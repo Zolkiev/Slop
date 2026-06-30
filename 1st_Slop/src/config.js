@@ -28,4 +28,14 @@ export const CONFIG = {
   SHAKE_TIME: 0.3,
   SHAKE_MAX: 4,
   FLASH_TIME: 0.16,
+
+  // Niveaux & difficulté progressive
+  GATES_PER_LEVEL: 10,
+  SPEED_BASE: 150,   // vitesse niveau 1 (= SCROLL_SPEED)
+  SPEED_STEP: 12,    // gain de vitesse par niveau
+  SPEED_MAX: 300,    // plafond de vitesse
+  GAP_BASE: 160,     // gapMin niveau 1 (= GAP_MIN)
+  GAP_SHRINK: 6,     // rétrécissement du gap par niveau
+  GAP_FLOOR: 110,    // gap minimal absolu
+  GAP_RANGE: 50,     // étendue aléatoire au-dessus de gapMin (= GAP_MAX - GAP_MIN)
 };
