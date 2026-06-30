@@ -1,6 +1,7 @@
 import { States } from '../engine/state.js';
 import { obstacleRects } from '../game/obstacles.js';
 import { twinkleAlpha } from '../game/twinkle.js';
+import { gateGoalForLevel } from '../game/level.js';
 import { CONFIG } from '../config.js';
 
 export function renderWorld(ctx, world, assets) {
@@ -80,18 +81,24 @@ export function renderWorld(ctx, world, assets) {
   ctx.textAlign = 'center';
   const state = world.sm.get();
   if (state === States.PLAY) {
-    ctx.fillText(String(world.score.current), CONFIG.WIDTH / 2, 60);
+    ctx.fillText(`${world.gatesThisLevel}/${gateGoalForLevel(world.level)}`, CONFIG.WIDTH / 2, 56);
+    ctx.font = '14px system-ui';
+    ctx.fillText(`Niveau ${world.level}`, CONFIG.WIDTH / 2, 80);
   } else if (state === States.MENU) {
     ctx.fillText('JETPACK BOT', CONFIG.WIDTH / 2, 240);
     ctx.font = '16px system-ui';
     ctx.fillText('Tap / Espace pour voler', CONFIG.WIDTH / 2, 280);
-    ctx.fillText(`Best: ${world.score.best}`, CONFIG.WIDTH / 2, 320);
+    ctx.fillText(`Best: niveau ${world.score.bestLevel}`, CONFIG.WIDTH / 2, 320);
+  } else if (state === States.LEVEL_COMPLETE) {
+    ctx.fillText(`NIVEAU ${world.level} OK`, CONFIG.WIDTH / 2, 240);
+    ctx.font = '16px system-ui';
+    ctx.fillText('Tap pour continuer', CONFIG.WIDTH / 2, 280);
   } else if (state === States.GAMEOVER) {
     ctx.fillText('GAME OVER', CONFIG.WIDTH / 2, 240);
     ctx.font = '16px system-ui';
-    ctx.fillText(`Score: ${world.score.current}`, CONFIG.WIDTH / 2, 280);
-    ctx.fillText(`Best: ${world.score.best}`, CONFIG.WIDTH / 2, 308);
-    ctx.fillText('Tap pour rejouer', CONFIG.WIDTH / 2, 340);
+    ctx.fillText(`Niveau ${world.level}`, CONFIG.WIDTH / 2, 280);
+    ctx.fillText(`Best: niveau ${world.score.bestLevel}`, CONFIG.WIDTH / 2, 308);
+    ctx.fillText('Tap pour réessayer', CONFIG.WIDTH / 2, 340);
   }
 
   // 6. White flash overlay (unshaken, drawn last)
