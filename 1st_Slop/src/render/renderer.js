@@ -24,10 +24,15 @@ export function renderWorld(ctx, world, assets) {
 
   // 4. Robot (64×64 sprite centered on hitbox, drawn at 44×44 for crisp pixel art)
   const r = world.robot;
+  let sprite = assets.robot; // idle / falling
+  if (r.alive && r.vy < 0) {
+    // rising = thrusting: flicker between the two thrust frames
+    sprite = (Math.floor(world.tick / 6) % 2 === 0) ? assets['robot-thrust-0'] : assets['robot-thrust-1'];
+  }
   const size = 44;
   const cx = r.x + r.w / 2;
   const cy = r.y + r.h / 2;
-  ctx.drawImage(assets.robot, Math.round(cx - size / 2), Math.round(cy - size / 2), size, size);
+  ctx.drawImage(sprite, Math.round(cx - size / 2), Math.round(cy - size / 2), size, size);
 
   // 5. HUD (unchanged)
   ctx.fillStyle = '#ffffff';

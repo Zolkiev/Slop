@@ -50,6 +50,30 @@ describe('world', () => {
     expect(w.score.current).toBe(0);
   });
 
+  describe('tick counter', () => {
+    it('tick starts at 0', () => {
+      const w = createWorld(fakeStorage());
+      expect(w.tick).toBe(0);
+    });
+
+    it('updateWorld increments tick once per call while in PLAY', () => {
+      const w = createWorld(fakeStorage());
+      press(w); // MENU -> PLAY
+      updateWorld(w, 1 / 60);
+      updateWorld(w, 1 / 60);
+      updateWorld(w, 1 / 60);
+      expect(w.tick).toBe(3);
+    });
+
+    it('tick does not increment outside PLAY state', () => {
+      const w = createWorld(fakeStorage());
+      // Still in MENU
+      updateWorld(w, 1 / 60);
+      updateWorld(w, 1 / 60);
+      expect(w.tick).toBe(0);
+    });
+  });
+
   describe('bgSet selection', () => {
     it('resetRun picks bgSet 0 when rand returns 0', () => {
       const w = createWorld(fakeStorage());

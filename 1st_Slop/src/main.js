@@ -7,6 +7,8 @@ import { loadImages } from './engine/assets.js';
 import { createAudio } from './engine/audio.js';
 
 import robotUrl from '../assets/robot.png';
+import robotThrust0 from '../assets/robot-thrust-0.png';
+import robotThrust1 from '../assets/robot-thrust-1.png';
 import obstacleUrl from '../assets/obstacle.png';
 import bgFar0 from '../assets/bg-far-0.png';
 import bgFar1 from '../assets/bg-far-1.png';
@@ -36,6 +38,8 @@ createInput({ target: canvas, win: window }, () => press(world));
 
 loadImages({
   robot: robotUrl,
+  'robot-thrust-0': robotThrust0,
+  'robot-thrust-1': robotThrust1,
   obstacle: obstacleUrl,
   'bg-far-0': bgFar0,
   'bg-far-1': bgFar1,
