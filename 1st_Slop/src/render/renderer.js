@@ -3,8 +3,10 @@ import { obstacleRects } from '../game/obstacles.js';
 import { CONFIG } from '../config.js';
 
 export function renderWorld(ctx, world, assets) {
-  // 1. Far background (static, fills screen)
-  ctx.drawImage(assets['bg-far'], 0, -3, CONFIG.WIDTH, CONFIG.HEIGHT + 3);
+  // 1. Far background (parallax, tiled twice)
+  const farOff = world.layers[0].offset % CONFIG.WIDTH;
+  ctx.drawImage(assets['bg-far'], -farOff, -3, CONFIG.WIDTH, CONFIG.HEIGHT + 3);
+  ctx.drawImage(assets['bg-far'], -farOff + CONFIG.WIDTH, -3, CONFIG.WIDTH, CONFIG.HEIGHT + 3);
 
   // 2. Near foreground (horizontal parallax, tiled twice)
   const drawHeight = Math.round(180 * CONFIG.WIDTH / 320);

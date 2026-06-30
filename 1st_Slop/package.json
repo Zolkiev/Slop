@@ -2,7 +2,6 @@
   "type": "module",
   "name": "1st_slop",
   "version": "1.0.0",
-  "main": "index.js",
   "directories": {
     "doc": "docs"
   },

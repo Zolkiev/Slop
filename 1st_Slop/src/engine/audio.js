@@ -9,7 +9,8 @@ export function createAudio(sources, AudioCtor = Audio) {
       if (!clip) return;
       try {
         clip.currentTime = 0;
-        clip.play();
+        const p = clip.play();
+        if (p && typeof p.catch === 'function') p.catch(() => {});
       } catch {
         /* lecture audio best-effort */
       }

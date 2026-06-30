@@ -15,4 +15,15 @@ describe('audio', () => {
     const audio = createAudio({}, FakeAudio);
     expect(() => audio.play('nope')).not.toThrow();
   });
+
+  it('swallows a rejected play() promise without throwing', () => {
+    class FakeAudio {
+      constructor() {
+        this.currentTime = 0;
+        this.play = () => Promise.reject(new Error('blocked'));
+      }
+    }
+    const audio = createAudio({ x: 'x.wav' }, FakeAudio);
+    expect(() => audio.play('x')).not.toThrow();
+  });
 });
