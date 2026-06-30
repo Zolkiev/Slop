@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { createWorld, press, updateWorld } from '../../src/game/world.js';
+import { createWorld, press, resetRun, updateWorld } from '../../src/game/world.js';
 import { States } from '../../src/engine/state.js';
+import { CONFIG } from '../../src/config.js';
 
 function fakeStorage() {
   const d = {};
@@ -47,5 +48,38 @@ describe('world', () => {
     press(w); // retry
     expect(w.sm.get()).toBe(States.PLAY);
     expect(w.score.current).toBe(0);
+  });
+
+  describe('bgSet selection', () => {
+    it('resetRun picks bgSet 0 when rand returns 0', () => {
+      const w = createWorld(fakeStorage());
+      w.rand = () => 0;
+      resetRun(w);
+      expect(w.bgSet).toBe(0);
+    });
+
+    it('resetRun picks bgSet BG_SET_COUNT-1 when rand returns 0.99', () => {
+      const w = createWorld(fakeStorage());
+      w.rand = () => 0.99;
+      resetRun(w);
+      expect(w.bgSet).toBe(CONFIG.BG_SET_COUNT - 1);
+    });
+
+    it('bgSet is always in range [0, BG_SET_COUNT)', () => {
+      const w = createWorld(fakeStorage());
+      for (const val of [0, 0.33, 0.66, 0.99]) {
+        w.rand = () => val;
+        resetRun(w);
+        expect(w.bgSet).toBeGreaterThanOrEqual(0);
+        expect(w.bgSet).toBeLessThan(CONFIG.BG_SET_COUNT);
+      }
+    });
+
+    it('press from MENU picks bgSet using world.rand', () => {
+      const w = createWorld(fakeStorage());
+      w.rand = () => 0.99;
+      press(w); // MENU -> PLAY, calls resetRun
+      expect(w.bgSet).toBe(CONFIG.BG_SET_COUNT - 1);
+    });
   });
 });

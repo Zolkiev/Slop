@@ -17,6 +17,7 @@ export function createWorld(storage) {
     score: createScore(storage),
     layers: [createLayer(0.25, CONFIG.WIDTH), createLayer(0.6, CONFIG.WIDTH)],
     rand: Math.random,
+    bgSet: Math.floor(Math.random() * CONFIG.BG_SET_COUNT),
     storage,
     events: [],
   };
@@ -26,6 +27,7 @@ export function resetRun(world) {
   world.robot = createRobot();
   world.obstacles = [];
   world.score.current = 0;
+  world.bgSet = Math.floor(world.rand() * CONFIG.BG_SET_COUNT);
 }
 
 function spawnObstacle(world) {

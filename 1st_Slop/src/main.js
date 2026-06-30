@@ -8,8 +8,12 @@ import { createAudio } from './engine/audio.js';
 
 import robotUrl from '../assets/robot.png';
 import obstacleUrl from '../assets/obstacle.png';
-import bgFarUrl from '../assets/bg-far.png';
-import bgNearUrl from '../assets/bg-near.png';
+import bgFar0 from '../assets/bg-far-0.png';
+import bgFar1 from '../assets/bg-far-1.png';
+import bgFar2 from '../assets/bg-far-2.png';
+import bgNear0 from '../assets/bg-near-0.png';
+import bgNear1 from '../assets/bg-near-1.png';
+import bgNear2 from '../assets/bg-near-2.png';
 import thrustUrl from '../assets/sfx-thrust.wav';
 import scoreUrl from '../assets/sfx-score.wav';
 import crashUrl from '../assets/sfx-crash.wav';
@@ -33,8 +37,12 @@ createInput({ target: canvas, win: window }, () => press(world));
 loadImages({
   robot: robotUrl,
   obstacle: obstacleUrl,
-  'bg-far': bgFarUrl,
-  'bg-near': bgNearUrl,
+  'bg-far-0': bgFar0,
+  'bg-far-1': bgFar1,
+  'bg-far-2': bgFar2,
+  'bg-near-0': bgNear0,
+  'bg-near-1': bgNear1,
+  'bg-near-2': bgNear2,
 }).then((assets) => {
   const loop = createLoop({
     update: (dt) => {

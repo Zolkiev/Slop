@@ -5,15 +5,15 @@ import { CONFIG } from '../config.js';
 export function renderWorld(ctx, world, assets) {
   // 1. Far background (parallax, tiled twice)
   const farOff = world.layers[0].offset % CONFIG.WIDTH;
-  ctx.drawImage(assets['bg-far'], -farOff, -3, CONFIG.WIDTH, CONFIG.HEIGHT + 3);
-  ctx.drawImage(assets['bg-far'], -farOff + CONFIG.WIDTH, -3, CONFIG.WIDTH, CONFIG.HEIGHT + 3);
+  ctx.drawImage(assets['bg-far-' + world.bgSet], -farOff, -3, CONFIG.WIDTH, CONFIG.HEIGHT + 3);
+  ctx.drawImage(assets['bg-far-' + world.bgSet], -farOff + CONFIG.WIDTH, -3, CONFIG.WIDTH, CONFIG.HEIGHT + 3);
 
   // 2. Near foreground (horizontal parallax, tiled twice)
   const drawHeight = Math.round(180 * CONFIG.WIDTH / 320);
   const nearY = CONFIG.HEIGHT - drawHeight;
   const off = world.layers[1].offset % CONFIG.WIDTH;
-  ctx.drawImage(assets['bg-near'], -off, nearY, CONFIG.WIDTH, drawHeight);
-  ctx.drawImage(assets['bg-near'], -off + CONFIG.WIDTH, nearY, CONFIG.WIDTH, drawHeight);
+  ctx.drawImage(assets['bg-near-' + world.bgSet], -off, nearY, CONFIG.WIDTH, drawHeight);
+  ctx.drawImage(assets['bg-near-' + world.bgSet], -off + CONFIG.WIDTH, nearY, CONFIG.WIDTH, drawHeight);
 
   // 3. Obstacles
   for (const o of world.obstacles) {
