@@ -5,7 +5,8 @@ import {
   needsSpawn, randomGapY,
 } from './obstacles.js';
 import { aabb, hitsBounds } from './collision.js';
-import { createScore, scorePass, checkPass, finalize } from './score.js';
+import { createScore, checkPass, finalizeLevel } from './score.js';
+import { gateGoalForLevel, difficultyForLevel } from './level.js';
 import { createLayer, updateLayer } from './background.js';
 import { createParticleField, spawnReactor, updateParticles } from './particles.js';
 import { createAmbiance, updateAmbiance } from './ambiance.js';
@@ -18,6 +19,11 @@ export function createWorld(storage) {
     robot: createRobot(),
     obstacles: [],
     score: createScore(storage),
+    level: 1,
+    gatesThisLevel: 0,
+    scrollSpeed: difficultyForLevel(1).scrollSpeed,
+    gapMin: difficultyForLevel(1).gapMin,
+    gapMax: difficultyForLevel(1).gapMax,
     layers: [createLayer(0.25, CONFIG.WIDTH), createLayer(0.6, CONFIG.WIDTH)],
     rand: Math.random,
     bgSet: Math.floor(Math.random() * CONFIG.BG_SET_COUNT),
@@ -35,13 +41,22 @@ export function createWorld(storage) {
 export function resetRun(world) {
   world.robot = createRobot();
   world.obstacles = [];
-  world.score.current = 0;
+  world.gatesThisLevel = 0;
   world.bgSet = Math.floor(world.rand() * CONFIG.BG_SET_COUNT);
   world.particles.particles = [];
 }
 
+export function startLevel(world, level) {
+  const diff = difficultyForLevel(level);
+  world.level = level;
+  world.scrollSpeed = diff.scrollSpeed;
+  world.gapMin = diff.gapMin;
+  world.gapMax = diff.gapMax;
+  resetRun(world);
+}
+
 function spawnObstacle(world) {
-  const gapH = CONFIG.GAP_MIN + world.rand() * (CONFIG.GAP_MAX - CONFIG.GAP_MIN);
+  const gapH = world.gapMin + world.rand() * (world.gapMax - world.gapMin);
   const gapY = randomGapY(world.rand, CONFIG.HEIGHT, gapH);
   world.obstacles.push(createObstacle(CONFIG.WIDTH + CONFIG.OBSTACLE_W, gapY, gapH));
 }
@@ -49,19 +64,22 @@ function spawnObstacle(world) {
 export function press(world) {
   const state = world.sm.get();
   if (state === States.MENU) {
+    startLevel(world, 1);
     world.sm.to(States.PLAY);
-    resetRun(world);
   } else if (state === States.PLAY) {
     applyThrust(world.robot);
     world.events.push('thrust');
-  } else if (state === States.GAMEOVER) {
+  } else if (state === States.LEVEL_COMPLETE) {
+    startLevel(world, world.level + 1);
     world.sm.to(States.PLAY);
-    resetRun(world);
+  } else if (state === States.GAMEOVER) {
+    startLevel(world, world.level);
+    world.sm.to(States.PLAY);
   }
 }
 
 export function updateWorld(world, dt) {
-  for (const layer of world.layers) updateLayer(layer, CONFIG.SCROLL_SPEED, dt);
+  for (const layer of world.layers) updateLayer(layer, world.scrollSpeed, dt);
   updateAmbiance(world.ambiance, dt, CONFIG.WIDTH, CONFIG.HEIGHT);
   world.shake = Math.max(0, world.shake - dt);
   world.flash = Math.max(0, world.flash - dt);
@@ -72,15 +90,22 @@ export function updateWorld(world, dt) {
   updateParticles(world.particles, dt);
 
   updateRobot(world.robot, dt);
-  updateObstacles(world.obstacles, dt);
+  updateObstacles(world.obstacles, dt, world.scrollSpeed);
   world.obstacles = recycle(world.obstacles, CONFIG.OBSTACLE_W);
   if (needsSpawn(world.obstacles, CONFIG.WIDTH)) spawnObstacle(world);
 
   for (const o of world.obstacles) {
     if (checkPass(world.robot, o, CONFIG.OBSTACLE_W)) {
-      scorePass(world.score);
+      world.gatesThisLevel += 1;
       world.events.push('score');
     }
+  }
+
+  if (world.gatesThisLevel >= gateGoalForLevel(world.level)) {
+    finalizeLevel(world.score, world.level, world.storage);
+    world.events.push('levelcomplete');
+    world.sm.to(States.LEVEL_COMPLETE);
+    return;
   }
 
   let dead = hitsBounds(world.robot, CONFIG.HEIGHT);
@@ -95,7 +120,7 @@ export function updateWorld(world, dt) {
     world.shake = CONFIG.SHAKE_TIME;
     world.flash = CONFIG.FLASH_TIME;
     world.robot.alive = false;
-    finalize(world.score, world.storage);
+    finalizeLevel(world.score, world.level, world.storage);
     world.sm.to(States.GAMEOVER);
   }
 }
