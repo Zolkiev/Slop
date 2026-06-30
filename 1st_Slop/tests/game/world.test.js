@@ -74,6 +74,43 @@ describe('world', () => {
     });
   });
 
+  describe('crash juice — shake and flash', () => {
+    /** Run until death, return world stopped one tick after the killing update. */
+    function runToDeath() {
+      const w = createWorld(fakeStorage());
+      press(w); // start
+      for (let i = 0; i < 600; i++) {
+        updateWorld(w, 1 / 60);
+        if (w.sm.get() === States.GAMEOVER) break;
+      }
+      expect(w.sm.get()).toBe(States.GAMEOVER); // sanity
+      return w;
+    }
+
+    it('shake and flash are positive immediately after crash', () => {
+      const w = runToDeath();
+      expect(w.shake).toBeGreaterThan(0);
+      expect(w.flash).toBeGreaterThan(0);
+    });
+
+    it('shake and flash decrease on further updates (in GAMEOVER)', () => {
+      const w = runToDeath();
+      const shakeBefore = w.shake;
+      const flashBefore = w.flash;
+      updateWorld(w, 1 / 60);
+      expect(w.shake).toBeLessThan(shakeBefore);
+      expect(w.flash).toBeLessThan(flashBefore);
+    });
+
+    it('shake and flash clamp at 0 and never go negative', () => {
+      const w = runToDeath();
+      // Drain fully (SHAKE_TIME=0.3s → 18 ticks; run 100 to be safe)
+      for (let i = 0; i < 100; i++) updateWorld(w, 1 / 60);
+      expect(w.shake).toBe(0);
+      expect(w.flash).toBe(0);
+    });
+  });
+
   describe('bgSet selection', () => {
     it('resetRun picks bgSet 0 when rand returns 0', () => {
       const w = createWorld(fakeStorage());

@@ -23,4 +23,9 @@ export const CONFIG = {
   GAP_MAX: 210,
   OBSTACLE_SPACING: 230, // distance horizontale entre 2 obstacles
   GAP_MARGIN: 48,        // marge haute/basse interdite pour le gap
+
+  // Crash juice
+  SHAKE_TIME: 0.3,
+  SHAKE_MAX: 4,
+  FLASH_TIME: 0.16,
 };

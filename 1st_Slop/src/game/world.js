@@ -9,6 +9,7 @@ import { createScore, scorePass, checkPass, finalize } from './score.js';
 import { createLayer, updateLayer } from './background.js';
 import { createParticleField, spawnReactor, updateParticles } from './particles.js';
 import { createAmbiance, updateAmbiance } from './ambiance.js';
+import { createTwinkles } from './twinkle.js';
 import { CONFIG } from '../config.js';
 
 export function createWorld(storage) {
@@ -25,6 +26,9 @@ export function createWorld(storage) {
     tick: 0,
     particles: createParticleField(),
     ambiance: createAmbiance(Math.random, 40, CONFIG.WIDTH, CONFIG.HEIGHT),
+    twinkles: createTwinkles(Math.random, 50, CONFIG.WIDTH, CONFIG.HEIGHT),
+    shake: 0,
+    flash: 0,
   };
 }
 
@@ -58,6 +62,8 @@ export function press(world) {
 export function updateWorld(world, dt) {
   for (const layer of world.layers) updateLayer(layer, CONFIG.SCROLL_SPEED, dt);
   updateAmbiance(world.ambiance, dt, CONFIG.WIDTH, CONFIG.HEIGHT);
+  world.shake = Math.max(0, world.shake - dt);
+  world.flash = Math.max(0, world.flash - dt);
   if (world.sm.get() !== States.PLAY) return;
   world.tick += 1;
 
@@ -85,6 +91,8 @@ export function updateWorld(world, dt) {
   }
   if (dead) {
     world.events.push('crash');
+    world.shake = CONFIG.SHAKE_TIME;
+    world.flash = CONFIG.FLASH_TIME;
     world.robot.alive = false;
     finalize(world.score, world.storage);
     world.sm.to(States.GAMEOVER);
