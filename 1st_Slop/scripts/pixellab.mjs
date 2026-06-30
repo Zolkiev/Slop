@@ -14,6 +14,11 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+function pngSize(buf) {
+  // IHDR width/height live at bytes 16..24 in a PNG
+  return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+}
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, '..');
 const API = 'https://api.pixellab.ai/v2';
@@ -109,6 +114,33 @@ async function poll(args, key) {
   saveJobImages(job, args);
 }
 
+async function edit(args, key) {
+  const inputBuf = readFileSync(join(PROJECT_ROOT, args.input));
+  const { width, height } = pngSize(inputBuf);
+  const b64 = inputBuf.toString('base64');
+  const body = {
+    method: 'edit_with_text',
+    edit_images: [{ image: { type: 'base64', base64: b64, format: 'png' }, width, height }],
+    image_size: { width, height },
+    description: args.description,
+    no_background: String(args['no-bg']) !== 'false',
+  };
+  if (args.seed) body.seed = Number(args.seed);
+
+  console.log(`POST edit-images-v2  ${width}x${height}  edit_with_text`);
+  console.log(`  "${args.description}"`);
+  const res = await fetch(`${API}/edit-images-v2`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`edit failed: ${res.status} ${await res.text()}`);
+  const { background_job_id: jobId } = await res.json();
+  console.log(`  job ${jobId} — polling…`);
+  const job = await pollJob(key, jobId);
+  saveJobImages(job, args);
+}
+
 const [cmd, ...rest] = process.argv.slice(2);
 const args = parseArgs(rest);
 const key = loadKey();
@@ -123,8 +155,14 @@ if (cmd === 'generate') {
     console.error('ERROR:', e.message);
     process.exit(1);
   });
+} else if (cmd === 'edit') {
+  edit(args, key).catch((e) => {
+    console.error('ERROR:', e.message);
+    process.exit(1);
+  });
 } else {
   console.error('usage: pixellab.mjs generate --description "..." --size WxH --no-bg true|false --out-dir DIR --name NAME [--seed N]');
   console.error('       pixellab.mjs poll --job JOB_ID --out-dir DIR --name NAME');
+  console.error('       pixellab.mjs edit --input PATH --description "..." --no-bg true|false --out-dir DIR --name NAME [--seed N]');
   process.exit(2);
 }

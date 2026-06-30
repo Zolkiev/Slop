@@ -45,4 +45,10 @@ describe('obstacles', () => {
     expect(y0).toBeGreaterThanOrEqual(CONFIG.GAP_MARGIN);
     expect(y1 + 180).toBeLessThanOrEqual(640 - CONFIG.GAP_MARGIN);
   });
+
+  it('utilise la vitesse fournie quand elle est précisée', () => {
+    const list = [createObstacle(400, 200, 180)];
+    updateObstacles(list, 1, 300);
+    expect(list[0].x).toBeCloseTo(100, 5);
+  });
 });

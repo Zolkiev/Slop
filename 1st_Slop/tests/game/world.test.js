@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createWorld, press, resetRun, updateWorld } from '../../src/game/world.js';
+import { createWorld, press, resetRun, startLevel, updateWorld } from '../../src/game/world.js';
 import { States } from '../../src/engine/state.js';
 import { CONFIG } from '../../src/config.js';
 
@@ -39,15 +39,63 @@ describe('world', () => {
     expect(scored).toBe(true);
   });
 
-  it('retry depuis GAMEOVER réinitialise le score courant', () => {
+  it('retry depuis GAMEOVER rejoue le même niveau et remet la progression à 0', () => {
     const w = createWorld(fakeStorage());
     press(w);
-    w.score.current = 5;
+    w.level = 3;
+    w.gatesThisLevel = 5;
     for (let i = 0; i < 600; i += 1) updateWorld(w, 1 / 60);
     expect(w.sm.get()).toBe(States.GAMEOVER);
+    const levelAtDeath = w.level;
     press(w); // retry
     expect(w.sm.get()).toBe(States.PLAY);
-    expect(w.score.current).toBe(0);
+    expect(w.level).toBe(levelAtDeath);
+    expect(w.gatesThisLevel).toBe(0);
+  });
+
+  it('atteindre GATES_PER_LEVEL portes passe en LEVEL_COMPLETE', () => {
+    const w = createWorld(fakeStorage());
+    press(w);
+    w.gatesThisLevel = CONFIG.GATES_PER_LEVEL - 1;
+    // obstacle déjà dépassé par le robot (x+OBSTACLE_W < ROBOT_X) mais pas encore recyclé
+    w.obstacles = [{ x: 20, gapY: 0, gapH: CONFIG.HEIGHT, passed: false }];
+    updateWorld(w, 1 / 60);
+    expect(w.sm.get()).toBe(States.LEVEL_COMPLETE);
+    expect(w.events).toContain('levelcomplete');
+  });
+
+  it('press en LEVEL_COMPLETE passe au niveau suivant et remet la progression à 0', () => {
+    const w = createWorld(fakeStorage());
+    press(w);
+    w.level = 2;
+    w.gatesThisLevel = CONFIG.GATES_PER_LEVEL;
+    w.obstacles = [{ x: 20, gapY: 0, gapH: CONFIG.HEIGHT, passed: false }];
+    updateWorld(w, 1 / 60); // -> LEVEL_COMPLETE
+    expect(w.sm.get()).toBe(States.LEVEL_COMPLETE);
+    press(w);
+    expect(w.sm.get()).toBe(States.PLAY);
+    expect(w.level).toBe(3);
+    expect(w.gatesThisLevel).toBe(0);
+  });
+
+  it('finir un niveau met à jour bestLevel (et le persiste)', () => {
+    const storage = fakeStorage();
+    const w = createWorld(storage);
+    press(w);
+    w.level = 4;
+    w.gatesThisLevel = CONFIG.GATES_PER_LEVEL;
+    w.obstacles = [{ x: 20, gapY: 0, gapH: CONFIG.HEIGHT, passed: false }];
+    updateWorld(w, 1 / 60);
+    expect(w.score.bestLevel).toBe(4);
+    expect(storage.getItem('jetpackbot.bestLevel')).toBe('4');
+  });
+
+  it('startLevel applique la difficulté du niveau', () => {
+    const w = createWorld(fakeStorage());
+    startLevel(w, 5);
+    expect(w.level).toBe(5);
+    expect(w.scrollSpeed).toBeGreaterThan(CONFIG.SCROLL_SPEED);
+    expect(w.gapMin).toBeLessThan(CONFIG.GAP_MIN);
   });
 
   describe('tick counter', () => {

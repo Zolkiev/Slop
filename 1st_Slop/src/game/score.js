@@ -1,14 +1,8 @@
-const KEY = 'jetpackbot.best';
+const KEY = 'jetpackbot.bestLevel';
 
 export function createScore(storage) {
-  const raw = storage?.getItem(KEY);
-  const best = Number(raw) || 0;
-  return { current: 0, best };
-}
-
-export function scorePass(scoreState) {
-  scoreState.current += 1;
-  return scoreState;
+  const bestLevel = Number(storage?.getItem(KEY)) || 0;
+  return { bestLevel };
 }
 
 export function checkPass(robot, obstacle, width) {
@@ -19,10 +13,10 @@ export function checkPass(robot, obstacle, width) {
   return false;
 }
 
-export function finalize(scoreState, storage) {
-  if (scoreState.current > scoreState.best) {
-    scoreState.best = scoreState.current;
-    storage?.setItem(KEY, String(scoreState.best));
+export function finalizeLevel(score, level, storage) {
+  if (level > score.bestLevel) {
+    score.bestLevel = level;
+    storage?.setItem(KEY, String(level));
   }
-  return scoreState;
+  return score;
 }

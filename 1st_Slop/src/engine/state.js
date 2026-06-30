@@ -1,9 +1,12 @@
-export const States = { MENU: 'menu', PLAY: 'play', GAMEOVER: 'gameover' };
+export const States = {
+  MENU: 'menu', PLAY: 'play', GAMEOVER: 'gameover', LEVEL_COMPLETE: 'levelcomplete',
+};
 
 const TRANSITIONS = {
   [States.MENU]: [States.PLAY],
-  [States.PLAY]: [States.GAMEOVER],
+  [States.PLAY]: [States.GAMEOVER, States.LEVEL_COMPLETE],
   [States.GAMEOVER]: [States.PLAY, States.MENU],
+  [States.LEVEL_COMPLETE]: [States.PLAY],
 };
 
 export function createStateMachine(initial = States.MENU) {

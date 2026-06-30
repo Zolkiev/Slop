@@ -11,8 +11,8 @@ export function obstacleRects(o, width, height) {
   ];
 }
 
-export function updateObstacles(obstacles, dt) {
-  for (const o of obstacles) o.x -= CONFIG.SCROLL_SPEED * dt;
+export function updateObstacles(obstacles, dt, speed = CONFIG.SCROLL_SPEED) {
+  for (const o of obstacles) o.x -= speed * dt;
   return obstacles;
 }
 
