@@ -20,6 +20,22 @@ describe('world', () => {
     press(w); // start
     for (let i = 0; i < 600; i += 1) updateWorld(w, 1 / 60);
     expect(w.sm.get()).toBe(States.GAMEOVER);
+    expect(w.events).toContain('crash');
+  });
+
+  it('émet un événement score au passage d\'un obstacle', () => {
+    const w = createWorld(fakeStorage());
+    // Fix rand so the gap (y≈228, h=185, bottom≈413) covers the robot at y≈320
+    w.rand = () => 0.5;
+    press(w); // start
+    let scored = false;
+    for (let i = 0; i < 600 && !scored; i += 1) {
+      // Keep robot alive by applying thrust when it falls too low
+      if (w.sm.get() === States.PLAY && w.robot.y > 370) press(w);
+      updateWorld(w, 1 / 60);
+      if (w.events.includes('score')) scored = true;
+    }
+    expect(scored).toBe(true);
   });
 
   it('retry depuis GAMEOVER réinitialise le score courant', () => {

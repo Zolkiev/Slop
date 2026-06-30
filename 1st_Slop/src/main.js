@@ -4,11 +4,15 @@ import { createInput } from './engine/input.js';
 import { createWorld, press, updateWorld } from './game/world.js';
 import { renderWorld } from './render/renderer.js';
 import { loadImages } from './engine/assets.js';
+import { createAudio } from './engine/audio.js';
 
 import robotUrl from '../assets/robot.png';
 import obstacleUrl from '../assets/obstacle.png';
 import bgFarUrl from '../assets/bg-far.png';
 import bgNearUrl from '../assets/bg-near.png';
+import thrustUrl from '../assets/sfx-thrust.wav';
+import scoreUrl from '../assets/sfx-score.wav';
+import crashUrl from '../assets/sfx-crash.wav';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -23,6 +27,7 @@ ctx.textAlign = 'center';
 ctx.fillText('Chargement…', CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2);
 
 const world = createWorld(window.localStorage);
+const audio = createAudio({ thrust: thrustUrl, score: scoreUrl, crash: crashUrl });
 createInput({ target: canvas, win: window }, () => press(world));
 
 loadImages({
@@ -32,7 +37,11 @@ loadImages({
   'bg-near': bgNearUrl,
 }).then((assets) => {
   const loop = createLoop({
-    update: (dt) => updateWorld(world, dt),
+    update: (dt) => {
+      updateWorld(world, dt);
+      for (const evt of world.events) audio.play(evt);
+      world.events.length = 0;
+    },
     render: () => renderWorld(ctx, world, assets),
     fixedDt: CONFIG.FIXED_DT,
   });

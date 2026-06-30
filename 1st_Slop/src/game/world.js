@@ -18,6 +18,7 @@ export function createWorld(storage) {
     layers: [createLayer(0.25, CONFIG.WIDTH), createLayer(0.6, CONFIG.WIDTH)],
     rand: Math.random,
     storage,
+    events: [],
   };
 }
 
@@ -40,6 +41,7 @@ export function press(world) {
     resetRun(world);
   } else if (state === States.PLAY) {
     applyThrust(world.robot);
+    world.events.push('thrust');
   } else if (state === States.GAMEOVER) {
     world.sm.to(States.PLAY);
     resetRun(world);
@@ -56,7 +58,10 @@ export function updateWorld(world, dt) {
   if (needsSpawn(world.obstacles, CONFIG.WIDTH)) spawnObstacle(world);
 
   for (const o of world.obstacles) {
-    if (checkPass(world.robot, o, CONFIG.OBSTACLE_W)) scorePass(world.score);
+    if (checkPass(world.robot, o, CONFIG.OBSTACLE_W)) {
+      scorePass(world.score);
+      world.events.push('score');
+    }
   }
 
   let dead = hitsBounds(world.robot, CONFIG.HEIGHT);
@@ -67,6 +72,7 @@ export function updateWorld(world, dt) {
     }
   }
   if (dead) {
+    world.events.push('crash');
     world.robot.alive = false;
     finalize(world.score, world.storage);
     world.sm.to(States.GAMEOVER);
