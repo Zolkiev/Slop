@@ -20,6 +20,7 @@ export function createWorld(storage) {
     bgSet: Math.floor(Math.random() * CONFIG.BG_SET_COUNT),
     storage,
     events: [],
+    tick: 0,
   };
 }
 
@@ -53,6 +54,7 @@ export function press(world) {
 export function updateWorld(world, dt) {
   for (const layer of world.layers) updateLayer(layer, CONFIG.SCROLL_SPEED, dt);
   if (world.sm.get() !== States.PLAY) return;
+  world.tick += 1;
 
   updateRobot(world.robot, dt);
   updateObstacles(world.obstacles, dt);
