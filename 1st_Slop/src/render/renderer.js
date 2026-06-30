@@ -1,8 +1,23 @@
 import { States } from '../engine/state.js';
 import { obstacleRects } from '../game/obstacles.js';
+import { twinkleAlpha } from '../game/twinkle.js';
 import { CONFIG } from '../config.js';
 
 export function renderWorld(ctx, world, assets) {
+  // 0. Dark base — fills any shake-gap edges with the background colour
+  ctx.fillStyle = '#0a0a14';
+  ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+
+  // --- Begin shaken scene ---
+  const shakeAmt = world.shake > 0 ? (world.shake / CONFIG.SHAKE_TIME) * CONFIG.SHAKE_MAX : 0;
+  ctx.save();
+  if (shakeAmt > 0) {
+    ctx.translate(
+      (Math.random() - 0.5) * 2 * shakeAmt,
+      (Math.random() - 0.5) * 2 * shakeAmt,
+    );
+  }
+
   // 1. Far background (parallax, tiled twice)
   const farOff = world.layers[0].offset % CONFIG.WIDTH;
   ctx.drawImage(assets['bg-far-' + world.bgSet], -farOff, -3, CONFIG.WIDTH, CONFIG.HEIGHT + 3);
@@ -15,12 +30,34 @@ export function renderWorld(ctx, world, assets) {
   ctx.drawImage(assets['bg-near-' + world.bgSet], -off, nearY, CONFIG.WIDTH, drawHeight);
   ctx.drawImage(assets['bg-near-' + world.bgSet], -off + CONFIG.WIDTH, nearY, CONFIG.WIDTH, drawHeight);
 
+  // 2a. Twinkling neon windows
+  for (const point of world.twinkles.points) {
+    ctx.globalAlpha = twinkleAlpha(point, world.tick);
+    ctx.fillStyle = point.color;
+    ctx.fillRect(Math.round(point.x), Math.round(point.y), 2, 2);
+  }
+  ctx.globalAlpha = 1;
+
+  // 2b. Ambiance (faint drifting streaks — rain/ash)
+  ctx.fillStyle = 'rgba(150,180,255,0.20)';
+  for (const d of world.ambiance.drops) {
+    ctx.fillRect(Math.round(d.x), Math.round(d.y), 1, Math.round(d.len));
+  }
+
   // 3. Obstacles
   for (const o of world.obstacles) {
     for (const r of obstacleRects(o, CONFIG.OBSTACLE_W, CONFIG.HEIGHT)) {
       ctx.drawImage(assets.obstacle, r.x, r.y, r.w, r.h);
     }
   }
+
+  // 3b. Reactor particle trail (drawn before robot so it appears behind)
+  for (const p of world.particles.particles) {
+    ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+    ctx.fillStyle = '#ff3ea5';
+    ctx.fillRect(Math.round(p.x), Math.round(p.y), 2, 2);
+  }
+  ctx.globalAlpha = 1;
 
   // 4. Robot (64×64 sprite centered on hitbox, drawn at 44×44 for crisp pixel art)
   const r = world.robot;
@@ -34,7 +71,10 @@ export function renderWorld(ctx, world, assets) {
   const cy = r.y + r.h / 2;
   ctx.drawImage(sprite, Math.round(cx - size / 2), Math.round(cy - size / 2), size, size);
 
-  // 5. HUD (unchanged)
+  // --- End shaken scene ---
+  ctx.restore();
+
+  // 5. HUD (unshaken — drawn after restore)
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 28px system-ui';
   ctx.textAlign = 'center';
@@ -52,5 +92,11 @@ export function renderWorld(ctx, world, assets) {
     ctx.fillText(`Score: ${world.score.current}`, CONFIG.WIDTH / 2, 280);
     ctx.fillText(`Best: ${world.score.best}`, CONFIG.WIDTH / 2, 308);
     ctx.fillText('Tap pour rejouer', CONFIG.WIDTH / 2, 340);
+  }
+
+  // 6. White flash overlay (unshaken, drawn last)
+  if (world.flash > 0) {
+    ctx.fillStyle = 'rgba(255,255,255,' + (world.flash / CONFIG.FLASH_TIME) * 0.6 + ')';
+    ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
   }
 }
