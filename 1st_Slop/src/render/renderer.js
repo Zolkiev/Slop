@@ -54,7 +54,7 @@ export function renderWorld(ctx, world, assets) {
   // 3b. Reactor particle trail (drawn before robot so it appears behind)
   for (const p of world.particles.particles) {
     ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
-    ctx.fillStyle = '#ff3ea5';
+    ctx.fillStyle = '#3ef0ff';
     ctx.fillRect(Math.round(p.x), Math.round(p.y), 2, 2);
   }
   ctx.globalAlpha = 1;
