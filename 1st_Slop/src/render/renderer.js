@@ -2,35 +2,32 @@ import { States } from '../engine/state.js';
 import { obstacleRects } from '../game/obstacles.js';
 import { CONFIG } from '../config.js';
 
-export function renderWorld(ctx, world) {
-  // Fond
-  ctx.fillStyle = '#0a0a14';
-  ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+export function renderWorld(ctx, world, assets) {
+  // 1. Far background (static, fills screen)
+  ctx.drawImage(assets['bg-far'], 0, -3, CONFIG.WIDTH, CONFIG.HEIGHT + 3);
 
-  // Parallaxe placeholder : bandes verticales décalées
-  const colors = ['#141430', '#1e1e4a'];
-  world.layers.forEach((layer, i) => {
-    ctx.fillStyle = colors[i % colors.length];
-    const step = 80;
-    for (let x = -layer.offset; x < CONFIG.WIDTH; x += step) {
-      ctx.fillRect(x, CONFIG.HEIGHT - 120 - i * 40, 40, 120 + i * 40);
-    }
-  });
+  // 2. Near foreground (horizontal parallax, tiled twice)
+  const drawHeight = Math.round(180 * CONFIG.WIDTH / 320);
+  const nearY = CONFIG.HEIGHT - drawHeight;
+  const off = world.layers[1].offset % CONFIG.WIDTH;
+  ctx.drawImage(assets['bg-near'], -off, nearY, CONFIG.WIDTH, drawHeight);
+  ctx.drawImage(assets['bg-near'], -off + CONFIG.WIDTH, nearY, CONFIG.WIDTH, drawHeight);
 
-  // Obstacles néon placeholder
-  ctx.fillStyle = '#ff2e88';
+  // 3. Obstacles
   for (const o of world.obstacles) {
     for (const r of obstacleRects(o, CONFIG.OBSTACLE_W, CONFIG.HEIGHT)) {
-      ctx.fillRect(r.x, r.y, r.w, r.h);
+      ctx.drawImage(assets.obstacle, r.x, r.y, r.w, r.h);
     }
   }
 
-  // Robot placeholder
+  // 4. Robot (64×64 sprite centered on hitbox, drawn at 44×44 for crisp pixel art)
   const r = world.robot;
-  ctx.fillStyle = r.alive ? '#00e5ff' : '#888';
-  ctx.fillRect(r.x, r.y, r.w, r.h);
+  const size = 44;
+  const cx = r.x + r.w / 2;
+  const cy = r.y + r.h / 2;
+  ctx.drawImage(assets.robot, Math.round(cx - size / 2), Math.round(cy - size / 2), size, size);
 
-  // HUD
+  // 5. HUD (unchanged)
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 28px system-ui';
   ctx.textAlign = 'center';
