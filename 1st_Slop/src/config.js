@@ -14,6 +14,9 @@ export const CONFIG = {
   SCROLL_SPEED: 150,  // px/s (défilement obstacles + sol)
   FIXED_DT: 1 / 60,   // pas de temps fixe
 
+  // Background sets
+  BG_SET_COUNT: 3,
+
   // Obstacles
   OBSTACLE_W: 62,
   GAP_MIN: 160,
