@@ -37,6 +37,7 @@ export function resetRun(world) {
   world.obstacles = [];
   world.score.current = 0;
   world.bgSet = Math.floor(world.rand() * CONFIG.BG_SET_COUNT);
+  world.particles.particles = [];
 }
 
 function spawnObstacle(world) {
