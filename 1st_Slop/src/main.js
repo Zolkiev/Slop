@@ -1,11 +1,19 @@
 import { CONFIG } from './config.js';
+import { createLoop } from './engine/loop.js';
+import { createInput } from './engine/input.js';
+import { createWorld, press, updateWorld } from './game/world.js';
+import { renderWorld } from './render/renderer.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
 
-ctx.fillStyle = '#0a0a14';
-ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
-ctx.fillStyle = '#00e5ff';
-ctx.font = '16px system-ui';
-ctx.textAlign = 'center';
-ctx.fillText('Jetpack Bot', CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2);
+const world = createWorld(window.localStorage);
+createInput({ target: canvas, win: window }, () => press(world));
+
+const loop = createLoop({
+  update: (dt) => updateWorld(world, dt),
+  render: () => renderWorld(ctx, world),
+  fixedDt: CONFIG.FIXED_DT,
+});
+loop.start();
