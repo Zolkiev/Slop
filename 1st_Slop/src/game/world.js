@@ -7,6 +7,8 @@ import {
 import { aabb, hitsBounds } from './collision.js';
 import { createScore, scorePass, checkPass, finalize } from './score.js';
 import { createLayer, updateLayer } from './background.js';
+import { createParticleField, spawnReactor, updateParticles } from './particles.js';
+import { createAmbiance, updateAmbiance } from './ambiance.js';
 import { CONFIG } from '../config.js';
 
 export function createWorld(storage) {
@@ -21,6 +23,8 @@ export function createWorld(storage) {
     storage,
     events: [],
     tick: 0,
+    particles: createParticleField(),
+    ambiance: createAmbiance(Math.random, 40, CONFIG.WIDTH, CONFIG.HEIGHT),
   };
 }
 
@@ -53,8 +57,12 @@ export function press(world) {
 
 export function updateWorld(world, dt) {
   for (const layer of world.layers) updateLayer(layer, CONFIG.SCROLL_SPEED, dt);
+  updateAmbiance(world.ambiance, dt, CONFIG.WIDTH, CONFIG.HEIGHT);
   if (world.sm.get() !== States.PLAY) return;
   world.tick += 1;
+
+  if (world.robot.vy < 0) spawnReactor(world.particles, world.robot, world.rand);
+  updateParticles(world.particles, dt);
 
   updateRobot(world.robot, dt);
   updateObstacles(world.obstacles, dt);

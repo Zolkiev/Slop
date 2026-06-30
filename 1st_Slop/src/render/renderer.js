@@ -15,12 +15,26 @@ export function renderWorld(ctx, world, assets) {
   ctx.drawImage(assets['bg-near-' + world.bgSet], -off, nearY, CONFIG.WIDTH, drawHeight);
   ctx.drawImage(assets['bg-near-' + world.bgSet], -off + CONFIG.WIDTH, nearY, CONFIG.WIDTH, drawHeight);
 
+  // 2b. Ambiance (faint drifting streaks — rain/ash)
+  ctx.fillStyle = 'rgba(150,180,255,0.20)';
+  for (const d of world.ambiance.drops) {
+    ctx.fillRect(Math.round(d.x), Math.round(d.y), 1, Math.round(d.len));
+  }
+
   // 3. Obstacles
   for (const o of world.obstacles) {
     for (const r of obstacleRects(o, CONFIG.OBSTACLE_W, CONFIG.HEIGHT)) {
       ctx.drawImage(assets.obstacle, r.x, r.y, r.w, r.h);
     }
   }
+
+  // 3b. Reactor particle trail (drawn before robot so it appears behind)
+  for (const p of world.particles.particles) {
+    ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+    ctx.fillStyle = '#ff3ea5';
+    ctx.fillRect(Math.round(p.x), Math.round(p.y), 2, 2);
+  }
+  ctx.globalAlpha = 1;
 
   // 4. Robot (64×64 sprite centered on hitbox, drawn at 44×44 for crisp pixel art)
   const r = world.robot;
