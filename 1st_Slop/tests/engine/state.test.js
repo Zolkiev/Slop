@@ -25,4 +25,13 @@ describe('stateMachine', () => {
     expect(sm.can(States.GAMEOVER)).toBe(false);
     expect(() => sm.to(States.GAMEOVER)).toThrow();
   });
+
+  it('autorise PLAY -> LEVEL_COMPLETE -> PLAY', () => {
+    const sm = createStateMachine(States.PLAY);
+    expect(sm.can(States.LEVEL_COMPLETE)).toBe(true);
+    sm.to(States.LEVEL_COMPLETE);
+    expect(sm.can(States.PLAY)).toBe(true);
+    sm.to(States.PLAY);
+    expect(sm.get()).toBe(States.PLAY);
+  });
 });
