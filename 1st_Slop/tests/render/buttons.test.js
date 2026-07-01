@@ -35,7 +35,7 @@ describe('fitFontSize', () => {
 
 function recordingCtx() {
   return {
-    drawn: [], texts: [], alphas: [], fills: [],
+    drawn: [], texts: [], fills: [],
     _font: '10px x', _alpha: 1,
     drawImage(img, ...rest) { this.drawn.push({ img, rest, alpha: this._alpha }); },
     fillText(t, x, y) { this.texts.push({ t, x, y, alpha: this._alpha }); },
