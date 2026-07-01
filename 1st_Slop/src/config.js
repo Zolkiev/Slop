@@ -41,6 +41,15 @@ export const CONFIG = {
   PAUSE_ICON: { x: 324, y: 16, w: 24, h: 24 },
   GAMEOVER_MENU_BTN: { x: 80, y: 384, w: 200, h: 56 },
 
+  // Button text (canvas-drawn labels over shared plate)
+  BTN_FONT_FAMILY: 'PressStart2P',
+  BTN_FONT_MAX: 18,
+  BTN_FONT_MIN: 8,
+  BTN_TEXT_PAD: 16,
+  BTN_DISABLED_ALPHA: 0.4,
+  BTN_TEXT: '#ffffff',
+  BTN_TEXT_DISABLED: '#8a94a6',
+
   // Niveaux & difficulté progressive
   GATES_PER_LEVEL: 10,
   SPEED_BASE: 150,   // vitesse niveau 1 (= SCROLL_SPEED)
