@@ -4,40 +4,32 @@ import { createPauseMenu } from '../../src/game/menu.js';
 
 function fakeCtx() {
   return {
-    drawn: [],
+    drawn: [], texts: [], _font: '10px x',
     drawImage(img, ...rest) { this.drawn.push({ img, rest }); },
     fillRect: vi.fn(),
-    fillText: vi.fn(),
-    save: vi.fn(),
-    restore: vi.fn(),
+    fillText(t) { this.texts.push(t); },
+    measureText(t) { return { width: t.length * parseInt(this._font, 10) }; },
+    save: vi.fn(), restore: vi.fn(),
     set fillStyle(_) {}, get fillStyle() { return ''; },
-    set font(_) {}, get font() { return ''; },
+    set font(v) { this._font = v; }, get font() { return this._font; },
     set textAlign(_) {}, get textAlign() { return ''; },
+    set textBaseline(_) {}, get textBaseline() { return ''; },
     set globalAlpha(_) {}, get globalAlpha() { return 1; },
   };
 }
 
 function fakeAssets() {
-  const keys = [
-    'btn-resume', 'btn-resume-focus', 'btn-resume-disabled',
-    'btn-restart', 'btn-restart-focus', 'btn-restart-disabled',
-    'btn-menu', 'btn-menu-focus', 'btn-menu-disabled',
-    'btn-options', 'btn-options-focus', 'btn-options-disabled',
-  ];
+  const keys = ['btn-plate', 'btn-plate-focus'];
   return Object.fromEntries(keys.map((k) => [k, { key: k }]));
 }
 
 describe('renderPause', () => {
-  it('resume focus -> btn-resume-focus ; restart/menu normal ; options disabled', () => {
+  it('resume focus -> une plate focus ; les 4 labels dessinés', () => {
     const ctx = fakeCtx();
-    const assets = fakeAssets();
     const world = { pause: createPauseMenu(), menuTick: 0 };
-    renderPause(ctx, world, assets);
+    renderPause(ctx, world, fakeAssets());
     const keys = ctx.drawn.map((d) => d.img.key);
-    expect(keys).toContain('btn-resume-focus');
-    expect(keys).toContain('btn-restart');
-    expect(keys).toContain('btn-menu');
-    expect(keys).toContain('btn-options-disabled');
-    expect(keys).not.toContain('btn-resume'); // resume is focused, not normal
+    expect(keys.filter((k) => k === 'btn-plate-focus').length).toBe(1);
+    expect(ctx.texts).toEqual(['PAUSE', 'REPRENDRE', 'RECOMMENCER', 'MENU', 'OPTIONS']);
   });
 });
