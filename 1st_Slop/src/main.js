@@ -1,7 +1,7 @@
 import { CONFIG } from './config.js';
 import { createLoop } from './engine/loop.js';
 import { createInput } from './engine/input.js';
-import { createWorld, press, updateWorld } from './game/world.js';
+import { createWorld, press, navMenu, updateWorld } from './game/world.js';
 import { renderWorld } from './render/renderer.js';
 import { loadImages } from './engine/assets.js';
 import { createAudio } from './engine/audio.js';
@@ -16,6 +16,16 @@ import bgFar2 from '../assets/bg-far-2.png';
 import bgNear0 from '../assets/bg-near-0.png';
 import bgNear1 from '../assets/bg-near-1.png';
 import bgNear2 from '../assets/bg-near-2.png';
+import uiLogo from '../assets/ui-logo.png';
+import btnNewgame from '../assets/btn-newgame.png';
+import btnNewgameFocus from '../assets/btn-newgame-focus.png';
+import btnNewgameDisabled from '../assets/btn-newgame-disabled.png';
+import btnContinue from '../assets/btn-continue.png';
+import btnContinueFocus from '../assets/btn-continue-focus.png';
+import btnContinueDisabled from '../assets/btn-continue-disabled.png';
+import btnOptions from '../assets/btn-options.png';
+import btnOptionsFocus from '../assets/btn-options-focus.png';
+import btnOptionsDisabled from '../assets/btn-options-disabled.png';
 import thrustUrl from '../assets/sfx-thrust.wav';
 import scoreUrl from '../assets/sfx-score.wav';
 import crashUrl from '../assets/sfx-crash.wav';
@@ -34,7 +44,7 @@ ctx.fillText('Chargement…', CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2);
 
 const world = createWorld(window.localStorage);
 const audio = createAudio({ thrust: thrustUrl, score: scoreUrl, crash: crashUrl });
-createInput({ target: canvas, win: window }, () => press(world));
+createInput({ target: canvas, win: window }, (pointer) => press(world, pointer), (dir) => navMenu(world, dir));
 
 loadImages({
   robot: robotUrl,
@@ -47,6 +57,16 @@ loadImages({
   'bg-near-0': bgNear0,
   'bg-near-1': bgNear1,
   'bg-near-2': bgNear2,
+  'ui-logo': uiLogo,
+  'btn-newgame': btnNewgame,
+  'btn-newgame-focus': btnNewgameFocus,
+  'btn-newgame-disabled': btnNewgameDisabled,
+  'btn-continue': btnContinue,
+  'btn-continue-focus': btnContinueFocus,
+  'btn-continue-disabled': btnContinueDisabled,
+  'btn-options': btnOptions,
+  'btn-options-focus': btnOptionsFocus,
+  'btn-options-disabled': btnOptionsDisabled,
 }).then((assets) => {
   const loop = createLoop({
     update: (dt) => {
