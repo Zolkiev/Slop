@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createWorld, press, navMenu, resetRun, startLevel, updateWorld } from '../../src/game/world.js';
+import { createWorld, press, navMenu, escapeAction, resetRun, startLevel, updateWorld } from '../../src/game/world.js';
 import { States } from '../../src/engine/state.js';
 import { CONFIG } from '../../src/config.js';
 
@@ -234,6 +234,110 @@ describe('world', () => {
       updateWorld(w, 1 / 60);
       updateWorld(w, 1 / 60);
       expect(w.menuTick).toBe(2);
+    });
+  });
+
+  describe('pause & gameover-menu routing', () => {
+    it('press en PLAY sur l\'icône ⏸ passe en PAUSE', () => {
+      const w = createWorld(fakeStorage());
+      press(w); // -> PLAY
+      const pi = CONFIG.PAUSE_ICON;
+      press(w, { x: pi.x + 1, y: pi.y + 1 });
+      expect(w.sm.get()).toBe(States.PAUSE);
+    });
+
+    it('press en PLAY ailleurs pousse (reste PLAY)', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      press(w, { x: 10, y: 300 });
+      expect(w.sm.get()).toBe(States.PLAY);
+    });
+
+    it('escapeAction bascule PLAY<->PAUSE', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      escapeAction(w);
+      expect(w.sm.get()).toBe(States.PAUSE);
+      escapeAction(w);
+      expect(w.sm.get()).toBe(States.PLAY);
+    });
+
+    it('pause: resume (clavier) -> PLAY', () => {
+      const w = createWorld(fakeStorage());
+      press(w); escapeAction(w); // PAUSE, focus resume
+      press(w); // no pointer -> activate(resume)
+      expect(w.sm.get()).toBe(States.PLAY);
+    });
+
+    it('pause: restart -> PLAY, même niveau, gates=0', () => {
+      const w = createWorld(fakeStorage());
+      press(w); w.level = 4; w.gatesThisLevel = 6; escapeAction(w); // PAUSE
+      const b = w.pause.buttons[1]; // restart
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.level).toBe(4);
+      expect(w.gatesThisLevel).toBe(0);
+    });
+
+    it('pause: menu -> MENU', () => {
+      const w = createWorld(fakeStorage());
+      press(w); escapeAction(w);
+      const b = w.pause.buttons[2]; // menu
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.MENU);
+    });
+
+    it('pause: clic Options (disabled) reste PAUSE', () => {
+      const w = createWorld(fakeStorage());
+      press(w); escapeAction(w);
+      const b = w.pause.buttons[3]; // options disabled
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.PAUSE);
+    });
+
+    it('navMenu agit en PAUSE', () => {
+      const w = createWorld(fakeStorage());
+      press(w); escapeAction(w);
+      const before = w.pause.focus;
+      navMenu(w, 1);
+      expect(w.pause.focus).not.toBe(before);
+    });
+
+    it('gel en PAUSE: le robot n\'avance pas', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      updateWorld(w, 1 / 60);
+      escapeAction(w); // PAUSE
+      const y = w.robot.y;
+      updateWorld(w, 1 / 60);
+      updateWorld(w, 1 / 60);
+      expect(w.robot.y).toBe(y);
+    });
+
+    it('gameover: clic sur le bouton Menu -> MENU', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      expect(w.sm.get()).toBe(States.GAMEOVER);
+      const b = CONFIG.GAMEOVER_MENU_BTN;
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.MENU);
+    });
+
+    it('gameover: press ailleurs = retry (PLAY)', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      press(w, { x: 10, y: 10 });
+      expect(w.sm.get()).toBe(States.PLAY);
+    });
+
+    it('escapeAction en GAMEOVER -> MENU', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      escapeAction(w);
+      expect(w.sm.get()).toBe(States.MENU);
     });
   });
 });
