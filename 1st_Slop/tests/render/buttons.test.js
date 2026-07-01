@@ -38,7 +38,7 @@ function recordingCtx() {
     drawn: [], texts: [], alphas: [], fills: [],
     _font: '10px x', _alpha: 1,
     drawImage(img, ...rest) { this.drawn.push({ img, rest, alpha: this._alpha }); },
-    fillText(t, x, y) { this.texts.push({ t, x, y }); },
+    fillText(t, x, y) { this.texts.push({ t, x, y, alpha: this._alpha }); },
     measureText(t) { return { width: t.length * parseInt(this._font, 10) }; },
     save() {}, restore() { this._alpha = 1; },
     set font(v) { this._font = v; }, get font() { return this._font; },
@@ -81,6 +81,13 @@ describe('drawButton', () => {
     expect(ctx.drawn[0].img.key).toBe('btn-plate');
     expect(ctx.drawn[0].alpha).toBe(0.4);
     expect(ctx.fills).toContain('#8a94a6');
+  });
+
+  it('disabled: label en alpha plein (plaque dimmée, pas de double atténuation)', () => {
+    const ctx = recordingCtx();
+    drawButton(ctx, { x: 0, y: 0, w: 200, h: 56 }, 'OPTIONS', 'disabled', plateAssets());
+    expect(ctx.drawn[0].alpha).toBe(0.4); // plate dimmed
+    expect(ctx.texts[0].alpha).toBe(1);   // label NOT dimmed
   });
 });
 

@@ -17,6 +17,7 @@ export function drawButton(ctx, rect, label, state, assets) {
   ctx.save();
   if (state === 'disabled') ctx.globalAlpha = CONFIG.BTN_DISABLED_ALPHA;
   ctx.drawImage(assets[plateKey(state)], rect.x, rect.y, rect.w, rect.h);
+  if (state === 'disabled') ctx.globalAlpha = 1; // label uses grey colour alone; not double-dimmed
 
   const size = fitFontSize(ctx, label, rect.w - CONFIG.BTN_TEXT_PAD * 2, CONFIG.BTN_FONT_MAX, CONFIG.BTN_FONT_MIN);
   ctx.font = `${size}px ${CONFIG.BTN_FONT_FAMILY}`;
