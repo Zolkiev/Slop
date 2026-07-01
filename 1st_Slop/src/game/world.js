@@ -12,10 +12,13 @@ import { createParticleField, spawnReactor, updateParticles } from './particles.
 import { createAmbiance, updateAmbiance } from './ambiance.js';
 import { createTwinkles } from './twinkle.js';
 import { CONFIG } from '../config.js';
+import { createMenu, hitTest, activate, moveFocus } from './menu.js';
 
 export function createWorld(storage) {
   return {
     sm: createStateMachine(States.MENU),
+    menu: createMenu(),
+    menuTick: 0,
     robot: createRobot(),
     obstacles: [],
     score: createScore(storage),
@@ -61,11 +64,15 @@ function spawnObstacle(world) {
   world.obstacles.push(createObstacle(CONFIG.WIDTH + CONFIG.OBSTACLE_W, gapY, gapH));
 }
 
-export function press(world) {
+export function press(world, pointer) {
   const state = world.sm.get();
   if (state === States.MENU) {
-    startLevel(world, 1);
-    world.sm.to(States.PLAY);
+    const id = pointer ? hitTest(world.menu, pointer.x, pointer.y) : activate(world.menu);
+    if (id === 'newgame') {
+      startLevel(world, 1);
+      world.sm.to(States.PLAY);
+    }
+    // 'continue' / 'options' (stubs) and null → no-op
   } else if (state === States.PLAY) {
     applyThrust(world.robot);
     world.events.push('thrust');
@@ -78,7 +85,12 @@ export function press(world) {
   }
 }
 
+export function navMenu(world, dir) {
+  if (world.sm.get() === States.MENU) moveFocus(world.menu, dir);
+}
+
 export function updateWorld(world, dt) {
+  world.menuTick += 1;
   for (const layer of world.layers) updateLayer(layer, world.scrollSpeed, dt);
   updateAmbiance(world.ambiance, dt, CONFIG.WIDTH, CONFIG.HEIGHT);
   world.shake = Math.max(0, world.shake - dt);

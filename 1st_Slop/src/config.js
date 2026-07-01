@@ -29,6 +29,12 @@ export const CONFIG = {
   SHAKE_MAX: 4,
   FLASH_TIME: 0.16,
 
+  // Menu / UI layout (canvas 360×640)
+  MENU_BTN: { x: 80, w: 200, h: 56, y0: 340, gap: 72 },
+  MENU_LOGO_Y: 120,
+  MENU_ROBOT_Y: 250,
+  MENU_BEST_Y: 600,
+
   // Niveaux & difficulté progressive
   GATES_PER_LEVEL: 10,
   SPEED_BASE: 150,   // vitesse niveau 1 (= SCROLL_SPEED)

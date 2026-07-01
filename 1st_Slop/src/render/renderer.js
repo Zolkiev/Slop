@@ -3,6 +3,7 @@ import { obstacleRects } from '../game/obstacles.js';
 import { twinkleAlpha } from '../game/twinkle.js';
 import { gateGoalForLevel } from '../game/level.js';
 import { CONFIG } from '../config.js';
+import { renderMenu } from './menu.js';
 
 export function renderWorld(ctx, world, assets) {
   // 0. Dark base — fills any shake-gap edges with the background colour
@@ -61,16 +62,18 @@ export function renderWorld(ctx, world, assets) {
   ctx.globalAlpha = 1;
 
   // 4. Robot (64×64 sprite centered on hitbox, drawn at 44×44 for crisp pixel art)
-  const r = world.robot;
-  let sprite = assets.robot; // idle / falling
-  if (r.alive && r.vy < 0) {
-    // rising = thrusting: flicker between the two thrust frames
-    sprite = (Math.floor(world.tick / 6) % 2 === 0) ? assets['robot-thrust-0'] : assets['robot-thrust-1'];
+  if (world.sm.get() !== States.MENU) {
+    const r = world.robot;
+    let sprite = assets.robot; // idle / falling
+    if (r.alive && r.vy < 0) {
+      // rising = thrusting: flicker between the two thrust frames
+      sprite = (Math.floor(world.tick / 6) % 2 === 0) ? assets['robot-thrust-0'] : assets['robot-thrust-1'];
+    }
+    const size = 44;
+    const cx = r.x + r.w / 2;
+    const cy = r.y + r.h / 2;
+    ctx.drawImage(sprite, Math.round(cx - size / 2), Math.round(cy - size / 2), size, size);
   }
-  const size = 44;
-  const cx = r.x + r.w / 2;
-  const cy = r.y + r.h / 2;
-  ctx.drawImage(sprite, Math.round(cx - size / 2), Math.round(cy - size / 2), size, size);
 
   // --- End shaken scene ---
   ctx.restore();
@@ -85,10 +88,7 @@ export function renderWorld(ctx, world, assets) {
     ctx.font = '14px system-ui';
     ctx.fillText(`Niveau ${world.level}`, CONFIG.WIDTH / 2, 80);
   } else if (state === States.MENU) {
-    ctx.fillText('JETPACK BOT', CONFIG.WIDTH / 2, 240);
-    ctx.font = '16px system-ui';
-    ctx.fillText('Tap / Espace pour voler', CONFIG.WIDTH / 2, 280);
-    ctx.fillText(`Best: niveau ${world.score.bestLevel}`, CONFIG.WIDTH / 2, 320);
+    renderMenu(ctx, world, assets);
   } else if (state === States.LEVEL_COMPLETE) {
     ctx.fillText(`NIVEAU ${world.level} OK`, CONFIG.WIDTH / 2, 240);
     ctx.font = '16px system-ui';
