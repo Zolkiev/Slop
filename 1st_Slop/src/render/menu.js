@@ -1,15 +1,7 @@
 import { CONFIG } from '../config.js';
-import { focusedId } from '../game/menu.js';
-
-function spriteKey(button, focused) {
-  if (!button.enabled) return `btn-${button.id}-disabled`;
-  if (button.id === focused) return `btn-${button.id}-focus`;
-  return `btn-${button.id}`;
-}
+import { drawButtons } from './buttons.js';
 
 export function renderMenu(ctx, world, assets) {
-  const { menu } = world;
-
   // Logo — centered near the top, kept at native aspect (max width 260)
   const logo = assets['ui-logo'];
   const logoW = Math.min(260, logo.width);
@@ -27,11 +19,8 @@ export function renderMenu(ctx, world, assets) {
     size, size,
   );
 
-  // Buttons — sprite chosen by state
-  const focused = focusedId(menu);
-  for (const b of menu.buttons) {
-    ctx.drawImage(assets[spriteKey(b, focused)], b.x, b.y, b.w, b.h);
-  }
+  // Buttons (shared state-sprite selection)
+  drawButtons(ctx, world.menu, assets);
 
   // Best level
   ctx.fillStyle = '#ffffff';

@@ -4,6 +4,7 @@ import { twinkleAlpha } from '../game/twinkle.js';
 import { gateGoalForLevel } from '../game/level.js';
 import { CONFIG } from '../config.js';
 import { renderMenu } from './menu.js';
+import { renderPause } from './pause.js';
 
 export function renderWorld(ctx, world, assets) {
   // 0. Dark base — fills any shake-gap edges with the background colour
@@ -87,8 +88,24 @@ export function renderWorld(ctx, world, assets) {
     ctx.fillText(`${world.gatesThisLevel}/${gateGoalForLevel(world.level)}`, CONFIG.WIDTH / 2, 56);
     ctx.font = '14px system-ui';
     ctx.fillText(`Niveau ${world.level}`, CONFIG.WIDTH / 2, 80);
+
+    // Pause button (⏸) — top-right
+    const pi = CONFIG.PAUSE_ICON;
+    ctx.fillStyle = 'rgba(10,10,20,0.5)';
+    ctx.fillRect(pi.x, pi.y, pi.w, pi.h);
+    ctx.strokeStyle = '#3ef0ff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(pi.x + 1, pi.y + 1, pi.w - 2, pi.h - 2);
+    ctx.fillStyle = '#3ef0ff';
+    const barW = 4, barH = 12;
+    const cx = pi.x + pi.w / 2;
+    const by = pi.y + (pi.h - barH) / 2;
+    ctx.fillRect(cx - 5, by, barW, barH);
+    ctx.fillRect(cx + 1, by, barW, barH);
   } else if (state === States.MENU) {
     renderMenu(ctx, world, assets);
+  } else if (state === States.PAUSE) {
+    renderPause(ctx, world, assets);
   } else if (state === States.LEVEL_COMPLETE) {
     ctx.fillText(`NIVEAU ${world.level} OK`, CONFIG.WIDTH / 2, 240);
     ctx.font = '16px system-ui';
@@ -99,6 +116,8 @@ export function renderWorld(ctx, world, assets) {
     ctx.fillText(`Niveau ${world.level}`, CONFIG.WIDTH / 2, 280);
     ctx.fillText(`Best: niveau ${world.score.bestLevel}`, CONFIG.WIDTH / 2, 308);
     ctx.fillText('Tap pour réessayer', CONFIG.WIDTH / 2, 340);
+    const gb = CONFIG.GAMEOVER_MENU_BTN;
+    ctx.drawImage(assets['btn-menu'], gb.x, gb.y, gb.w, gb.h);
   }
 
   // 6. White flash overlay (unshaken, drawn last)

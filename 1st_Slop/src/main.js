@@ -1,7 +1,7 @@
 import { CONFIG } from './config.js';
 import { createLoop } from './engine/loop.js';
 import { createInput } from './engine/input.js';
-import { createWorld, press, navMenu, updateWorld } from './game/world.js';
+import { createWorld, press, navMenu, escapeAction, updateWorld } from './game/world.js';
 import { renderWorld } from './render/renderer.js';
 import { loadImages } from './engine/assets.js';
 import { createAudio } from './engine/audio.js';
@@ -26,6 +26,12 @@ import btnContinueDisabled from '../assets/btn-continue-disabled.png';
 import btnOptions from '../assets/btn-options.png';
 import btnOptionsFocus from '../assets/btn-options-focus.png';
 import btnOptionsDisabled from '../assets/btn-options-disabled.png';
+import btnResume from '../assets/btn-resume.png';
+import btnResumeFocus from '../assets/btn-resume-focus.png';
+import btnRestart from '../assets/btn-restart.png';
+import btnRestartFocus from '../assets/btn-restart-focus.png';
+import btnMenu from '../assets/btn-menu.png';
+import btnMenuFocus from '../assets/btn-menu-focus.png';
 import thrustUrl from '../assets/sfx-thrust.wav';
 import scoreUrl from '../assets/sfx-score.wav';
 import crashUrl from '../assets/sfx-crash.wav';
@@ -44,7 +50,7 @@ ctx.fillText('Chargement…', CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2);
 
 const world = createWorld(window.localStorage);
 const audio = createAudio({ thrust: thrustUrl, score: scoreUrl, crash: crashUrl });
-createInput({ target: canvas, win: window }, (pointer) => press(world, pointer), (dir) => navMenu(world, dir));
+createInput({ target: canvas, win: window }, (pointer) => press(world, pointer), (dir) => navMenu(world, dir), () => escapeAction(world));
 
 loadImages({
   robot: robotUrl,
@@ -67,6 +73,12 @@ loadImages({
   'btn-options': btnOptions,
   'btn-options-focus': btnOptionsFocus,
   'btn-options-disabled': btnOptionsDisabled,
+  'btn-resume': btnResume,
+  'btn-resume-focus': btnResumeFocus,
+  'btn-restart': btnRestart,
+  'btn-restart-focus': btnRestartFocus,
+  'btn-menu': btnMenu,
+  'btn-menu-focus': btnMenuFocus,
 }).then((assets) => {
   const loop = createLoop({
     update: (dt) => {
