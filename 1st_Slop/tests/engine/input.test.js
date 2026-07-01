@@ -38,4 +38,40 @@ describe('input', () => {
     dispose();
     expect(target.has('pointerdown')).toBe(false);
   });
+
+  it('passe les coordonnées canvas au onPress sur pointerdown', () => {
+    const handlers = {};
+    const target = {
+      addEventListener: (t, fn) => { handlers[t] = fn; },
+      removeEventListener: () => {},
+      getBoundingClientRect: () => ({ left: 10, top: 20, width: 360, height: 640 }),
+      width: 360,
+      height: 640,
+    };
+    const win = fakeTarget();
+    const onPress = vi.fn();
+    createInput({ target, win, preventDefault: false }, onPress);
+    handlers.pointerdown({ clientX: 100, clientY: 120 });
+    expect(onPress).toHaveBeenCalledWith({ x: 90, y: 100 });
+  });
+
+  it('ArrowUp/ArrowDown appellent onNav avec -1 / +1', () => {
+    const target = fakeTarget();
+    const win = fakeTarget();
+    const onNav = vi.fn();
+    createInput({ target, win, preventDefault: false }, vi.fn(), onNav);
+    win.fire('keydown', { code: 'ArrowUp', repeat: false });
+    win.fire('keydown', { code: 'ArrowDown', repeat: false });
+    expect(onNav).toHaveBeenNthCalledWith(1, -1);
+    expect(onNav).toHaveBeenNthCalledWith(2, 1);
+  });
+
+  it('Enter déclenche onPress sans coordonnées', () => {
+    const target = fakeTarget();
+    const win = fakeTarget();
+    const onPress = vi.fn();
+    createInput({ target, win, preventDefault: false }, onPress);
+    win.fire('keydown', { code: 'Enter', repeat: false });
+    expect(onPress).toHaveBeenCalledWith(undefined);
+  });
 });
