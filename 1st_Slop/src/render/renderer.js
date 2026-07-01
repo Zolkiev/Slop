@@ -5,6 +5,7 @@ import { gateGoalForLevel } from '../game/level.js';
 import { CONFIG } from '../config.js';
 import { renderMenu } from './menu.js';
 import { renderPause } from './pause.js';
+import { drawButton } from './buttons.js';
 
 export function renderWorld(ctx, world, assets) {
   // 0. Dark base — fills any shake-gap edges with the background colour
@@ -116,8 +117,7 @@ export function renderWorld(ctx, world, assets) {
     ctx.fillText(`Niveau ${world.level}`, CONFIG.WIDTH / 2, 280);
     ctx.fillText(`Best: niveau ${world.score.bestLevel}`, CONFIG.WIDTH / 2, 308);
     ctx.fillText('Tap pour réessayer', CONFIG.WIDTH / 2, 340);
-    const gb = CONFIG.GAMEOVER_MENU_BTN;
-    ctx.drawImage(assets['btn-menu'], gb.x, gb.y, gb.w, gb.h);
+    drawButton(ctx, CONFIG.GAMEOVER_MENU_BTN, 'MENU', 'normal', assets);
   }
 
   // 6. White flash overlay (unshaken, drawn last)
