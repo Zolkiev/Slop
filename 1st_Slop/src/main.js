@@ -5,6 +5,7 @@ import { createWorld, press, navMenu, escapeAction, updateWorld } from './game/w
 import { renderWorld } from './render/renderer.js';
 import { loadImages } from './engine/assets.js';
 import { createAudio } from './engine/audio.js';
+import { loadFont } from './engine/font.js';
 
 import robotUrl from '../assets/robot.png';
 import robotThrust0 from '../assets/robot-thrust-0.png';
@@ -17,21 +18,9 @@ import bgNear0 from '../assets/bg-near-0.png';
 import bgNear1 from '../assets/bg-near-1.png';
 import bgNear2 from '../assets/bg-near-2.png';
 import uiLogo from '../assets/ui-logo.png';
-import btnNewgame from '../assets/btn-newgame.png';
-import btnNewgameFocus from '../assets/btn-newgame-focus.png';
-import btnNewgameDisabled from '../assets/btn-newgame-disabled.png';
-import btnContinue from '../assets/btn-continue.png';
-import btnContinueFocus from '../assets/btn-continue-focus.png';
-import btnContinueDisabled from '../assets/btn-continue-disabled.png';
-import btnOptions from '../assets/btn-options.png';
-import btnOptionsFocus from '../assets/btn-options-focus.png';
-import btnOptionsDisabled from '../assets/btn-options-disabled.png';
-import btnResume from '../assets/btn-resume.png';
-import btnResumeFocus from '../assets/btn-resume-focus.png';
-import btnRestart from '../assets/btn-restart.png';
-import btnRestartFocus from '../assets/btn-restart-focus.png';
-import btnMenu from '../assets/btn-menu.png';
-import btnMenuFocus from '../assets/btn-menu-focus.png';
+import btnPlate from '../assets/btn-plate.png';
+import btnPlateFocus from '../assets/btn-plate-focus.png';
+import fontUrl from '../assets/PressStart2P-Regular.ttf';
 import thrustUrl from '../assets/sfx-thrust.wav';
 import scoreUrl from '../assets/sfx-score.wav';
 import crashUrl from '../assets/sfx-crash.wav';
@@ -52,7 +41,7 @@ const world = createWorld(window.localStorage);
 const audio = createAudio({ thrust: thrustUrl, score: scoreUrl, crash: crashUrl });
 createInput({ target: canvas, win: window }, (pointer) => press(world, pointer), (dir) => navMenu(world, dir), () => escapeAction(world));
 
-loadImages({
+const imagesPromise = loadImages({
   robot: robotUrl,
   'robot-thrust-0': robotThrust0,
   'robot-thrust-1': robotThrust1,
@@ -64,22 +53,11 @@ loadImages({
   'bg-near-1': bgNear1,
   'bg-near-2': bgNear2,
   'ui-logo': uiLogo,
-  'btn-newgame': btnNewgame,
-  'btn-newgame-focus': btnNewgameFocus,
-  'btn-newgame-disabled': btnNewgameDisabled,
-  'btn-continue': btnContinue,
-  'btn-continue-focus': btnContinueFocus,
-  'btn-continue-disabled': btnContinueDisabled,
-  'btn-options': btnOptions,
-  'btn-options-focus': btnOptionsFocus,
-  'btn-options-disabled': btnOptionsDisabled,
-  'btn-resume': btnResume,
-  'btn-resume-focus': btnResumeFocus,
-  'btn-restart': btnRestart,
-  'btn-restart-focus': btnRestartFocus,
-  'btn-menu': btnMenu,
-  'btn-menu-focus': btnMenuFocus,
-}).then((assets) => {
+  'btn-plate': btnPlate,
+  'btn-plate-focus': btnPlateFocus,
+});
+
+Promise.all([imagesPromise, loadFont(CONFIG.BTN_FONT_FAMILY, fontUrl)]).then(([assets]) => {
   const loop = createLoop({
     update: (dt) => {
       updateWorld(world, dt);
