@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createWorld, press, resetRun, startLevel, updateWorld } from '../../src/game/world.js';
+import { createWorld, press, navMenu, resetRun, startLevel, updateWorld } from '../../src/game/world.js';
 import { States } from '../../src/engine/state.js';
 import { CONFIG } from '../../src/config.js';
 
@@ -189,6 +189,51 @@ describe('world', () => {
       w.rand = () => 0.99;
       press(w); // MENU -> PLAY, calls resetRun
       expect(w.bgSet).toBe(CONFIG.BG_SET_COUNT - 1);
+    });
+  });
+
+  describe('menu routing', () => {
+    it('press avec pointer sur New Game démarre le niveau 1', () => {
+      const w = createWorld(fakeStorage());
+      const b = w.menu.buttons[0];
+      press(w, { x: b.x + b.w / 2, y: b.y + b.h / 2 });
+      expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.level).toBe(1);
+    });
+
+    it('press avec pointer sur Continue (stub disabled) reste au MENU', () => {
+      const w = createWorld(fakeStorage());
+      const b = w.menu.buttons[1];
+      press(w, { x: b.x + b.w / 2, y: b.y + b.h / 2 });
+      expect(w.sm.get()).toBe(States.MENU);
+    });
+
+    it('press clavier (sans pointer) active le focus et démarre', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      expect(w.sm.get()).toBe(States.PLAY);
+    });
+
+    it('press dans le vide au MENU ne fait rien', () => {
+      const w = createWorld(fakeStorage());
+      press(w, { x: 0, y: 0 });
+      expect(w.sm.get()).toBe(States.MENU);
+    });
+
+    it('navMenu ne change pas d\'état et est no-op hors MENU', () => {
+      const w = createWorld(fakeStorage());
+      navMenu(w, 1);
+      expect(w.sm.get()).toBe(States.MENU);
+      press(w); // -> PLAY
+      navMenu(w, 1); // no-op en PLAY
+      expect(w.sm.get()).toBe(States.PLAY);
+    });
+
+    it('menuTick s\'incrémente à chaque updateWorld, même au MENU', () => {
+      const w = createWorld(fakeStorage());
+      updateWorld(w, 1 / 60);
+      updateWorld(w, 1 / 60);
+      expect(w.menuTick).toBe(2);
     });
   });
 });
