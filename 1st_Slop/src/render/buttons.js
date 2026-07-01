@@ -9,15 +9,28 @@ export function fitFontSize(ctx, text, maxWidth, maxSize, minSize) {
   return minSize;
 }
 
-export function spriteKey(button, focused) {
-  if (!button.enabled) return `btn-${button.id}-disabled`;
-  if (button.id === focused) return `btn-${button.id}-focus`;
-  return `btn-${button.id}`;
+export function plateKey(state) {
+  return state === 'focus' ? 'btn-plate-focus' : 'btn-plate';
+}
+
+export function drawButton(ctx, rect, label, state, assets) {
+  ctx.save();
+  if (state === 'disabled') ctx.globalAlpha = CONFIG.BTN_DISABLED_ALPHA;
+  ctx.drawImage(assets[plateKey(state)], rect.x, rect.y, rect.w, rect.h);
+
+  const size = fitFontSize(ctx, label, rect.w - CONFIG.BTN_TEXT_PAD * 2, CONFIG.BTN_FONT_MAX, CONFIG.BTN_FONT_MIN);
+  ctx.font = `${size}px ${CONFIG.BTN_FONT_FAMILY}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = state === 'disabled' ? CONFIG.BTN_TEXT_DISABLED : CONFIG.BTN_TEXT;
+  ctx.fillText(label, rect.x + rect.w / 2, rect.y + rect.h / 2 + 1);
+  ctx.restore();
 }
 
 export function drawButtons(ctx, menuObj, assets) {
   const focused = focusedId(menuObj);
   for (const b of menuObj.buttons) {
-    ctx.drawImage(assets[spriteKey(b, focused)], b.x, b.y, b.w, b.h);
+    const state = !b.enabled ? 'disabled' : (b.id === focused ? 'focus' : 'normal');
+    drawButton(ctx, b, b.label, state, assets);
   }
 }
