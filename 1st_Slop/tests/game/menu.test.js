@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createMenu, hitTest, moveFocus, focusedId, activate } from '../../src/game/menu.js';
+import { createMenu, createPauseMenu, hitTest, inRect, moveFocus, focusedId, activate } from '../../src/game/menu.js';
 
 describe('menu', () => {
   it('createMenu: 3 boutons ordonnés, newgame enabled, autres disabled, focus sur newgame', () => {
@@ -52,5 +52,30 @@ describe('menu', () => {
     expect(activate(m)).toBe('newgame');
     m.buttons[0].enabled = false;
     expect(activate(m)).toBe(null);
+  });
+
+  it('createPauseMenu: 4 boutons ordonnés, resume/restart/menu enabled, options disabled, focus resume', () => {
+    const m = createPauseMenu();
+    expect(m.buttons.map((b) => b.id)).toEqual(['resume', 'restart', 'menu', 'options']);
+    expect(m.buttons[0].enabled).toBe(true);
+    expect(m.buttons[1].enabled).toBe(true);
+    expect(m.buttons[2].enabled).toBe(true);
+    expect(m.buttons[3].enabled).toBe(false);
+    expect(focusedId(m)).toBe('resume');
+  });
+
+  it('moveFocus sur le pause menu saute options (disabled)', () => {
+    const m = createPauseMenu();
+    m.focus = 2; // menu
+    moveFocus(m, 1); // options disabled -> wrap to resume
+    expect(focusedId(m)).toBe('resume');
+  });
+
+  it('inRect: dedans vrai, dehors faux (bord droit/bas exclusif)', () => {
+    const r = { x: 10, y: 20, w: 30, h: 40 };
+    expect(inRect(r, 10, 20)).toBe(true);
+    expect(inRect(r, 39, 59)).toBe(true);
+    expect(inRect(r, 40, 20)).toBe(false);
+    expect(inRect(r, 0, 0)).toBe(false);
   });
 });
