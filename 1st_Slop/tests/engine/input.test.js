@@ -74,4 +74,13 @@ describe('input', () => {
     win.fire('keydown', { code: 'Enter', repeat: false });
     expect(onPress).toHaveBeenCalledWith(undefined);
   });
+
+  it('Escape appelle onEscape', () => {
+    const target = fakeTarget();
+    const win = fakeTarget();
+    const onEscape = vi.fn();
+    createInput({ target, win, preventDefault: false }, vi.fn(), vi.fn(), onEscape);
+    win.fire('keydown', { code: 'Escape', repeat: false });
+    expect(onEscape).toHaveBeenCalledTimes(1);
+  });
 });

@@ -35,6 +35,12 @@ export const CONFIG = {
   MENU_ROBOT_Y: 250,
   MENU_BEST_Y: 600,
 
+  // Pause overlay + HUD
+  PAUSE_BTN: { x: 80, w: 200, h: 56, y0: 230, gap: 72 },
+  PAUSE_TITLE_Y: 170,
+  PAUSE_ICON: { x: 324, y: 16, w: 24, h: 24 },
+  GAMEOVER_MENU_BTN: { x: 80, y: 384, w: 200, h: 56 },
+
   // Niveaux & difficulté progressive
   GATES_PER_LEVEL: 10,
   SPEED_BASE: 150,   // vitesse niveau 1 (= SCROLL_SPEED)

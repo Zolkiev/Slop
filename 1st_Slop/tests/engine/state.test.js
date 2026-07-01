@@ -34,4 +34,20 @@ describe('stateMachine', () => {
     sm.to(States.PLAY);
     expect(sm.get()).toBe(States.PLAY);
   });
+
+  it('PLAY peut aller en PAUSE', () => {
+    const sm = createStateMachine(States.PLAY);
+    expect(sm.can(States.PAUSE)).toBe(true);
+  });
+
+  it('PAUSE peut revenir en PLAY et aller au MENU', () => {
+    const sm = createStateMachine(States.PAUSE);
+    expect(sm.can(States.PLAY)).toBe(true);
+    expect(sm.can(States.MENU)).toBe(true);
+  });
+
+  it('PAUSE ne peut pas aller en GAMEOVER', () => {
+    const sm = createStateMachine(States.PAUSE);
+    expect(sm.can(States.GAMEOVER)).toBe(false);
+  });
 });

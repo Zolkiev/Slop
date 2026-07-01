@@ -1,20 +1,36 @@
 import { CONFIG } from '../config.js';
 
-export function createMenu() {
-  const { x, w, h, y0, gap } = CONFIG.MENU_BTN;
-  const defs = [
-    { id: 'newgame', label: 'NEW GAME', enabled: true },
-    { id: 'continue', label: 'CONTINUE', enabled: false },
-    { id: 'options', label: 'OPTIONS', enabled: false },
-  ];
+function build(defs, geom) {
+  const { x, w, h, y0, gap } = geom;
   const buttons = defs.map((d, i) => ({ ...d, x, y: y0 + i * gap, w, h }));
   const first = buttons.findIndex((b) => b.enabled);
   return { buttons, focus: first < 0 ? 0 : first };
 }
 
+export function createMenu() {
+  return build([
+    { id: 'newgame', label: 'NEW GAME', enabled: true },
+    { id: 'continue', label: 'CONTINUE', enabled: false },
+    { id: 'options', label: 'OPTIONS', enabled: false },
+  ], CONFIG.MENU_BTN);
+}
+
+export function createPauseMenu() {
+  return build([
+    { id: 'resume', label: 'REPRENDRE', enabled: true },
+    { id: 'restart', label: 'RECOMMENCER', enabled: true },
+    { id: 'menu', label: 'MENU', enabled: true },
+    { id: 'options', label: 'OPTIONS', enabled: false },
+  ], CONFIG.PAUSE_BTN);
+}
+
+export function inRect(rect, px, py) {
+  return px >= rect.x && px < rect.x + rect.w && py >= rect.y && py < rect.y + rect.h;
+}
+
 export function hitTest(menu, px, py) {
   for (const b of menu.buttons) {
-    if (px >= b.x && px < b.x + b.w && py >= b.y && py < b.y + b.h) return b.id;
+    if (inRect(b, px, py)) return b.id;
   }
   return null;
 }

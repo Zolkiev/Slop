@@ -1,4 +1,4 @@
-export function createInput({ target, win = window, preventDefault = true }, onPress, onNav = () => {}) {
+export function createInput({ target, win = window, preventDefault = true }, onPress, onNav = () => {}, onEscape = () => {}) {
   function pointerFromEvent(e) {
     if (typeof e.clientX !== 'number' || typeof target.getBoundingClientRect !== 'function') {
       return undefined;
@@ -24,6 +24,9 @@ export function createInput({ target, win = window, preventDefault = true }, onP
     } else if (e.code === 'ArrowDown' && !e.repeat) {
       if (preventDefault && e.preventDefault) e.preventDefault();
       onNav(1);
+    } else if (e.code === 'Escape' && !e.repeat) {
+      if (preventDefault && e.preventDefault) e.preventDefault();
+      onEscape();
     }
   }
 

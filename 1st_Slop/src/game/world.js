@@ -12,12 +12,13 @@ import { createParticleField, spawnReactor, updateParticles } from './particles.
 import { createAmbiance, updateAmbiance } from './ambiance.js';
 import { createTwinkles } from './twinkle.js';
 import { CONFIG } from '../config.js';
-import { createMenu, hitTest, activate, moveFocus } from './menu.js';
+import { createMenu, createPauseMenu, hitTest, activate, moveFocus, inRect } from './menu.js';
 
 export function createWorld(storage) {
   return {
     sm: createStateMachine(States.MENU),
     menu: createMenu(),
+    pause: createPauseMenu(),
     menuTick: 0,
     robot: createRobot(),
     obstacles: [],
@@ -74,19 +75,47 @@ export function press(world, pointer) {
     }
     // 'continue' / 'options' (stubs) and null → no-op
   } else if (state === States.PLAY) {
-    applyThrust(world.robot);
-    world.events.push('thrust');
+    if (pointer && inRect(CONFIG.PAUSE_ICON, pointer.x, pointer.y)) {
+      world.sm.to(States.PAUSE);
+    } else {
+      applyThrust(world.robot);
+      world.events.push('thrust');
+    }
+  } else if (state === States.PAUSE) {
+    const id = pointer ? hitTest(world.pause, pointer.x, pointer.y) : activate(world.pause);
+    if (id === 'resume') {
+      world.sm.to(States.PLAY);
+    } else if (id === 'restart') {
+      startLevel(world, world.level);
+      world.sm.to(States.PLAY);
+    } else if (id === 'menu') {
+      world.sm.to(States.MENU);
+    }
+    // 'options' / null -> no-op
   } else if (state === States.LEVEL_COMPLETE) {
     startLevel(world, world.level + 1);
     world.sm.to(States.PLAY);
   } else if (state === States.GAMEOVER) {
-    startLevel(world, world.level);
-    world.sm.to(States.PLAY);
+    if (pointer && inRect(CONFIG.GAMEOVER_MENU_BTN, pointer.x, pointer.y)) {
+      world.sm.to(States.MENU);
+    } else {
+      startLevel(world, world.level);
+      world.sm.to(States.PLAY);
+    }
   }
 }
 
 export function navMenu(world, dir) {
-  if (world.sm.get() === States.MENU) moveFocus(world.menu, dir);
+  const s = world.sm.get();
+  if (s === States.MENU) moveFocus(world.menu, dir);
+  else if (s === States.PAUSE) moveFocus(world.pause, dir);
+}
+
+export function escapeAction(world) {
+  const s = world.sm.get();
+  if (s === States.PLAY) world.sm.to(States.PAUSE);
+  else if (s === States.PAUSE) world.sm.to(States.PLAY);
+  else if (s === States.GAMEOVER) world.sm.to(States.MENU);
 }
 
 export function updateWorld(world, dt) {
