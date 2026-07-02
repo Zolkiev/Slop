@@ -34,6 +34,7 @@ describe('save code', () => {
     expect(decodeSave('JB2-2345')).toBe(null);
     expect(decodeSave('')).toBe(null);
     expect(decodeSave('JB1-@!')).toBe(null);
+    expect(decodeSave('JB1-@AB')).toBe(null); // payload '@' hors alphabet (body assez long)
     expect(decodeSave('JB1-AB')).toBe(null); // 2 chars = checksum seul, payload vide
     expect(decodeSave(undefined)).toBe(null);
   });
