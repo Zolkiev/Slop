@@ -11,9 +11,10 @@ export function createCodeInput(doc = document) {
 
   function submit() {
     if (!current) return;
-    if (current.onSubmit(input.value)) {
-      close();
-    } else {
+    const session = current;
+    if (session.onSubmit(input.value)) {
+      if (current === session) close();
+    } else if (current === session) {
       errorEl.textContent = 'CODE INVALIDE';
     }
   }
@@ -62,6 +63,12 @@ export function createCodeInput(doc = document) {
     });
     okBtn.addEventListener('click', (e) => { e.preventDefault(); submit(); });
     cancelBtn.addEventListener('click', (e) => { e.preventDefault(); cancel(); });
+    const keyGuard = (e) => {
+      e.stopPropagation();
+      if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+    };
+    okBtn.addEventListener('keydown', keyGuard);
+    cancelBtn.addEventListener('keydown', keyGuard);
 
     row.appendChild(okBtn);
     row.appendChild(cancelBtn);

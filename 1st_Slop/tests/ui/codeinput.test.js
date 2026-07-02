@@ -121,6 +121,39 @@ describe('codeinput overlay', () => {
     expect(cancelled).toBe(true);
   });
 
+  it('submit réentrant: onSubmit qui rouvre une session n\'est pas écrasé par le close', () => {
+    const doc = fakeDoc();
+    const ci = createCodeInput(doc);
+    ci.open({
+      onSubmit: () => {
+        ci.open({ value: 'NOUVEAU', onSubmit: () => true, onCancel: () => {} });
+        return true;
+      },
+      onCancel: () => {},
+    });
+    const input = find(doc, 'input')[0];
+    input.listeners.keydown(keyEvent('Enter'));
+    expect(ci.isOpen()).toBe(true);
+    expect(input.value).toBe('NOUVEAU');
+  });
+
+  it('keydown sur les boutons OK/ANNULER stoppe la propagation, Escape y annule', () => {
+    const doc = fakeDoc();
+    const ci = createCodeInput(doc);
+    let cancelled = false;
+    ci.open({ onSubmit: () => true, onCancel: () => { cancelled = true; } });
+    const [okBtn, cancelBtn] = find(doc, 'button');
+    const e1 = keyEvent(' ');
+    okBtn.listeners.keydown(e1);
+    expect(e1.stopped).toBe(true);
+    expect(ci.isOpen()).toBe(true);
+    const e2 = keyEvent('Escape');
+    cancelBtn.listeners.keydown(e2);
+    expect(e2.stopped).toBe(true);
+    expect(cancelled).toBe(true);
+    expect(ci.isOpen()).toBe(false);
+  });
+
   it('rouvrir réinitialise erreur et valeur', () => {
     const doc = fakeDoc();
     const ci = createCodeInput(doc);
