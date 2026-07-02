@@ -60,9 +60,15 @@ if (hashMatch) {
 
 const world = createWorld(window.localStorage);
 const audio = createAudio({ thrust: thrustUrl, score: scoreUrl, crash: crashUrl });
-createInput({ target: canvas, win: window }, (pointer) => press(world, pointer), (dir) => navMenu(world, dir), () => escapeAction(world));
 
 const codeInput = createCodeInput(document);
+
+createInput(
+  { target: canvas, win: window },
+  (pointer) => { if (!codeInput.isOpen()) press(world, pointer); },
+  (dir) => { if (!codeInput.isOpen()) navMenu(world, dir); },
+  () => { if (!codeInput.isOpen()) escapeAction(world); },
+);
 
 function copyText(text) {
   const fallback = () => codeInput.open({
