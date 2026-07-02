@@ -30,7 +30,7 @@ export const CONFIG = {
   FLASH_TIME: 0.16,
 
   // Menu / UI layout (canvas 360×640)
-  MENU_BTN: { x: 80, w: 200, h: 56, y0: 340, gap: 72 },
+  MENU_BTN: { x: 80, w: 200, h: 56, y0: 330, gap: 66 },
   MENU_LOGO_Y: 120,
   MENU_ROBOT_Y: 250,
   MENU_BEST_Y: 600,
@@ -40,6 +40,10 @@ export const CONFIG = {
   PAUSE_TITLE_Y: 170,
   PAUSE_ICON: { x: 324, y: 16, w: 24, h: 24 },
   GAMEOVER_BTN: { x: 80, w: 200, h: 56, y0: 384, gap: 72 },
+  SAVECODE_BTN: { x: 80, w: 200, h: 56, y0: 280, gap: 66 },
+  SAVECODE_TITLE_Y: 120,
+  SAVECODE_CODE_Y: 190,
+  SAVECODE_MSG_Y: 235,
 
   // Button text (canvas-drawn labels over shared plate)
   BTN_FONT_FAMILY: 'PressStart2P',

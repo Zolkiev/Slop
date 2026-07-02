@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { createWorld, press, navMenu, escapeAction, resetRun, startLevel, updateWorld } from '../../src/game/world.js';
+import { createWorld, press, navMenu, escapeAction, resetRun, startLevel, updateWorld, submitSaveCode } from '../../src/game/world.js';
 import { States } from '../../src/engine/state.js';
 import { CONFIG } from '../../src/config.js';
+import { encodeSave } from '../../src/game/save.js';
 
 function fakeStorage() {
   const d = {};
@@ -267,6 +268,8 @@ describe('world', () => {
       const w = createWorld(fakeStorage());
       navMenu(w, 1);
       expect(w.sm.get()).toBe(States.MENU);
+      // Ensure focus is on newgame before pressing to transition to PLAY
+      w.menu.focus = 0;
       press(w); // -> PLAY
       navMenu(w, 1); // no-op en PLAY
       expect(w.sm.get()).toBe(States.PLAY);
@@ -413,6 +416,109 @@ describe('world', () => {
       for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
       escapeAction(w);
       expect(w.sm.get()).toBe(States.MENU);
+    });
+  });
+
+  describe('continue & savecode routing', () => {
+    function storageWithBest(level) {
+      const d = { 'jetpackbot.bestLevel': String(level) };
+      return { getItem: (k) => d[k] ?? null, setItem: (k, v) => { d[k] = String(v); } };
+    }
+
+    it('CONTINUE enabled avec une save, démarre au bestLevel', () => {
+      const w = createWorld(storageWithBest(5));
+      expect(w.menu.buttons[1].enabled).toBe(true);
+      const b = w.menu.buttons[1];
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.level).toBe(5);
+    });
+
+    it('CONTINUE disabled sans save (clic = no-op)', () => {
+      const w = createWorld(fakeStorage());
+      expect(w.menu.buttons[1].enabled).toBe(false);
+      const b = w.menu.buttons[1];
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.MENU);
+    });
+
+    it('CODE -> SAVECODE avec un écran savecode frais', () => {
+      const w = createWorld(storageWithBest(3));
+      const b = w.menu.buttons[3];
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.SAVECODE);
+      expect(w.savecode.code).toBe(encodeSave({ bestLevel: 3 }));
+    });
+
+    it('SAVECODE: COPIER pousse copycode + feedback', () => {
+      const w = createWorld(storageWithBest(3));
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      const b = w.savecode.menu.buttons[0];
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.events).toContain('copycode');
+      expect(w.savecode.feedbackText).toBe('COPIÉ !');
+    });
+
+    it('SAVECODE: LIEN pousse copylink, SAISIR pousse codeentry', () => {
+      const w = createWorld(storageWithBest(3));
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      const link = w.savecode.menu.buttons[1];
+      press(w, { x: link.x + 1, y: link.y + 1 });
+      expect(w.events).toContain('copylink');
+      const enter = w.savecode.menu.buttons[2];
+      press(w, { x: enter.x + 1, y: enter.y + 1 });
+      expect(w.events).toContain('codeentry');
+      expect(w.sm.get()).toBe(States.SAVECODE);
+    });
+
+    it('SAVECODE: RETOUR et Escape ramènent au MENU', () => {
+      const w = createWorld(fakeStorage());
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      const back = w.savecode.menu.buttons[3];
+      press(w, { x: back.x + 1, y: back.y + 1 });
+      expect(w.sm.get()).toBe(States.MENU);
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      escapeAction(w);
+      expect(w.sm.get()).toBe(States.MENU);
+    });
+
+    it('navMenu agit en SAVECODE', () => {
+      const w = createWorld(storageWithBest(3));
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      const before = w.savecode.menu.focus;
+      navMenu(w, 1);
+      expect(w.savecode.menu.focus).not.toBe(before);
+    });
+
+    it('submitSaveCode valide: applique le max, recrée le menu, retourne au MENU', () => {
+      const storage = fakeStorage();
+      const w = createWorld(storage);
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      const ok = submitSaveCode(w, encodeSave({ bestLevel: 9 }));
+      expect(ok).toBe(true);
+      expect(w.sm.get()).toBe(States.MENU);
+      expect(w.score.bestLevel).toBe(9);
+      expect(w.menu.buttons[1].enabled).toBe(true);
+      expect(storage.getItem('jetpackbot.bestLevel')).toBe('9');
+    });
+
+    it('submitSaveCode invalide: false, reste en SAVECODE, score intact', () => {
+      const w = createWorld(storageWithBest(4));
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      expect(submitSaveCode(w, 'JB1-ZZZZZZ')).toBe(false);
+      expect(w.sm.get()).toBe(States.SAVECODE);
+      expect(w.score.bestLevel).toBe(4);
+    });
+
+    it('retour au MENU depuis la pause recrée le menu (CONTINUE reflète la save)', () => {
+      const w = createWorld(fakeStorage());
+      press(w); // newgame -> PLAY
+      w.score.bestLevel = 2; // progression pendant la partie
+      escapeAction(w); // PAUSE
+      const b = w.pause.buttons[2]; // menu
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.MENU);
+      expect(w.menu.buttons[1].enabled).toBe(true);
     });
   });
 });

@@ -50,4 +50,14 @@ describe('stateMachine', () => {
     const sm = createStateMachine(States.PAUSE);
     expect(sm.can(States.GAMEOVER)).toBe(false);
   });
+
+  it('MENU <-> SAVECODE (aller-retour), SAVECODE ne va pas en PLAY', () => {
+    const sm = createStateMachine();
+    expect(sm.can(States.SAVECODE)).toBe(true);
+    sm.to(States.SAVECODE);
+    expect(sm.can(States.PLAY)).toBe(false);
+    expect(sm.can(States.MENU)).toBe(true);
+    sm.to(States.MENU);
+    expect(sm.get()).toBe(States.MENU);
+  });
 });
