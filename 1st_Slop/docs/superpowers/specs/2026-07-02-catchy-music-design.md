@@ -36,7 +36,9 @@ Quatre primitives, rien d'autre :
    Les hooks respirent au lieu d'être mitraillés à volume constant.
 4. **PRNG seedé** (mulberry32, seed fixe par piste) à la place de
    `Math.random` dans les voix bruit — règle au passage le nit différé
-   « assets non reproductibles ».
+   « assets non reproductibles ». Les lanes de bruit gagnent aussi un
+   `sustain` optionnel (durée en pas, défaut 0.5) pour que la snare puisse
+   sonner plus longue que les hats.
 
 Le reste du contrat est conservé : 16 steps/mesure, boucles alignées sur la
 mesure (pas de fondu), soft clip `tanh`, 16-bit PCM mono 22050 Hz.
