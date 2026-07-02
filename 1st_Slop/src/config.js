@@ -41,6 +41,9 @@ export const CONFIG = {
   PAUSE_ICON: { x: 324, y: 16, w: 24, h: 24 },
   GAMEOVER_BTN: { x: 80, w: 200, h: 56, y0: 384, gap: 72 },
   SAVECODE_BTN: { x: 80, w: 200, h: 56, y0: 280, gap: 66 },
+  SAVECODE_TITLE_Y: 120,
+  SAVECODE_CODE_Y: 190,
+  SAVECODE_MSG_Y: 235,
 
   // Button text (canvas-drawn labels over shared plate)
   BTN_FONT_FAMILY: 'PressStart2P',

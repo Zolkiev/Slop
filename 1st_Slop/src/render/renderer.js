@@ -5,6 +5,7 @@ import { gateGoalForLevel } from '../game/level.js';
 import { CONFIG } from '../config.js';
 import { renderMenu } from './menu.js';
 import { renderPause } from './pause.js';
+import { renderSavecode } from './savecode.js';
 import { drawButtons } from './buttons.js';
 
 export function renderWorld(ctx, world, assets) {
@@ -64,7 +65,8 @@ export function renderWorld(ctx, world, assets) {
   ctx.globalAlpha = 1;
 
   // 4. Robot (64×64 sprite centered on hitbox, drawn at 44×44 for crisp pixel art)
-  if (world.sm.get() !== States.MENU) {
+  const hudState = world.sm.get();
+  if (hudState !== States.MENU && hudState !== States.SAVECODE) {
     const r = world.robot;
     let sprite = assets.robot; // idle / falling
     if (r.alive && r.vy < 0) {
@@ -107,6 +109,8 @@ export function renderWorld(ctx, world, assets) {
     renderMenu(ctx, world, assets);
   } else if (state === States.PAUSE) {
     renderPause(ctx, world, assets);
+  } else if (state === States.SAVECODE) {
+    renderSavecode(ctx, world, assets);
   } else if (state === States.LEVEL_COMPLETE) {
     ctx.fillText(`NIVEAU ${world.level} OK`, CONFIG.WIDTH / 2, 240);
     ctx.font = '16px system-ui';
