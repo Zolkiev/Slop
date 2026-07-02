@@ -1,7 +1,10 @@
 import { CONFIG } from './config.js';
 import { createLoop } from './engine/loop.js';
 import { createInput } from './engine/input.js';
-import { createWorld, press, navMenu, escapeAction, updateWorld } from './game/world.js';
+import { createWorld, press, navMenu, escapeAction, updateWorld, submitSaveCode } from './game/world.js';
+import { decodeSave } from './game/save.js';
+import { createScore, applySave } from './game/score.js';
+import { createCodeInput } from './ui/codeinput.js';
 import { renderWorld } from './render/renderer.js';
 import { loadImages } from './engine/assets.js';
 import { createAudio } from './engine/audio.js';
@@ -37,9 +40,41 @@ ctx.font = 'bold 20px system-ui';
 ctx.textAlign = 'center';
 ctx.fillText('Chargement…', CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2);
 
+// Restauration par lien de sauvegarde (#save=JB1-XXXX), avant la création du monde
+const hashMatch = /[#&]save=([^&]+)/.exec(window.location.hash);
+if (hashMatch) {
+  const decoded = decodeSave(decodeURIComponent(hashMatch[1]));
+  if (decoded) {
+    applySave(createScore(window.localStorage), decoded.bestLevel, window.localStorage);
+  } else {
+    console.warn('Code de sauvegarde invalide dans l\'URL');
+  }
+  window.history.replaceState(null, '', window.location.pathname + window.location.search);
+}
+
 const world = createWorld(window.localStorage);
 const audio = createAudio({ thrust: thrustUrl, score: scoreUrl, crash: crashUrl });
 createInput({ target: canvas, win: window }, (pointer) => press(world, pointer), (dir) => navMenu(world, dir), () => escapeAction(world));
+
+const codeInput = createCodeInput(document);
+
+function copyText(text) {
+  const fallback = () => codeInput.open({
+    value: text,
+    message: 'COPIE MANUELLE (Ctrl+C)',
+    onSubmit: () => true,
+    onCancel: () => {},
+  });
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+function saveLink(code) {
+  return `${window.location.origin}${window.location.pathname}#save=${code}`;
+}
 
 const imagesPromise = loadImages({
   robot: robotUrl,
@@ -61,7 +96,21 @@ Promise.all([imagesPromise, loadFont(CONFIG.BTN_FONT_FAMILY, fontUrl)]).then(([a
   const loop = createLoop({
     update: (dt) => {
       updateWorld(world, dt);
-      for (const evt of world.events) audio.play(evt);
+      for (const evt of world.events) {
+        if (evt === 'codeentry') {
+          codeInput.open({
+            message: 'ENTRE TON CODE',
+            onSubmit: (text) => submitSaveCode(world, text),
+            onCancel: () => {},
+          });
+        } else if (evt === 'copycode') {
+          copyText(world.savecode.code);
+        } else if (evt === 'copylink') {
+          copyText(saveLink(world.savecode.code));
+        } else {
+          audio.play(evt);
+        }
+      }
       world.events.length = 0;
     },
     render: () => renderWorld(ctx, world, assets),
