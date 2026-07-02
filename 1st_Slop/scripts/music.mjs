@@ -185,22 +185,42 @@ const music1 = {
   ],
 };
 
-// --- music-2 : zone toxique — mystérieux, Ré dorien, 76 BPM, 8 mesures ---
-// Arpège triangle flottant (intervalles ouverts), drone de basse, shimmer rare.
-const NOTES2 = [50, 57, 62, 64, 69]; // D3 A3 D4 E4 A4
+// --- music-2 : zone toxique — catchy mais mystérieux, Ré dorien, 84 BPM, 16 mesures ---
+// A : motif lead triangle+vibrato sur drone, percussions clairsemées.
+// B : contre-chant pulse25 en quintes au-dessus du motif. La plus posée des trois.
+const NOTES2 = [50, 57, 62, 64, 69]; // D3 A3 D4 E4 A4 — texture d'arpège conservée
 const SEQ2 = [0, 1, 2, 3, 4, 3, 2, 1];
 const DRONE2 = [38, 38, 41, 36]; // D2 D2 F2 C2
+// Motif de 4 mesures (clé = pas 0..15) — le si (71) = sixte dorienne, la couleur de la piste.
+const LEAD2 = [
+  { 0: { m: 62, v: 1.0 }, 4: { m: 65, v: 0.8 }, 8: { m: 69, v: 0.9 }, 12: { m: 71, v: 0.8 } },
+  { 0: { m: 69, v: 0.9 }, 6: { m: 65, v: 0.7 }, 10: { m: 62, v: 0.8 } },
+  { 0: { m: 65, v: 1.0 }, 4: { m: 69, v: 0.8 }, 8: { m: 72, v: 0.9 }, 12: { m: 71, v: 0.7 } },
+  { 0: { m: 69, v: 0.9 }, 8: { m: 62, v: 0.8 } },
+];
 const music2 = {
-  bpm: 76,
-  bars: 8,
+  bpm: 84,
+  bars: 16,
+  seed: 84,
   voices: [
-    { wave: 'triangle', vol: 0.13, decay: 4, sustain: 2,
+    { wave: 'triangle', vol: 0.16, decay: 2.5, sustain: 4, vibrato: { rate: 4.5, depth: 0.35 },
+      note: (bar, step) => LEAD2[bar % 4][step] ?? null },
+    { wave: 'pulse25', vol: 0.06, decay: 2.5, sustain: 4, // contre-chant, section B
+      note: (bar, step) => {
+        if (bar < 8) return null;
+        const hit = LEAD2[bar % 4][step];
+        return hit ? { m: hit.m + 7, v: hit.v * 0.7 } : null;
+      } },
+    { wave: 'triangle', vol: 0.09, decay: 4, sustain: 2, // texture d'arpège
       note: (bar, step) => (step % 2 === 0 ? NOTES2[SEQ2[(step / 2) % 8]] : null) },
-    { wave: 'triangle', vol: 0.17, decay: 1.2, sustain: 14,
+    { wave: 'triangle', vol: 0.17, decay: 1.2, sustain: 14, // drone
       note: (bar, step) => (step === 0 ? DRONE2[bar % 4] : null) },
+    { wave: 'triangle', vol: 0.22, decay: 12, slide: -12, // kick doux, temps 1
+      note: (bar, step) => (step === 0 ? 40 : null) },
   ],
   noise: [
-    { vol: 0.02, decay: 25, hit: (bar, step) => step === 12 && bar % 2 === 1 },
+    { vol: 0.05, decay: 28, sustain: 1.5, hit: (bar, step) => step === 8 && bar % 2 === 1 }, // tick
+    { vol: 0.02, decay: 25, hit: (bar, step) => step === 12 && bar % 2 === 1 },              // shimmer
   ],
 };
 
