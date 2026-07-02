@@ -47,12 +47,14 @@ export function resetRun(world) {
   world.robot = createRobot();
   world.obstacles = [];
   world.gatesThisLevel = 0;
-  world.bgSet = Math.floor(world.rand() * CONFIG.BG_SET_COUNT);
   world.particles.particles = [];
 }
 
 export function startLevel(world, level) {
   const diff = difficultyForLevel(level);
+  if (level !== world.level) {
+    world.bgSet = Math.floor(world.rand() * CONFIG.BG_SET_COUNT);
+  }
   world.level = level;
   world.scrollSpeed = diff.scrollSpeed;
   world.gapMin = diff.gapMin;

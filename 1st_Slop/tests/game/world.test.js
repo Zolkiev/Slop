@@ -159,35 +159,78 @@ describe('world', () => {
     });
   });
 
-  describe('bgSet selection', () => {
-    it('resetRun picks bgSet 0 when rand returns 0', () => {
+  describe('bgSet selection (décor persistant)', () => {
+    it('resetRun ne touche plus bgSet', () => {
       const w = createWorld(fakeStorage());
-      w.rand = () => 0;
+      w.bgSet = 1;
+      w.rand = () => 0.99;
       resetRun(w);
+      expect(w.bgSet).toBe(1);
+    });
+
+    it('startLevel même niveau garde le décor', () => {
+      const w = createWorld(fakeStorage());
+      w.level = 3;
+      w.bgSet = 1;
+      w.rand = () => 0.99;
+      startLevel(w, 3);
+      expect(w.bgSet).toBe(1);
+    });
+
+    it('startLevel niveau différent retire le décor via world.rand', () => {
+      const w = createWorld(fakeStorage());
+      w.level = 1;
+      w.bgSet = 1;
+      w.rand = () => 0.99;
+      startLevel(w, 2);
+      expect(w.bgSet).toBe(CONFIG.BG_SET_COUNT - 1);
+      w.rand = () => 0;
+      startLevel(w, 3);
       expect(w.bgSet).toBe(0);
     });
 
-    it('resetRun picks bgSet BG_SET_COUNT-1 when rand returns 0.99', () => {
-      const w = createWorld(fakeStorage());
-      w.rand = () => 0.99;
-      resetRun(w);
-      expect(w.bgSet).toBe(CONFIG.BG_SET_COUNT - 1);
-    });
-
-    it('bgSet is always in range [0, BG_SET_COUNT)', () => {
+    it('bgSet reste dans [0, BG_SET_COUNT) pour tout tirage', () => {
       const w = createWorld(fakeStorage());
       for (const val of [0, 0.33, 0.66, 0.99]) {
         w.rand = () => val;
-        resetRun(w);
+        startLevel(w, w.level + 1);
         expect(w.bgSet).toBeGreaterThanOrEqual(0);
         expect(w.bgSet).toBeLessThan(CONFIG.BG_SET_COUNT);
       }
     });
 
-    it('press from MENU picks bgSet using world.rand', () => {
+    it('restart depuis la PAUSE garde le décor', () => {
       const w = createWorld(fakeStorage());
+      press(w); // -> PLAY (niveau 1)
+      w.bgSet = 2;
+      escapeAction(w); // PAUSE
+      const b = w.pause.buttons[1]; // restart
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.bgSet).toBe(2);
+    });
+
+    it('restart depuis le GAMEOVER garde le décor', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      w.bgSet = 2;
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      const b = w.gameover.buttons[0]; // restart
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.bgSet).toBe(2);
+    });
+
+    it('NEW GAME après une mort au niveau 3 retire le décor', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      w.level = 3;
+      w.bgSet = 1;
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      escapeAction(w); // GAMEOVER -> MENU
       w.rand = () => 0.99;
-      press(w); // MENU -> PLAY, calls resetRun
+      const b = w.menu.buttons[0]; // newgame
+      press(w, { x: b.x + 1, y: b.y + 1 }); // startLevel(1), 1 !== 3 -> reroll
       expect(w.bgSet).toBe(CONFIG.BG_SET_COUNT - 1);
     });
   });
