@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createScore, checkPass, finalizeLevel } from '../../src/game/score.js';
+import { createScore, checkPass, finalizeLevel, applySave } from '../../src/game/score.js';
 
 function fakeStorage(initial = {}) {
   const data = { ...initial };
@@ -40,5 +40,38 @@ describe('score', () => {
     const s = createScore(storage);
     finalizeLevel(s, 4, storage);
     expect(s.bestLevel).toBe(10);
+  });
+});
+
+describe('applySave', () => {
+  function fakeStorage() {
+    const d = {};
+    return {
+      getItem: (k) => d[k] ?? null,
+      setItem: (k, v) => { d[k] = String(v); },
+      data: d,
+    };
+  }
+
+  it('prend le niveau restauré quand il est meilleur et persiste', () => {
+    const storage = fakeStorage();
+    const score = { bestLevel: 2 };
+    applySave(score, 5, storage);
+    expect(score.bestLevel).toBe(5);
+    expect(storage.getItem('jetpackbot.bestLevel')).toBe('5');
+  });
+
+  it('ne régresse jamais et ne persiste pas si rien ne change', () => {
+    const storage = fakeStorage();
+    const score = { bestLevel: 7 };
+    applySave(score, 3, storage);
+    expect(score.bestLevel).toBe(7);
+    expect(storage.getItem('jetpackbot.bestLevel')).toBe(null);
+  });
+
+  it('tolère un storage absent', () => {
+    const score = { bestLevel: 1 };
+    expect(() => applySave(score, 4, undefined)).not.toThrow();
+    expect(score.bestLevel).toBe(4);
   });
 });

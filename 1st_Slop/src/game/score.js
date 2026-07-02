@@ -13,10 +13,14 @@ export function checkPass(robot, obstacle, width) {
   return false;
 }
 
-export function finalizeLevel(score, level, storage) {
-  if (level > score.bestLevel) {
-    score.bestLevel = level;
-    storage?.setItem(KEY, String(level));
+export function applySave(score, bestLevel, storage) {
+  if (bestLevel > score.bestLevel) {
+    score.bestLevel = bestLevel;
+    storage?.setItem(KEY, String(bestLevel));
   }
   return score;
+}
+
+export function finalizeLevel(score, level, storage) {
+  return applySave(score, level, storage);
 }
