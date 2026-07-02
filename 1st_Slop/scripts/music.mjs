@@ -147,22 +147,41 @@ const music0 = {
   ],
 };
 
-// --- music-1 : industriel — tendu, Mi phrygien, 112 BPM, 10 mesures ---
-// Basse martelée en croches, stabs clairsemés, kick triangle grave, hats métalliques.
-const ROOTS1 = [40, 40, 41, 38, 40, 40, 43, 41, 40, 38]; // E E F D E E G F E D
+// --- music-1 : industriel — le plus énergique, Mi phrygien, 118 BPM, 16 mesures ---
+// A : riff lead syncopé sur basse martelée, kick 4-on-the-floor, backbeat marqué.
+// B : riff à l'octave, stabs doublés en syncope.
+const ROOTS1 = [40, 40, 41, 38, 40, 40, 43, 41]; // E E F D E E G F (×2)
+// Riff de 2 mesures (clé = pas 0..15) — syncopes sur 3/8/11/14, sixte phrygienne au sommet.
+const RIFF1 = [
+  { 0: { m: 64, v: 1.0 }, 3: { m: 65, v: 0.8 }, 6: { m: 64, v: 0.9 }, 8: { m: 67, v: 1.0 }, 11: { m: 65, v: 0.8 }, 14: { m: 62, v: 0.9 } },
+  { 0: { m: 64, v: 1.0 }, 3: { m: 67, v: 0.8 }, 6: { m: 71, v: 1.0 }, 10: { m: 67, v: 0.8 }, 12: { m: 65, v: 0.9 }, 14: { m: 64, v: 0.7 } },
+];
 const music1 = {
-  bpm: 112,
-  bars: 10,
+  bpm: 118,
+  bars: 16,
+  seed: 118,
   voices: [
-    { wave: 'square', vol: 0.16, decay: 7,
-      note: (bar, step) => (step % 2 === 0 ? ROOTS1[bar] + (step === 6 || step === 14 ? 12 : 0) : null) },
+    { wave: 'pulse25', vol: 0.13, decay: 7, sustain: 2, vibrato: { rate: 6, depth: 0.25 },
+      note: (bar, step) => {
+        const hit = RIFF1[bar % 2][step];
+        if (!hit) return null;
+        return bar < 8 ? hit : { m: hit.m + 12, v: hit.v * 0.8 };
+      } },
+    { wave: 'square', vol: 0.15, decay: 7,
+      note: (bar, step) => (step % 2 === 0
+        ? { m: ROOTS1[bar % 8] + (step === 6 || step === 14 ? 12 : 0), v: step % 4 === 0 ? 1 : 0.8 }
+        : null) },
     { wave: 'square', vol: 0.08, decay: 12,
-      note: (bar, step) => (step === 4 || step === 12 ? ROOTS1[bar] + 19 : null) },
-    { wave: 'triangle', vol: 0.3, decay: 18,
-      note: (bar, step) => (step === 0 || step === 8 ? ROOTS1[bar] - 12 : null) },
+      note: (bar, step) => {
+        const on = step === 4 || step === 12 || (bar >= 8 && (step === 7 || step === 15));
+        return on ? ROOTS1[bar % 8] + 19 : null;
+      } },
+    { wave: 'triangle', vol: 0.34, decay: 18, slide: -16, // kick 4-on-the-floor
+      note: (bar, step) => (step % 4 === 0 ? 43 : null) },
   ],
   noise: [
-    { vol: 0.05, decay: 55, hit: (bar, step) => step % 2 === 1 },
+    { vol: 0.1, decay: 24, sustain: 1.5, hit: (bar, step) => step === 4 || step === 12 }, // snare
+    { vol: 0.045, decay: 60, hit: (bar, step) => step % 2 === 1 },                        // hats métalliques
   ],
 };
 
