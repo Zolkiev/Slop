@@ -1,7 +1,9 @@
 import { CONFIG } from './config.js';
 import { createLoop } from './engine/loop.js';
 import { createInput } from './engine/input.js';
-import { createWorld, press, navMenu, escapeAction, updateWorld, submitSaveCode } from './game/world.js';
+import { createWorld, press, navMenu, escapeAction, updateWorld, submitSaveCode, adjustAction } from './game/world.js';
+import { saveSettings, volumeToGain } from './game/settings.js';
+import { musicFor } from './game/music.js';
 import { decodeSave } from './game/save.js';
 import { createScore, applySave } from './game/score.js';
 import { createCodeInput } from './ui/codeinput.js';
@@ -27,6 +29,9 @@ import fontUrl from '../assets/PressStart2P-Regular.ttf';
 import thrustUrl from '../assets/sfx-thrust.wav';
 import scoreUrl from '../assets/sfx-score.wav';
 import crashUrl from '../assets/sfx-crash.wav';
+import music0Url from '../assets/music-0.wav';
+import music1Url from '../assets/music-1.wav';
+import music2Url from '../assets/music-2.wav';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -59,7 +64,12 @@ if (hashMatch) {
 }
 
 const world = createWorld(window.localStorage);
-const audio = createAudio({ thrust: thrustUrl, score: scoreUrl, crash: crashUrl });
+const audio = createAudio({
+  thrust: thrustUrl, score: scoreUrl, crash: crashUrl,
+  'music-0': music0Url, 'music-1': music1Url, 'music-2': music2Url,
+});
+audio.setSfxVolume(volumeToGain(world.settings.sfx));
+audio.setMusicVolume(volumeToGain(world.settings.music));
 
 const codeInput = createCodeInput(document);
 
@@ -68,6 +78,7 @@ createInput(
   (pointer) => { if (!codeInput.isOpen()) press(world, pointer); },
   (dir) => { if (!codeInput.isOpen()) navMenu(world, dir); },
   () => { if (!codeInput.isOpen()) escapeAction(world); },
+  (dir) => { if (!codeInput.isOpen()) adjustAction(world, dir); },
 );
 
 function copyText(text) {
@@ -119,11 +130,19 @@ Promise.all([imagesPromise, loadFont(CONFIG.BTN_FONT_FAMILY, fontUrl)]).then(([a
           copyText(world.savecode.code);
         } else if (evt === 'copylink') {
           copyText(saveLink(world.savecode.code));
+        } else if (evt === 'volsfx') {
+          saveSettings(world.settings, window.localStorage);
+          audio.setSfxVolume(volumeToGain(world.settings.sfx));
+          audio.play('score'); // feedback immédiat au nouveau volume
+        } else if (evt === 'volmusic') {
+          saveSettings(world.settings, window.localStorage);
+          audio.setMusicVolume(volumeToGain(world.settings.music));
         } else {
           audio.play(evt);
         }
       }
       world.events.length = 0;
+      audio.setMusic(musicFor(world.sm.get(), world.bgSet));
     },
     render: () => renderWorld(ctx, world, assets),
     fixedDt: CONFIG.FIXED_DT,

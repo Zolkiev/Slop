@@ -83,4 +83,15 @@ describe('input', () => {
     win.fire('keydown', { code: 'Escape', repeat: false });
     expect(onEscape).toHaveBeenCalledTimes(1);
   });
+
+  it('ArrowLeft/ArrowRight appellent onAdjust avec -1 / +1, répétition acceptée', () => {
+    const target = fakeTarget();
+    const win = fakeTarget();
+    const onAdjust = vi.fn();
+    createInput({ target, win, preventDefault: false }, vi.fn(), vi.fn(), vi.fn(), onAdjust);
+    win.fire('keydown', { code: 'ArrowLeft', repeat: false });
+    win.fire('keydown', { code: 'ArrowRight', repeat: true }); // repeat OK
+    expect(onAdjust).toHaveBeenNthCalledWith(1, -1);
+    expect(onAdjust).toHaveBeenNthCalledWith(2, 1);
+  });
 });

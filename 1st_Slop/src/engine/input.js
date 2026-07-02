@@ -1,4 +1,4 @@
-export function createInput({ target, win = window, preventDefault = true }, onPress, onNav = () => {}, onEscape = () => {}) {
+export function createInput({ target, win = window, preventDefault = true }, onPress, onNav = () => {}, onEscape = () => {}, onAdjust = () => {}) {
   function pointerFromEvent(e) {
     if (typeof e.clientX !== 'number' || typeof target.getBoundingClientRect !== 'function') {
       return undefined;
@@ -27,6 +27,12 @@ export function createInput({ target, win = window, preventDefault = true }, onP
     } else if (e.code === 'Escape' && !e.repeat) {
       if (preventDefault && e.preventDefault) e.preventDefault();
       onEscape();
+    } else if (e.code === 'ArrowLeft') {
+      if (preventDefault && e.preventDefault) e.preventDefault();
+      onAdjust(-1);
+    } else if (e.code === 'ArrowRight') {
+      if (preventDefault && e.preventDefault) e.preventDefault();
+      onAdjust(1);
     }
   }
 
