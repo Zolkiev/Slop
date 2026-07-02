@@ -39,7 +39,7 @@ export const CONFIG = {
   PAUSE_BTN: { x: 80, w: 200, h: 56, y0: 230, gap: 72 },
   PAUSE_TITLE_Y: 170,
   PAUSE_ICON: { x: 324, y: 16, w: 24, h: 24 },
-  GAMEOVER_MENU_BTN: { x: 80, y: 384, w: 200, h: 56 },
+  GAMEOVER_BTN: { x: 80, w: 200, h: 56, y0: 384, gap: 72 },
 
   // Button text (canvas-drawn labels over shared plate)
   BTN_FONT_FAMILY: 'PressStart2P',

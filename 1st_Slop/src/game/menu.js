@@ -24,13 +24,20 @@ export function createPauseMenu() {
   ], CONFIG.PAUSE_BTN);
 }
 
+export function createGameoverMenu() {
+  return build([
+    { id: 'restart', label: 'RECOMMENCER', enabled: true },
+    { id: 'menu', label: 'MENU', enabled: true },
+  ], CONFIG.GAMEOVER_BTN);
+}
+
 export function inRect(rect, px, py) {
   return px >= rect.x && px < rect.x + rect.w && py >= rect.y && py < rect.y + rect.h;
 }
 
 export function hitTest(menu, px, py) {
   for (const b of menu.buttons) {
-    if (inRect(b, px, py)) return b.id;
+    if (b.enabled && inRect(b, px, py)) return b.id;
   }
   return null;
 }

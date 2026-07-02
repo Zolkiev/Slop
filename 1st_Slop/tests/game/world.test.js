@@ -159,35 +159,78 @@ describe('world', () => {
     });
   });
 
-  describe('bgSet selection', () => {
-    it('resetRun picks bgSet 0 when rand returns 0', () => {
+  describe('bgSet selection (décor persistant)', () => {
+    it('resetRun ne touche plus bgSet', () => {
       const w = createWorld(fakeStorage());
-      w.rand = () => 0;
+      w.bgSet = 1;
+      w.rand = () => 0.99;
       resetRun(w);
+      expect(w.bgSet).toBe(1);
+    });
+
+    it('startLevel même niveau garde le décor', () => {
+      const w = createWorld(fakeStorage());
+      w.level = 3;
+      w.bgSet = 1;
+      w.rand = () => 0.99;
+      startLevel(w, 3);
+      expect(w.bgSet).toBe(1);
+    });
+
+    it('startLevel niveau différent retire le décor via world.rand', () => {
+      const w = createWorld(fakeStorage());
+      w.level = 1;
+      w.bgSet = 1;
+      w.rand = () => 0.99;
+      startLevel(w, 2);
+      expect(w.bgSet).toBe(CONFIG.BG_SET_COUNT - 1);
+      w.rand = () => 0;
+      startLevel(w, 3);
       expect(w.bgSet).toBe(0);
     });
 
-    it('resetRun picks bgSet BG_SET_COUNT-1 when rand returns 0.99', () => {
-      const w = createWorld(fakeStorage());
-      w.rand = () => 0.99;
-      resetRun(w);
-      expect(w.bgSet).toBe(CONFIG.BG_SET_COUNT - 1);
-    });
-
-    it('bgSet is always in range [0, BG_SET_COUNT)', () => {
+    it('bgSet reste dans [0, BG_SET_COUNT) pour tout tirage', () => {
       const w = createWorld(fakeStorage());
       for (const val of [0, 0.33, 0.66, 0.99]) {
         w.rand = () => val;
-        resetRun(w);
+        startLevel(w, w.level + 1);
         expect(w.bgSet).toBeGreaterThanOrEqual(0);
         expect(w.bgSet).toBeLessThan(CONFIG.BG_SET_COUNT);
       }
     });
 
-    it('press from MENU picks bgSet using world.rand', () => {
+    it('restart depuis la PAUSE garde le décor', () => {
       const w = createWorld(fakeStorage());
+      press(w); // -> PLAY (niveau 1)
+      w.bgSet = 2;
+      escapeAction(w); // PAUSE
+      const b = w.pause.buttons[1]; // restart
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.bgSet).toBe(2);
+    });
+
+    it('restart depuis le GAMEOVER garde le décor', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      w.bgSet = 2;
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      const b = w.gameover.buttons[0]; // restart
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.bgSet).toBe(2);
+    });
+
+    it('NEW GAME après une mort au niveau 3 retire le décor', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      w.level = 3;
+      w.bgSet = 1;
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      escapeAction(w); // GAMEOVER -> MENU
       w.rand = () => 0.99;
-      press(w); // MENU -> PLAY, calls resetRun
+      const b = w.menu.buttons[0]; // newgame
+      press(w, { x: b.x + 1, y: b.y + 1 }); // startLevel(1), 1 !== 3 -> reroll
       expect(w.bgSet).toBe(CONFIG.BG_SET_COUNT - 1);
     });
   });
@@ -314,22 +357,54 @@ describe('world', () => {
       expect(w.robot.y).toBe(y);
     });
 
-    it('gameover: clic sur le bouton Menu -> MENU', () => {
+    it('gameover: clic sur le bouton MENU -> MENU', () => {
       const w = createWorld(fakeStorage());
       press(w);
       for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
       expect(w.sm.get()).toBe(States.GAMEOVER);
-      const b = CONFIG.GAMEOVER_MENU_BTN;
+      const b = w.gameover.buttons[1]; // menu
       press(w, { x: b.x + 1, y: b.y + 1 });
       expect(w.sm.get()).toBe(States.MENU);
     });
 
-    it('gameover: press ailleurs = retry (PLAY)', () => {
+    it('gameover: clic hors boutons = no-op (reste GAMEOVER)', () => {
       const w = createWorld(fakeStorage());
       press(w);
       for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
       press(w, { x: 10, y: 10 });
+      expect(w.sm.get()).toBe(States.GAMEOVER);
+    });
+
+    it('gameover: clic RECOMMENCER -> PLAY, même niveau, gates=0', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      w.level = 3;
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      const b = w.gameover.buttons[0]; // restart
+      press(w, { x: b.x + 1, y: b.y + 1 });
       expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.level).toBe(3);
+      expect(w.gatesThisLevel).toBe(0);
+    });
+
+    it('navMenu agit en GAMEOVER', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      const before = w.gameover.focus;
+      navMenu(w, 1);
+      expect(w.gameover.focus).not.toBe(before);
+    });
+
+    it('gameover: le focus revient sur RECOMMENCER à chaque nouvelle mort', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      navMenu(w, 1); // focus -> menu
+      const b = w.gameover.buttons[0]; // restart
+      press(w, { x: b.x + 1, y: b.y + 1 }); // -> PLAY
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      expect(w.gameover.buttons[w.gameover.focus].id).toBe('restart');
     });
 
     it('escapeAction en GAMEOVER -> MENU', () => {
