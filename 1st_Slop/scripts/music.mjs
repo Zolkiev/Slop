@@ -99,8 +99,10 @@ function render(track) {
   return out;
 }
 
-// --- music-0 : nuit urbaine — synthwave calme, La mineur, 90 BPM, 8 mesures ---
-// Progression Am / F / C / G (racines midi), arpège up-down, basse ronde, hats doux.
+// --- music-0 : nuit urbaine — synthwave groove, La mineur, 96 BPM, 16 mesures ---
+// A (mesures 0-7) : hook lead pulse25 en question/réponse sur Am / F / C / G,
+// basse en croches, batterie discrète (kick 1/3, snare 2/4, hats).
+// B (mesures 8-15) : hook à l'octave plus doux, arpège en doubles-croches.
 const PROG0 = [
   { root: 57, iv: [0, 3, 7, 12] },  // Am
   { root: 53, iv: [0, 4, 7, 12] },  // F
@@ -108,17 +110,40 @@ const PROG0 = [
   { root: 55, iv: [0, 4, 7, 12] },  // G
 ];
 const ARP0 = [0, 1, 2, 3, 2, 1, 0, 2];
+// Hook de 4 mesures (une par accord), clé = pas 0..15. Question (Am, F) / réponse (C, G).
+const LEAD0 = [
+  { 0: { m: 69, v: 1.0 }, 3: { m: 72, v: 0.8 }, 6: { m: 76, v: 1.0 }, 10: { m: 74, v: 0.8 }, 12: { m: 72, v: 0.7 } },
+  { 0: { m: 72, v: 1.0 }, 4: { m: 69, v: 0.8 }, 8: { m: 65, v: 0.9 }, 12: { m: 67, v: 0.7 } },
+  { 0: { m: 67, v: 1.0 }, 3: { m: 72, v: 0.8 }, 6: { m: 76, v: 0.9 }, 10: { m: 74, v: 0.7 }, 12: { m: 72, v: 0.8 } },
+  { 0: { m: 74, v: 1.0 }, 4: { m: 71, v: 0.8 }, 8: { m: 67, v: 0.9 }, 12: { m: 71, v: 0.7 } },
+];
 const music0 = {
-  bpm: 90,
-  bars: 8,
+  bpm: 96,
+  bars: 16,
+  seed: 96,
   voices: [
-    { wave: 'square', vol: 0.11, decay: 9,
-      note: (bar, step) => { const c = PROG0[bar % 4]; return c.root + c.iv[ARP0[step % 8]]; } },
-    { wave: 'triangle', vol: 0.22, decay: 3, sustain: 6,
-      note: (bar, step) => (step === 0 || step === 8 ? PROG0[bar % 4].root - 12 : null) },
+    { wave: 'pulse25', vol: 0.14, decay: 5, sustain: 3, vibrato: { rate: 5, depth: 0.3 },
+      note: (bar, step) => {
+        const hit = LEAD0[bar % 4][step];
+        if (!hit) return null;
+        return bar < 8 ? hit : { m: hit.m + 12, v: hit.v * 0.85 };
+      } },
+    { wave: 'square', vol: 0.07, decay: 9,
+      note: (bar, step) => {
+        if (bar < 8 && step % 2 === 1) return null; // croches en A, 16es en B
+        const c = PROG0[bar % 4];
+        return { m: c.root + c.iv[ARP0[step % 8]], v: 0.9 };
+      } },
+    { wave: 'triangle', vol: 0.2, decay: 4, sustain: 1.6,
+      note: (bar, step) => (step % 2 === 0
+        ? { m: PROG0[bar % 4].root - 12, v: step % 8 === 0 ? 1 : 0.75 }
+        : null) },
+    { wave: 'triangle', vol: 0.34, decay: 16, slide: -14, // kick
+      note: (bar, step) => (step === 0 || step === 8 ? 45 : null) },
   ],
   noise: [
-    { vol: 0.035, decay: 45, hit: (bar, step) => step % 4 === 2 },
+    { vol: 0.09, decay: 22, sustain: 1.5, hit: (bar, step) => step === 4 || step === 12 }, // snare
+    { vol: 0.03, decay: 55, hit: (bar, step) => step % 4 === 2 },                          // hats
   ],
 };
 
