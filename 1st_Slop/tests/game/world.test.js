@@ -314,22 +314,54 @@ describe('world', () => {
       expect(w.robot.y).toBe(y);
     });
 
-    it('gameover: clic sur le bouton Menu -> MENU', () => {
+    it('gameover: clic sur le bouton MENU -> MENU', () => {
       const w = createWorld(fakeStorage());
       press(w);
       for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
       expect(w.sm.get()).toBe(States.GAMEOVER);
-      const b = CONFIG.GAMEOVER_MENU_BTN;
+      const b = w.gameover.buttons[1]; // menu
       press(w, { x: b.x + 1, y: b.y + 1 });
       expect(w.sm.get()).toBe(States.MENU);
     });
 
-    it('gameover: press ailleurs = retry (PLAY)', () => {
+    it('gameover: clic hors boutons = no-op (reste GAMEOVER)', () => {
       const w = createWorld(fakeStorage());
       press(w);
       for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
       press(w, { x: 10, y: 10 });
+      expect(w.sm.get()).toBe(States.GAMEOVER);
+    });
+
+    it('gameover: clic RECOMMENCER -> PLAY, même niveau, gates=0', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      w.level = 3;
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      const b = w.gameover.buttons[0]; // restart
+      press(w, { x: b.x + 1, y: b.y + 1 });
       expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.level).toBe(3);
+      expect(w.gatesThisLevel).toBe(0);
+    });
+
+    it('navMenu agit en GAMEOVER', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      const before = w.gameover.focus;
+      navMenu(w, 1);
+      expect(w.gameover.focus).not.toBe(before);
+    });
+
+    it('gameover: le focus revient sur RECOMMENCER à chaque nouvelle mort', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      navMenu(w, 1); // focus -> menu
+      const b = w.gameover.buttons[0]; // restart
+      press(w, { x: b.x + 1, y: b.y + 1 }); // -> PLAY
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      expect(w.gameover.buttons[w.gameover.focus].id).toBe('restart');
     });
 
     it('escapeAction en GAMEOVER -> MENU', () => {

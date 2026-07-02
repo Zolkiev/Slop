@@ -12,13 +12,14 @@ import { createParticleField, spawnReactor, updateParticles } from './particles.
 import { createAmbiance, updateAmbiance } from './ambiance.js';
 import { createTwinkles } from './twinkle.js';
 import { CONFIG } from '../config.js';
-import { createMenu, createPauseMenu, hitTest, activate, moveFocus, inRect } from './menu.js';
+import { createMenu, createPauseMenu, createGameoverMenu, hitTest, activate, moveFocus, inRect } from './menu.js';
 
 export function createWorld(storage) {
   return {
     sm: createStateMachine(States.MENU),
     menu: createMenu(),
     pause: createPauseMenu(),
+    gameover: createGameoverMenu(),
     menuTick: 0,
     robot: createRobot(),
     obstacles: [],
@@ -96,12 +97,14 @@ export function press(world, pointer) {
     startLevel(world, world.level + 1);
     world.sm.to(States.PLAY);
   } else if (state === States.GAMEOVER) {
-    if (pointer && inRect(CONFIG.GAMEOVER_MENU_BTN, pointer.x, pointer.y)) {
-      world.sm.to(States.MENU);
-    } else {
+    const id = pointer ? hitTest(world.gameover, pointer.x, pointer.y) : activate(world.gameover);
+    if (id === 'restart') {
       startLevel(world, world.level);
       world.sm.to(States.PLAY);
+    } else if (id === 'menu') {
+      world.sm.to(States.MENU);
     }
+    // null -> no-op
   }
 }
 
@@ -109,6 +112,7 @@ export function navMenu(world, dir) {
   const s = world.sm.get();
   if (s === States.MENU) moveFocus(world.menu, dir);
   else if (s === States.PAUSE) moveFocus(world.pause, dir);
+  else if (s === States.GAMEOVER) moveFocus(world.gameover, dir);
 }
 
 export function escapeAction(world) {
@@ -162,6 +166,7 @@ export function updateWorld(world, dt) {
     world.flash = CONFIG.FLASH_TIME;
     world.robot.alive = false;
     finalizeLevel(world.score, world.level, world.storage);
+    world.gameover = createGameoverMenu();
     world.sm.to(States.GAMEOVER);
   }
 }
