@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createMenu, createPauseMenu, hitTest, inRect, moveFocus, focusedId, activate } from '../../src/game/menu.js';
+import { createMenu, createPauseMenu, createGameoverMenu, hitTest, inRect, moveFocus, focusedId, activate } from '../../src/game/menu.js';
 
 describe('menu', () => {
   it('createMenu: 3 boutons ordonnés, newgame enabled, autres disabled, focus sur newgame', () => {
@@ -84,5 +84,13 @@ describe('menu', () => {
     expect(inRect(r, 39, 59)).toBe(true);
     expect(inRect(r, 40, 20)).toBe(false);
     expect(inRect(r, 0, 0)).toBe(false);
+  });
+
+  it('createGameoverMenu: restart + menu, tous enabled, focus sur restart', () => {
+    const m = createGameoverMenu();
+    expect(m.buttons.map((b) => b.id)).toEqual(['restart', 'menu']);
+    expect(m.buttons.map((b) => b.label)).toEqual(['RECOMMENCER', 'MENU']);
+    expect(m.buttons.every((b) => b.enabled)).toBe(true);
+    expect(focusedId(m)).toBe('restart');
   });
 });
