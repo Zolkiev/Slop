@@ -30,7 +30,7 @@ export function inRect(rect, px, py) {
 
 export function hitTest(menu, px, py) {
   for (const b of menu.buttons) {
-    if (inRect(b, px, py)) return b.id;
+    if (b.enabled && inRect(b, px, py)) return b.id;
   }
   return null;
 }

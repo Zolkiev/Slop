@@ -29,6 +29,13 @@ describe('menu', () => {
     expect(hitTest(m, b.x + b.w, b.y + b.h)).toBe(null);
   });
 
+  it('hitTest ignore les boutons disabled (renvoie null)', () => {
+    const m = createMenu();
+    const b = m.buttons[1]; // continue, disabled
+    expect(b.enabled).toBe(false);
+    expect(hitTest(m, b.x + b.w / 2, b.y + b.h / 2)).toBe(null);
+  });
+
   it('moveFocus saute les boutons disabled et reste sur le seul enabled', () => {
     const m = createMenu();
     moveFocus(m, 1);
