@@ -151,7 +151,7 @@ const music0 = {
 // A : riff lead syncopé sur basse martelée, kick 4-on-the-floor, backbeat marqué.
 // B : riff à l'octave, stabs doublés en syncope.
 const ROOTS1 = [40, 40, 41, 38, 40, 40, 43, 41]; // E E F D E E G F (×2)
-// Riff de 2 mesures (clé = pas 0..15) — syncopes sur 3/8/11/14, sixte phrygienne au sommet.
+// Riff de 2 mesures (clé = pas 0..15) — hits 0/3/6/8/11/14 puis 0/3/6/10/12/14, sixte phrygienne au sommet.
 const RIFF1 = [
   { 0: { m: 64, v: 1.0 }, 3: { m: 65, v: 0.8 }, 6: { m: 64, v: 0.9 }, 8: { m: 67, v: 1.0 }, 11: { m: 65, v: 0.8 }, 14: { m: 62, v: 0.9 } },
   { 0: { m: 64, v: 1.0 }, 3: { m: 67, v: 0.8 }, 6: { m: 71, v: 1.0 }, 10: { m: 67, v: 0.8 }, 12: { m: 65, v: 0.9 }, 14: { m: 64, v: 0.7 } },
