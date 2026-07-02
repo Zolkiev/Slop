@@ -15,6 +15,8 @@ import { CONFIG } from '../config.js';
 import { createMenu, createPauseMenu, createGameoverMenu, hitTest, activate, moveFocus, inRect } from './menu.js';
 import { createSavecode, setFeedback } from './savecode.js';
 import { decodeSave } from './save.js';
+import { createOptions, moveOptionsFocus, adjust, barHitTest } from './options.js';
+import { loadSettings } from './settings.js';
 
 export function createWorld(storage) {
   const score = createScore(storage);
@@ -24,6 +26,9 @@ export function createWorld(storage) {
     pause: createPauseMenu(),
     gameover: createGameoverMenu(),
     savecode: createSavecode(score),
+    settings: loadSettings(storage),
+    options: null,
+    optionsReturn: 'menu',
     menuTick: 0,
     robot: createRobot(),
     obstacles: [],
@@ -71,6 +76,22 @@ export function toMenu(world) {
   world.sm.to(States.MENU);
 }
 
+function openOptions(world, from) {
+  world.options = createOptions(world.settings);
+  world.optionsReturn = from;
+  world.sm.to(States.OPTIONS);
+}
+
+function closeOptions(world) {
+  if (world.optionsReturn === 'pause') world.sm.to(States.PAUSE);
+  else toMenu(world);
+}
+
+function syncVolume(world, id) {
+  world.settings = { sfx: world.options.rows[0].value, music: world.options.rows[1].value };
+  world.events.push(id === 'sfx' ? 'volsfx' : 'volmusic');
+}
+
 function spawnObstacle(world) {
   const gapH = world.gapMin + world.rand() * (world.gapMax - world.gapMin);
   const gapY = randomGapY(world.rand, CONFIG.HEIGHT, gapH);
@@ -90,8 +111,10 @@ export function press(world, pointer) {
     } else if (id === 'code') {
       world.savecode = createSavecode(world.score);
       world.sm.to(States.SAVECODE);
+    } else if (id === 'options') {
+      openOptions(world, 'menu');
     }
-    // 'options' (stub) et null → no-op
+    // null → no-op
   } else if (state === States.PLAY) {
     if (pointer && inRect(CONFIG.PAUSE_ICON, pointer.x, pointer.y)) {
       world.sm.to(States.PAUSE);
@@ -108,8 +131,10 @@ export function press(world, pointer) {
       world.sm.to(States.PLAY);
     } else if (id === 'menu') {
       toMenu(world);
+    } else if (id === 'options') {
+      openOptions(world, 'pause');
     }
-    // 'options' / null -> no-op
+    // null -> no-op
   } else if (state === States.LEVEL_COMPLETE) {
     startLevel(world, world.level + 1);
     world.sm.to(States.PLAY);
@@ -136,6 +161,22 @@ export function press(world, pointer) {
     } else if (id === 'back') {
       toMenu(world);
     }
+  } else if (state === States.OPTIONS) {
+    if (pointer) {
+      const hit = barHitTest(world.options, pointer.x, pointer.y);
+      if (hit) {
+        const idx = world.options.rows.findIndex((r) => r.id === hit.id);
+        world.options.focus = idx;
+        if (world.options.rows[idx].value !== hit.value) {
+          world.options.rows[idx].value = hit.value;
+          syncVolume(world, hit.id);
+        }
+      } else if (inRect(CONFIG.OPTIONS_BTN, pointer.x, pointer.y)) {
+        closeOptions(world);
+      }
+    } else if (world.options.focus === 2) {
+      closeOptions(world);
+    }
   }
 }
 
@@ -145,6 +186,7 @@ export function navMenu(world, dir) {
   else if (s === States.PAUSE) moveFocus(world.pause, dir);
   else if (s === States.GAMEOVER) moveFocus(world.gameover, dir);
   else if (s === States.SAVECODE) moveFocus(world.savecode.menu, dir);
+  else if (s === States.OPTIONS) moveOptionsFocus(world.options, dir);
 }
 
 export function escapeAction(world) {
@@ -153,6 +195,7 @@ export function escapeAction(world) {
   else if (s === States.PAUSE) world.sm.to(States.PLAY);
   else if (s === States.GAMEOVER) toMenu(world);
   else if (s === States.SAVECODE) toMenu(world);
+  else if (s === States.OPTIONS) closeOptions(world);
 }
 
 export function submitSaveCode(world, text) {
@@ -161,6 +204,12 @@ export function submitSaveCode(world, text) {
   applySave(world.score, decoded.bestLevel, world.storage);
   toMenu(world);
   return true;
+}
+
+export function adjustAction(world, dir) {
+  if (world.sm.get() !== States.OPTIONS) return;
+  const id = adjust(world.options, dir);
+  if (id) syncVolume(world, id);
 }
 
 export function updateWorld(world, dt) {

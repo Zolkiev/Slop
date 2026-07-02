@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createWorld, press, navMenu, escapeAction, resetRun, startLevel, updateWorld, submitSaveCode } from '../../src/game/world.js';
+import { createWorld, press, navMenu, escapeAction, resetRun, startLevel, updateWorld, submitSaveCode, adjustAction } from '../../src/game/world.js';
 import { States } from '../../src/engine/state.js';
 import { CONFIG } from '../../src/config.js';
 import { encodeSave } from '../../src/game/save.js';
@@ -333,12 +333,13 @@ describe('world', () => {
       expect(w.sm.get()).toBe(States.MENU);
     });
 
-    it('pause: clic Options (disabled) reste PAUSE', () => {
+    it('pause: clic Options ouvre OPTIONS (retour pause)', () => {
       const w = createWorld(fakeStorage());
       press(w); escapeAction(w);
-      const b = w.pause.buttons[3]; // options disabled
+      const b = w.pause.buttons[3]; // options
       press(w, { x: b.x + 1, y: b.y + 1 });
-      expect(w.sm.get()).toBe(States.PAUSE);
+      expect(w.sm.get()).toBe(States.OPTIONS);
+      expect(w.optionsReturn).toBe('pause');
     });
 
     it('navMenu agit en PAUSE', () => {
@@ -519,6 +520,94 @@ describe('world', () => {
       press(w, { x: b.x + 1, y: b.y + 1 });
       expect(w.sm.get()).toBe(States.MENU);
       expect(w.menu.buttons[1].enabled).toBe(true);
+    });
+  });
+
+  describe('options routing', () => {
+    it('menu: clic OPTIONS ouvre l\'écran avec les settings courants', () => {
+      const w = createWorld(fakeStorage());
+      const b = w.menu.buttons[2]; // options
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.OPTIONS);
+      expect(w.optionsReturn).toBe('menu');
+      expect(w.options.rows[0].value).toBe(w.settings.sfx);
+    });
+
+    it('OPTIONS: RETOUR (clic) revient à l\'origine menu', () => {
+      const w = createWorld(fakeStorage());
+      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      const r = CONFIG.OPTIONS_BTN;
+      press(w, { x: r.x + 1, y: r.y + 1 });
+      expect(w.sm.get()).toBe(States.MENU);
+    });
+
+    it('OPTIONS depuis la pause: Escape revient en PAUSE, partie gelée', () => {
+      const w = createWorld(fakeStorage());
+      press(w); // PLAY
+      updateWorld(w, 1 / 60);
+      escapeAction(w); // PAUSE
+      const y = w.robot.y;
+      const b = w.pause.buttons[3];
+      press(w, { x: b.x + 1, y: b.y + 1 }); // OPTIONS
+      updateWorld(w, 1 / 60);
+      updateWorld(w, 1 / 60);
+      expect(w.robot.y).toBe(y); // gelé en OPTIONS
+      escapeAction(w);
+      expect(w.sm.get()).toBe(States.PAUSE);
+      expect(w.robot.y).toBe(y); // toujours gelé
+    });
+
+    it('adjustAction change la valeur focusée, met à jour settings et pousse volsfx', () => {
+      const w = createWorld(fakeStorage());
+      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      const before = w.settings.sfx;
+      adjustAction(w, -1);
+      expect(w.options.rows[0].value).toBe(before - 1);
+      expect(w.settings.sfx).toBe(before - 1);
+      expect(w.events).toContain('volsfx');
+    });
+
+    it('adjustAction sur la ligne MUSIQUE pousse volmusic', () => {
+      const w = createWorld(fakeStorage());
+      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      navMenu(w, 1); // focus MUSIQUE
+      adjustAction(w, 1);
+      expect(w.events).toContain('volmusic');
+      expect(w.settings.music).toBe(8);
+    });
+
+    it('adjustAction hors OPTIONS = no-op', () => {
+      const w = createWorld(fakeStorage());
+      adjustAction(w, 1);
+      expect(w.events).toEqual([]);
+      expect(w.sm.get()).toBe(States.MENU);
+    });
+
+    it('clic sur un segment règle la valeur et pousse l\'event', () => {
+      const w = createWorld(fakeStorage());
+      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      const R = CONFIG.OPTIONS_ROWS;
+      press(w, { x: R.x + 2 * (R.segW + R.segGap) + 1, y: R.y0 + R.gap + 1 }); // music -> 2
+      expect(w.settings.music).toBe(2);
+      expect(w.events).toContain('volmusic');
+    });
+
+    it('clic sur un segment de la valeur courante ne pousse pas d\'event', () => {
+      const w = createWorld(fakeStorage());
+      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      const R = CONFIG.OPTIONS_ROWS;
+      const cur = w.settings.sfx;
+      press(w, { x: R.x + cur * (R.segW + R.segGap) + 1, y: R.y0 + 1 });
+      expect(w.events).toEqual([]);
+    });
+
+    it('nav clavier: haut/bas change le focus, Enter sur RETOUR ferme', () => {
+      const w = createWorld(fakeStorage());
+      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      navMenu(w, -1); // wrap -> RETOUR (2)
+      expect(w.options.focus).toBe(2);
+      press(w); // activation clavier
+      expect(w.sm.get()).toBe(States.MENU);
     });
   });
 });
