@@ -38,37 +38,59 @@ function toWav(samples) {
 
 const midiFreq = (m) => 440 * Math.pow(2, (m - 69) / 12);
 const square = (ph) => ((ph % 1) < 0.5 ? 1 : -1);
+const pulse25 = (ph) => ((ph % 1) < 0.25 ? 1 : -1);
 const triangle = (ph) => { const p = ph % 1; return p < 0.5 ? 4 * p - 1 : 3 - 4 * p; };
-const WAVES = { square, triangle };
+const WAVES = { square, triangle, pulse25 };
+
+// PRNG déterministe (mulberry32) — assets reproductibles, seed par piste.
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 // Pattern renderer. A track is:
-// { bpm, bars, voices: [{ wave, vol, decay, sustain?, note(bar, step) -> midi|null }],
-//   noise: [{ vol, decay, hit(bar, step) -> boolean }] }
-// 16 steps (16th notes) per bar.
+// { bpm, bars, seed?, voices: [{ wave, vol, decay, sustain?, vibrato?, slide?,
+//   note(bar, step) -> midi | { m, v } | null }],
+//   noise: [{ vol, decay, sustain?, hit(bar, step) -> boolean }] }
+// 16 steps (16th notes) per bar. La phase est accumulée échantillon par
+// échantillon pour permettre vibrato (sinus) et slide (glissement linéaire).
 function render(track) {
   const stepLen = Math.round((60 / track.bpm / 4) * RATE);
   const total = stepLen * 16 * track.bars;
   const out = new Float32Array(total);
+  const rand = mulberry32(track.seed ?? 1);
   for (let bar = 0; bar < track.bars; bar += 1) {
     for (let step = 0; step < 16; step += 1) {
       const start = (bar * 16 + step) * stepLen;
       for (const v of track.voices) {
-        const midi = v.note(bar, step);
-        if (midi == null) continue;
-        const f = midiFreq(midi);
+        const hit = v.note(bar, step);
+        if (hit == null) continue;
+        const midi = typeof hit === 'number' ? hit : hit.m;
+        const vel = typeof hit === 'number' ? 1 : (hit.v ?? 1);
         const wave = WAVES[v.wave];
         const len = Math.min(Math.round(stepLen * (v.sustain ?? 1)), total - start);
+        let phase = 0;
         for (let i = 0; i < len; i += 1) {
           const t = i / RATE;
-          out[start + i] += wave(f * t) * Math.exp(-t * v.decay) * v.vol;
+          let m = midi;
+          if (v.slide) m += v.slide * (i / len);
+          if (v.vibrato) m += v.vibrato.depth * Math.sin(2 * Math.PI * v.vibrato.rate * t);
+          phase += midiFreq(m) / RATE;
+          out[start + i] += wave(phase) * Math.exp(-t * v.decay) * v.vol * vel;
         }
       }
       for (const nz of track.noise ?? []) {
         if (!nz.hit(bar, step)) continue;
-        const len = Math.min(Math.round(stepLen * 0.5), total - start);
+        const len = Math.min(Math.round(stepLen * (nz.sustain ?? 0.5)), total - start);
         for (let i = 0; i < len; i += 1) {
           const t = i / RATE;
-          out[start + i] += (Math.random() * 2 - 1) * Math.exp(-t * nz.decay) * nz.vol;
+          out[start + i] += (rand() * 2 - 1) * Math.exp(-t * nz.decay) * nz.vol;
         }
       }
     }
