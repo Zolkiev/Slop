@@ -43,7 +43,13 @@ ctx.fillText('Chargement…', CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2);
 // Restauration par lien de sauvegarde (#save=JB1-XXXX), avant la création du monde
 const hashMatch = /[#&]save=([^&]+)/.exec(window.location.hash);
 if (hashMatch) {
-  const decoded = decodeSave(decodeURIComponent(hashMatch[1]));
+  let raw = hashMatch[1];
+  try {
+    raw = decodeURIComponent(raw);
+  } catch {
+    /* encodage invalide — on tente le brut, decodeSave tranchera */
+  }
+  const decoded = decodeSave(raw);
   if (decoded) {
     applySave(createScore(window.localStorage), decoded.bestLevel, window.localStorage);
   } else {
