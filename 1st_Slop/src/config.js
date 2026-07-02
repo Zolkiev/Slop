@@ -45,6 +45,12 @@ export const CONFIG = {
   SAVECODE_CODE_Y: 190,
   SAVECODE_MSG_Y: 235,
 
+  // Écran Options
+  OPTIONS_TITLE_Y: 140,
+  OPTIONS_ROWS: { x: 28, y0: 240, gap: 84, segW: 24, segGap: 4, segH: 28, count: 11 },
+  OPTIONS_LABEL_DY: -16,
+  OPTIONS_BTN: { x: 80, y: 440, w: 200, h: 56 },
+
   // Button text (canvas-drawn labels over shared plate)
   BTN_FONT_FAMILY: 'PressStart2P',
   BTN_FONT_MAX: 18,

@@ -60,4 +60,15 @@ describe('stateMachine', () => {
     sm.to(States.MENU);
     expect(sm.get()).toBe(States.MENU);
   });
+
+  it('MENU <-> OPTIONS et PAUSE <-> OPTIONS ; OPTIONS ne va pas en PLAY', () => {
+    const sm = createStateMachine();
+    expect(sm.can(States.OPTIONS)).toBe(true);
+    sm.to(States.OPTIONS);
+    expect(sm.can(States.PLAY)).toBe(false);
+    expect(sm.can(States.MENU)).toBe(true);
+    expect(sm.can(States.PAUSE)).toBe(true);
+    const sm2 = createStateMachine(States.PAUSE);
+    expect(sm2.can(States.OPTIONS)).toBe(true);
+  });
 });

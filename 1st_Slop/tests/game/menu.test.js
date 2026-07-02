@@ -2,11 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { createMenu, createSavecodeMenu, createPauseMenu, createGameoverMenu, hitTest, inRect, moveFocus, focusedId, activate } from '../../src/game/menu.js';
 
 describe('menu', () => {
-  it('createMenu: 4 boutons ordonnés, continue/options disabled par défaut, focus newgame', () => {
+  it('createMenu: 4 boutons ordonnés, continue disabled par défaut, options/code enabled', () => {
     const m = createMenu();
     expect(m.buttons.map((b) => b.id)).toEqual(['newgame', 'continue', 'options', 'code']);
-    expect(m.buttons.map((b) => b.enabled)).toEqual([true, false, false, true]);
-    expect(m.buttons[3].label).toBe('CODE');
+    expect(m.buttons.map((b) => b.enabled)).toEqual([true, false, true, true]);
     expect(focusedId(m)).toBe('newgame');
   });
 
@@ -40,10 +39,10 @@ describe('menu', () => {
     expect(hitTest(m, b.x + b.w / 2, b.y + b.h / 2)).toBe(null);
   });
 
-  it('moveFocus saute continue/options (disabled) et va sur code', () => {
+  it('moveFocus saute continue (disabled) et va sur options', () => {
     const m = createMenu();
     moveFocus(m, 1);
-    expect(focusedId(m)).toBe('code');
+    expect(focusedId(m)).toBe('options');
     moveFocus(m, -1);
     expect(focusedId(m)).toBe('newgame');
   });
@@ -66,20 +65,19 @@ describe('menu', () => {
     expect(activate(m)).toBe(null);
   });
 
-  it('createPauseMenu: 4 boutons ordonnés, resume/restart/menu enabled, options disabled, focus resume', () => {
+  it('createPauseMenu: 4 boutons ordonnés, tous enabled, focus resume', () => {
     const m = createPauseMenu();
     expect(m.buttons.map((b) => b.id)).toEqual(['resume', 'restart', 'menu', 'options']);
-    expect(m.buttons[0].enabled).toBe(true);
-    expect(m.buttons[1].enabled).toBe(true);
-    expect(m.buttons[2].enabled).toBe(true);
-    expect(m.buttons[3].enabled).toBe(false);
+    expect(m.buttons.every((b) => b.enabled)).toBe(true);
     expect(focusedId(m)).toBe('resume');
   });
 
-  it('moveFocus sur le pause menu saute options (disabled)', () => {
+  it('moveFocus sur le pause menu parcourt les 4 boutons', () => {
     const m = createPauseMenu();
     m.focus = 2; // menu
-    moveFocus(m, 1); // options disabled -> wrap to resume
+    moveFocus(m, 1);
+    expect(focusedId(m)).toBe('options');
+    moveFocus(m, 1);
     expect(focusedId(m)).toBe('resume');
   });
 

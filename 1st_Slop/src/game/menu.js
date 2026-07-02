@@ -11,7 +11,7 @@ export function createMenu(hasSave = false) {
   return build([
     { id: 'newgame', label: 'NEW GAME', enabled: true },
     { id: 'continue', label: 'CONTINUE', enabled: hasSave },
-    { id: 'options', label: 'OPTIONS', enabled: false },
+    { id: 'options', label: 'OPTIONS', enabled: true },
     { id: 'code', label: 'CODE', enabled: true },
   ], CONFIG.MENU_BTN);
 }
@@ -30,7 +30,7 @@ export function createPauseMenu() {
     { id: 'resume', label: 'REPRENDRE', enabled: true },
     { id: 'restart', label: 'RECOMMENCER', enabled: true },
     { id: 'menu', label: 'MENU', enabled: true },
-    { id: 'options', label: 'OPTIONS', enabled: false },
+    { id: 'options', label: 'OPTIONS', enabled: true },
   ], CONFIG.PAUSE_BTN);
 }
 
