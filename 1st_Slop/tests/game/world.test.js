@@ -267,6 +267,8 @@ describe('world', () => {
       const w = createWorld(fakeStorage());
       navMenu(w, 1);
       expect(w.sm.get()).toBe(States.MENU);
+      // Ensure focus is on newgame before pressing to transition to PLAY
+      w.menu.focus = 0;
       press(w); // -> PLAY
       navMenu(w, 1); // no-op en PLAY
       expect(w.sm.get()).toBe(States.PLAY);

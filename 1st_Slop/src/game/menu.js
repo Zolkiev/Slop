@@ -7,12 +7,22 @@ function build(defs, geom) {
   return { buttons, focus: first < 0 ? 0 : first };
 }
 
-export function createMenu() {
+export function createMenu(hasSave = false) {
   return build([
     { id: 'newgame', label: 'NEW GAME', enabled: true },
-    { id: 'continue', label: 'CONTINUE', enabled: false },
+    { id: 'continue', label: 'CONTINUE', enabled: hasSave },
     { id: 'options', label: 'OPTIONS', enabled: false },
+    { id: 'code', label: 'CODE', enabled: true },
   ], CONFIG.MENU_BTN);
+}
+
+export function createSavecodeMenu(hasSave) {
+  return build([
+    { id: 'copy', label: 'COPIER', enabled: hasSave },
+    { id: 'link', label: 'LIEN', enabled: hasSave },
+    { id: 'enter', label: 'SAISIR', enabled: true },
+    { id: 'back', label: 'RETOUR', enabled: true },
+  ], CONFIG.SAVECODE_BTN);
 }
 
 export function createPauseMenu() {

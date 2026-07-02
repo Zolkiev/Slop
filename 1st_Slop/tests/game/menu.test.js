@@ -1,14 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { createMenu, createPauseMenu, createGameoverMenu, hitTest, inRect, moveFocus, focusedId, activate } from '../../src/game/menu.js';
+import { createMenu, createSavecodeMenu, createPauseMenu, createGameoverMenu, hitTest, inRect, moveFocus, focusedId, activate } from '../../src/game/menu.js';
 
 describe('menu', () => {
-  it('createMenu: 3 boutons ordonnés, newgame enabled, autres disabled, focus sur newgame', () => {
+  it('createMenu: 4 boutons ordonnés, continue/options disabled par défaut, focus newgame', () => {
     const m = createMenu();
-    expect(m.buttons.map((b) => b.id)).toEqual(['newgame', 'continue', 'options']);
-    expect(m.buttons[0].enabled).toBe(true);
-    expect(m.buttons[1].enabled).toBe(false);
-    expect(m.buttons[2].enabled).toBe(false);
+    expect(m.buttons.map((b) => b.id)).toEqual(['newgame', 'continue', 'options', 'code']);
+    expect(m.buttons.map((b) => b.enabled)).toEqual([true, false, false, true]);
+    expect(m.buttons[3].label).toBe('CODE');
     expect(focusedId(m)).toBe('newgame');
+  });
+
+  it('createMenu(true): continue enabled', () => {
+    const m = createMenu(true);
+    expect(m.buttons[1].enabled).toBe(true);
   });
 
   it('hitTest renvoie l\'id quand le point est dans le bouton', () => {
@@ -36,22 +40,23 @@ describe('menu', () => {
     expect(hitTest(m, b.x + b.w / 2, b.y + b.h / 2)).toBe(null);
   });
 
-  it('moveFocus saute les boutons disabled et reste sur le seul enabled', () => {
+  it('moveFocus saute continue/options (disabled) et va sur code', () => {
     const m = createMenu();
     moveFocus(m, 1);
-    expect(focusedId(m)).toBe('newgame');
+    expect(focusedId(m)).toBe('code');
     moveFocus(m, -1);
     expect(focusedId(m)).toBe('newgame');
   });
 
   it('moveFocus parcourt tout quand tout est enabled', () => {
-    const m = createMenu();
+    const m = createMenu(true);
     m.buttons.forEach((b) => { b.enabled = true; });
     expect(focusedId(m)).toBe('newgame');
     moveFocus(m, 1); expect(focusedId(m)).toBe('continue');
     moveFocus(m, 1); expect(focusedId(m)).toBe('options');
+    moveFocus(m, 1); expect(focusedId(m)).toBe('code');
     moveFocus(m, 1); expect(focusedId(m)).toBe('newgame');
-    moveFocus(m, -1); expect(focusedId(m)).toBe('options');
+    moveFocus(m, -1); expect(focusedId(m)).toBe('code');
   });
 
   it('activate renvoie l\'id focus si enabled, sinon null', () => {
@@ -92,5 +97,19 @@ describe('menu', () => {
     expect(m.buttons.map((b) => b.label)).toEqual(['RECOMMENCER', 'MENU']);
     expect(m.buttons.every((b) => b.enabled)).toBe(true);
     expect(focusedId(m)).toBe('restart');
+  });
+
+  it('createSavecodeMenu(true): copier/lien/saisir/retour tous enabled, focus copier', () => {
+    const m = createSavecodeMenu(true);
+    expect(m.buttons.map((b) => b.id)).toEqual(['copy', 'link', 'enter', 'back']);
+    expect(m.buttons.map((b) => b.label)).toEqual(['COPIER', 'LIEN', 'SAISIR', 'RETOUR']);
+    expect(m.buttons.every((b) => b.enabled)).toBe(true);
+    expect(focusedId(m)).toBe('copy');
+  });
+
+  it('createSavecodeMenu(false): copier/lien disabled, focus saisir', () => {
+    const m = createSavecodeMenu(false);
+    expect(m.buttons.map((b) => b.enabled)).toEqual([false, false, true, true]);
+    expect(focusedId(m)).toBe('enter');
   });
 });
