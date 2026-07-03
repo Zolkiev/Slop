@@ -56,7 +56,7 @@ describe('world', () => {
     expect(w.gatesThisLevel).toBe(0);
   });
 
-  it('atteindre GATES_PER_LEVEL portes passe en LEVEL_COMPLETE', () => {
+  it('atteindre l\'objectif de portes passe en LEVEL_COMPLETE', () => {
     const w = createWorld(fakeStorage());
     press(w);
     w.gatesThisLevel = gateGoalForLevel(w.level) - 1;
