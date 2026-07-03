@@ -61,7 +61,9 @@ export const CONFIG = {
   BTN_TEXT_DISABLED: '#8a94a6',
 
   // Niveaux & difficulté progressive
-  GATES_PER_LEVEL: 10,
+  GATES_BASE: 10,    // portes du niveau 1
+  GATES_STEP: 5,     // portes en plus par niveau
+  GATES_CAP: 30,     // plafond de portes par niveau
   SPEED_BASE: 150,   // vitesse niveau 1 (= SCROLL_SPEED)
   SPEED_STEP: 12,    // gain de vitesse par niveau
   SPEED_MAX: 300,    // plafond de vitesse
@@ -69,4 +71,9 @@ export const CONFIG = {
   GAP_SHRINK: 6,     // rétrécissement du gap par niveau
   GAP_FLOOR: 110,    // gap minimal absolu
   GAP_RANGE: 50,     // étendue aléatoire au-dessus de gapMin (= GAP_MAX - GAP_MIN)
+  SPACING_STEP: 5,   // resserrement horizontal par niveau (base = OBSTACLE_SPACING)
+  SPACING_FLOOR: 175, // espacement minimal absolu
+  SAFETY_UP: 0.55,   // marge de sécurité sur la capacité de montée entre 2 portes
+  SAFETY_DOWN: 0.6,  // idem descente (plus permissive : la gravité aide)
+  PATTERN_TIERS: [1, 3, 5, 7, 10], // niveaux d'entrée des tiers de motifs
 };

@@ -3,6 +3,7 @@ import { createWorld, press, navMenu, escapeAction, resetRun, startLevel, update
 import { States } from '../../src/engine/state.js';
 import { CONFIG } from '../../src/config.js';
 import { encodeSave } from '../../src/game/save.js';
+import { gateGoalForLevel } from '../../src/game/level.js';
 
 function fakeStorage() {
   const d = {};
@@ -57,7 +58,7 @@ describe('world', () => {
   it('atteindre GATES_PER_LEVEL portes passe en LEVEL_COMPLETE', () => {
     const w = createWorld(fakeStorage());
     press(w);
-    w.gatesThisLevel = CONFIG.GATES_PER_LEVEL - 1;
+    w.gatesThisLevel = gateGoalForLevel(w.level) - 1;
     // obstacle déjà dépassé par le robot (x+OBSTACLE_W < ROBOT_X) mais pas encore recyclé
     w.obstacles = [{ x: 20, gapY: 0, gapH: CONFIG.HEIGHT, passed: false }];
     updateWorld(w, 1 / 60);
@@ -69,7 +70,7 @@ describe('world', () => {
     const w = createWorld(fakeStorage());
     press(w);
     w.level = 2;
-    w.gatesThisLevel = CONFIG.GATES_PER_LEVEL;
+    w.gatesThisLevel = gateGoalForLevel(w.level);
     w.obstacles = [{ x: 20, gapY: 0, gapH: CONFIG.HEIGHT, passed: false }];
     updateWorld(w, 1 / 60); // -> LEVEL_COMPLETE
     expect(w.sm.get()).toBe(States.LEVEL_COMPLETE);
@@ -84,7 +85,7 @@ describe('world', () => {
     const w = createWorld(storage);
     press(w);
     w.level = 4;
-    w.gatesThisLevel = CONFIG.GATES_PER_LEVEL;
+    w.gatesThisLevel = gateGoalForLevel(w.level);
     w.obstacles = [{ x: 20, gapY: 0, gapH: CONFIG.HEIGHT, passed: false }];
     updateWorld(w, 1 / 60);
     expect(w.score.bestLevel).toBe(4);
