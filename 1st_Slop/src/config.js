@@ -15,7 +15,7 @@ export const CONFIG = {
   FIXED_DT: 1 / 60,   // pas de temps fixe
 
   // Background sets
-  BG_SET_COUNT: 3,
+  BG_SET_COUNT: 5,
 
   // Obstacles
   OBSTACLE_W: 62,

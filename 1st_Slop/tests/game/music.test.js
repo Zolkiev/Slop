@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { musicFor, isLooping } from '../../src/game/music.js';
+import { musicFor, isLooping, BG_MUSIC } from '../../src/game/music.js';
 import { States } from '../../src/engine/state.js';
 
 describe('musicFor', () => {
@@ -27,6 +27,13 @@ describe('musicFor', () => {
 
   it('retourne null pour un état inconnu', () => {
     expect(musicFor('nope', 0)).toBe(null);
+  });
+
+  it('mappe les nouveaux décors sur les pistes d\'intérim (table BG_MUSIC)', () => {
+    expect(musicFor(States.PLAY, 3)).toBe('music-1'); // tempête -> l'énergique
+    expect(musicFor(States.PLAY, 4)).toBe('music-2'); // orbite -> la mystérieuse
+    expect(musicFor(States.OPTIONS, 3, 'pause')).toBe('music-1');
+    expect(BG_MUSIC).toEqual(['music-0', 'music-1', 'music-2', 'music-1', 'music-2']);
   });
 });
 
