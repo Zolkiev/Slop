@@ -107,4 +107,27 @@ describe('audio volumes & music', () => {
     expect(() => audio.setMusic('music-9')).not.toThrow();
     expect(instances[0].pause).toHaveBeenCalled();
   });
+
+  it('setMusic(key, false) joue la piste sans boucler', () => {
+    const { FakeAudio, instances } = trackFake();
+    const audio = createAudio({ 'jingle-gameover': 'j.wav' }, FakeAudio);
+    audio.setMusic('jingle-gameover', false);
+    expect(instances[0].play).toHaveBeenCalled();
+    expect(instances[0].loop).toBe(false);
+  });
+
+  it('setMusic même clé non bouclée ne redémarre pas le clip (dédup par frame)', () => {
+    const { FakeAudio, instances } = trackFake();
+    const audio = createAudio({ 'jingle-gameover': 'j.wav' }, FakeAudio);
+    audio.setMusic('jingle-gameover', false);
+    audio.setMusic('jingle-gameover', false);
+    expect(instances[0].play).toHaveBeenCalledTimes(1);
+  });
+
+  it('setMusic boucle par défaut', () => {
+    const { FakeAudio, instances } = trackFake();
+    const audio = createAudio({ 'music-menu': 'm.wav' }, FakeAudio);
+    audio.setMusic('music-menu');
+    expect(instances[0].loop).toBe(true);
+  });
 });

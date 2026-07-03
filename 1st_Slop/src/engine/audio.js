@@ -39,14 +39,14 @@ export function createAudio(sources, AudioCtor = Audio) {
       const clip = clips[musicKey];
       if (clip) clip.volume = v;
     },
-    setMusic(key) {
+    setMusic(key, loop = true) {
       if (key === musicKey) return;
       stopMusic();
       const clip = clips[key];
       if (!clip) return; // null ou clé inconnue -> silence
       musicKey = key;
       try {
-        clip.loop = true;
+        clip.loop = loop;
         clip.volume = musicGain;
         const p = clip.play();
         if (p && typeof p.catch === 'function') p.catch(() => {});
