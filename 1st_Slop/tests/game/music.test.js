@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { musicFor } from '../../src/game/music.js';
+import { musicFor, isLooping } from '../../src/game/music.js';
 import { States } from '../../src/engine/state.js';
 
 describe('musicFor', () => {
@@ -10,9 +10,27 @@ describe('musicFor', () => {
     }
   });
 
-  it('silence au MENU, GAMEOVER, SAVECODE et OPTIONS', () => {
-    for (const s of [States.MENU, States.GAMEOVER, States.SAVECODE, States.OPTIONS]) {
-      expect(musicFor(s, 1)).toBe(null);
-    }
+  it('joue music-menu au MENU et en SAVECODE', () => {
+    expect(musicFor(States.MENU, 1)).toBe('music-menu');
+    expect(musicFor(States.SAVECODE, 1)).toBe('music-menu');
+  });
+
+  it('OPTIONS garde la musique du contexte d\'ouverture', () => {
+    expect(musicFor(States.OPTIONS, 1, 'menu')).toBe('music-menu');
+    expect(musicFor(States.OPTIONS, 1, 'pause')).toBe('music-1');
+    expect(musicFor(States.OPTIONS, 1)).toBe('music-menu'); // défaut
+  });
+
+  it('joue le jingle au GAMEOVER', () => {
+    expect(musicFor(States.GAMEOVER, 1)).toBe('jingle-gameover');
+  });
+});
+
+describe('isLooping', () => {
+  it('seul le jingle ne boucle pas', () => {
+    expect(isLooping('jingle-gameover')).toBe(false);
+    expect(isLooping('music-0')).toBe(true);
+    expect(isLooping('music-menu')).toBe(true);
+    expect(isLooping(null)).toBe(true);
   });
 });
