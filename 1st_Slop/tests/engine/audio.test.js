@@ -134,7 +134,6 @@ describe('audio volumes & music', () => {
   it('setMusic réessaie après un play() rejeté (politique autoplay)', async () => {
     const { FakeAudio, instances } = trackFake();
     const audio = createAudio({ 'music-menu': 'm.wav' }, FakeAudio);
-    instances; // les instances sont créées par createAudio
     const clip = instances[0];
     let reject = true;
     clip.play = vi.fn(() => (reject ? Promise.reject(new Error('NotAllowedError')) : Promise.resolve()));
