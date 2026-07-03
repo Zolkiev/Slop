@@ -224,8 +224,80 @@ const music2 = {
   ],
 };
 
+// --- music-menu : menu principal — chill mais énergique, Do majeur, 100 BPM, 16 mesures ---
+// A : hook lead pulse25 lumineux sur C / G / Am / F, arpège en croches, basse aux temps,
+// percussions minimales (kick temps 1, hats légers) — pas de 4-on-the-floor.
+// B : hook à l'octave adouci, arpège en doubles-croches, soft snare sur 3.
+const PROGM = [
+  { root: 48, iv: [0, 4, 7, 12] },  // C
+  { root: 55, iv: [0, 4, 7, 12] },  // G
+  { root: 57, iv: [0, 3, 7, 12] },  // Am
+  { root: 53, iv: [0, 4, 7, 12] },  // F
+];
+const ARPM = [0, 2, 1, 3, 2, 1, 2, 0];
+// Hook de 4 mesures (clé = pas 0..15) — question (C, G) / réponse (Am, F qui ramène vers C).
+const LEADM = [
+  { 0: { m: 72, v: 1.0 }, 4: { m: 76, v: 0.8 }, 8: { m: 79, v: 0.9 }, 12: { m: 76, v: 0.7 } },
+  { 0: { m: 74, v: 1.0 }, 6: { m: 71, v: 0.8 }, 10: { m: 67, v: 0.8 } },
+  { 0: { m: 72, v: 1.0 }, 4: { m: 69, v: 0.8 }, 8: { m: 76, v: 0.9 }, 12: { m: 74, v: 0.7 } },
+  { 0: { m: 72, v: 0.9 }, 6: { m: 69, v: 0.8 }, 10: { m: 65, v: 0.7 }, 12: { m: 67, v: 0.8 } },
+];
+const musicMenu = {
+  bpm: 100,
+  bars: 16,
+  seed: 100,
+  voices: [
+    { wave: 'pulse25', vol: 0.13, decay: 4, sustain: 3, vibrato: { rate: 5, depth: 0.25 },
+      note: (bar, step) => {
+        const hit = LEADM[bar % 4][step];
+        if (!hit) return null;
+        return bar < 8 ? hit : { m: hit.m + 12, v: hit.v * 0.75 };
+      } },
+    { wave: 'square', vol: 0.06, decay: 8,
+      note: (bar, step) => {
+        if (bar < 8 && step % 2 === 1) return null; // croches en A, 16es en B
+        const c = PROGM[bar % 4];
+        return { m: c.root + c.iv[ARPM[step % 8]] + 12, v: 0.85 };
+      } },
+    { wave: 'triangle', vol: 0.18, decay: 3, sustain: 3,
+      note: (bar, step) => (step % 4 === 0
+        ? { m: PROGM[bar % 4].root - 12, v: step === 0 ? 1 : 0.8 }
+        : null) },
+    { wave: 'triangle', vol: 0.26, decay: 14, slide: -12, // kick doux, temps 1 seulement
+      note: (bar, step) => (step === 0 ? 45 : null) },
+  ],
+  noise: [
+    { vol: 0.06, decay: 26, sustain: 1.5, hit: (bar, step) => bar >= 8 && step === 8 }, // soft snare, section B
+    { vol: 0.02, decay: 60, hit: (bar, step) => step % 4 === 2 },                       // hats légers
+  ],
+};
+
+// --- jingle-gameover : sting de défaite one-shot, La mineur, ~2.6 s ---
+// Démarre sur une note tenue (laisse le sfx-crash lisible), descente A-F-D,
+// résolution sur un La grave qui tombe (slide). PAS une boucle : joué une fois
+// via setMusic(key, false), silence ensuite.
+const jingleGameover = {
+  bpm: 92,
+  bars: 1,
+  seed: 13,
+  voices: [
+    { wave: 'pulse25', vol: 0.15, decay: 2.5, sustain: 4, vibrato: { rate: 4, depth: 0.3 },
+      note: (bar, step) => ({
+        0: { m: 69, v: 1.0 }, 4: { m: 65, v: 0.9 }, 8: { m: 62, v: 0.85 },
+      })[step] ?? null },
+    { wave: 'triangle', vol: 0.22, decay: 1.2, sustain: 4, slide: -2, // chute finale
+      note: (bar, step) => (step === 12 ? { m: 57, v: 1.0 } : null) },
+    { wave: 'triangle', vol: 0.16, decay: 1.5, sustain: 16, // drone grave sous tout le sting
+      note: (bar, step) => (step === 0 ? 45 : null) },
+  ],
+  noise: [],
+};
+
 mkdirSync(ASSETS, { recursive: true });
-const tracks = { 'music-0': music0, 'music-1': music1, 'music-2': music2 };
+const tracks = {
+  'music-0': music0, 'music-1': music1, 'music-2': music2,
+  'music-menu': musicMenu, 'jingle-gameover': jingleGameover,
+};
 for (const [name, track] of Object.entries(tracks)) {
   const samples = render(track);
   writeFileSync(join(ASSETS, `${name}.wav`), toWav(samples));
