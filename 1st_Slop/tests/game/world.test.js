@@ -213,6 +213,40 @@ describe('world', () => {
         expect(w.bgSet).toBeLessThan(CONFIG.BG_SET_COUNT);
       }
     });
+
+    it('restart depuis la PAUSE garde le décor', () => {
+      const w = createWorld(fakeStorage());
+      press(w); // -> PLAY
+      startLevel(w, 7); // tier 4 -> bgSet 3
+      escapeAction(w); // PAUSE
+      const b = w.pause.buttons[1]; // restart
+      press(w, { x: b.x + 1, y: b.y + 1 }); // startLevel(7) -> même tier
+      expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.bgSet).toBe(3);
+    });
+
+    it('restart depuis le GAMEOVER garde le décor', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      startLevel(w, 7); // tier 4 -> bgSet 3
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      const b = w.gameover.buttons[0]; // restart
+      press(w, { x: b.x + 1, y: b.y + 1 }); // startLevel(7) -> même tier
+      expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.bgSet).toBe(3);
+    });
+
+    it('NEW GAME après une mort au niveau 3 revient au décor du tier 1', () => {
+      const w = createWorld(fakeStorage());
+      press(w);
+      startLevel(w, 3); // tier 2 -> bgSet 1
+      expect(w.bgSet).toBe(1);
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      escapeAction(w); // GAMEOVER -> MENU
+      const b = w.menu.buttons[0]; // newgame
+      press(w, { x: b.x + 1, y: b.y + 1 }); // startLevel(1) -> tier 1
+      expect(w.bgSet).toBe(0);
+    });
   });
 
   describe('menu routing', () => {
