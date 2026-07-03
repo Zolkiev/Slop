@@ -28,8 +28,9 @@ describe('world', () => {
 
   it('émet un événement score au passage d\'un obstacle', () => {
     const w = createWorld(fakeStorage());
-    // Fix rand so the gap (y≈228, h=185, bottom≈413) covers the robot at y≈320
-    w.rand = () => 0.5;
+    // Fix rand : la salve fraîche (flow, ancrée à HEIGHT/2) reste proche du
+    // centre, dans la bande où le robot est maintenu par le thrust ci-dessous.
+    w.rand = () => 0.05;
     press(w); // start
     let scored = false;
     for (let i = 0; i < 600 && !scored; i += 1) {
@@ -97,7 +98,34 @@ describe('world', () => {
     startLevel(w, 5);
     expect(w.level).toBe(5);
     expect(w.scrollSpeed).toBeGreaterThan(CONFIG.SCROLL_SPEED);
-    expect(w.gapMin).toBeLessThan(CONFIG.GAP_MIN);
+    expect(w.diff.gapMin).toBeLessThan(CONFIG.GAP_MIN);
+  });
+
+  it('les obstacles spawnen depuis la file de motifs (première salve douce ancrée au centre)', () => {
+    const w = createWorld(fakeStorage());
+    w.rand = () => 0.4;
+    press(w, null); // NEW GAME -> PLAY
+    // updateWorld jusqu'au premier spawn
+    updateWorld(w, 1 / 60);
+    expect(w.obstacles.length).toBeGreaterThan(0);
+    const premier = w.obstacles[0];
+    // première salve = flow ancré à HEIGHT/2 : delta ≤ 0.35 × max(capacités)
+    const d = w.diff;
+    const capMax = 0.35 * Math.max(d.deltaUp, d.deltaDown);
+    expect(Math.abs(premier.gapY - 320)).toBeLessThanOrEqual(capMax + 1e-9);
+    expect(w.lastGapY).toBe(premier.gapY);
+  });
+
+  it('resetRun vide la file de motifs et réarme la salve douce', () => {
+    const w = createWorld(fakeStorage());
+    w.rand = () => 0.4;
+    press(w, null);
+    updateWorld(w, 1 / 60);
+    expect(w.freshLevel).toBe(false);
+    resetRun(w);
+    expect(w.patternQueue.length).toBe(0);
+    expect(w.freshLevel).toBe(true);
+    expect(w.lastGapY).toBe(320);
   });
 
   describe('tick counter', () => {

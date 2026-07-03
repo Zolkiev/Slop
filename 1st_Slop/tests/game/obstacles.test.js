@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { CONFIG } from '../../src/config.js';
 import {
   createObstacle, obstacleRects, updateObstacles,
-  recycle, needsSpawn, randomGapY,
+  recycle, needsSpawn,
 } from '../../src/game/obstacles.js';
 
 describe('obstacles', () => {
@@ -39,11 +39,10 @@ describe('obstacles', () => {
     expect(needsSpawn(list, 360)).toBe(true);
   });
 
-  it('randomGapY reste dans les marges autorisées', () => {
-    const y0 = randomGapY(() => 0, 640, 180);
-    const y1 = randomGapY(() => 0.999, 640, 180);
-    expect(y0).toBeGreaterThanOrEqual(CONFIG.GAP_MARGIN);
-    expect(y1 + 180).toBeLessThanOrEqual(640 - CONFIG.GAP_MARGIN);
+  it('needsSpawn respecte le spacing passé en paramètre', () => {
+    const list = [createObstacle(360 - 200, 200, 180)];
+    expect(needsSpawn(list, 360, 200)).toBe(true);
+    expect(needsSpawn(list, 360, 210)).toBe(false);
   });
 
   it('utilise la vitesse fournie quand elle est précisée', () => {

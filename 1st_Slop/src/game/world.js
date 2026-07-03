@@ -2,8 +2,9 @@ import { States, createStateMachine } from '../engine/state.js';
 import { createRobot, applyThrust, updateRobot } from './robot.js';
 import {
   createObstacle, obstacleRects, updateObstacles, recycle,
-  needsSpawn, randomGapY,
+  needsSpawn,
 } from './obstacles.js';
+import { nextSalve, flow } from './patterns.js';
 import { aabb, hitsBounds } from './collision.js';
 import { createScore, checkPass, finalizeLevel, applySave } from './score.js';
 import { gateGoalForLevel, difficultyForLevel } from './level.js';
@@ -36,8 +37,10 @@ export function createWorld(storage) {
     level: 1,
     gatesThisLevel: 0,
     scrollSpeed: difficultyForLevel(1).scrollSpeed,
-    gapMin: difficultyForLevel(1).gapMin,
-    gapMax: difficultyForLevel(1).gapMax,
+    diff: difficultyForLevel(1),
+    patternQueue: [],
+    lastGapY: CONFIG.HEIGHT / 2,
+    freshLevel: true,
     layers: [createLayer(0.25, CONFIG.WIDTH), createLayer(0.6, CONFIG.WIDTH)],
     rand: Math.random,
     bgSet: Math.floor(Math.random() * CONFIG.BG_SET_COUNT),
@@ -57,6 +60,9 @@ export function resetRun(world) {
   world.obstacles = [];
   world.gatesThisLevel = 0;
   world.particles.particles = [];
+  world.patternQueue = [];
+  world.lastGapY = CONFIG.HEIGHT / 2;
+  world.freshLevel = true;
 }
 
 export function startLevel(world, level) {
@@ -66,8 +72,7 @@ export function startLevel(world, level) {
   }
   world.level = level;
   world.scrollSpeed = diff.scrollSpeed;
-  world.gapMin = diff.gapMin;
-  world.gapMax = diff.gapMax;
+  world.diff = diff;
   resetRun(world);
 }
 
@@ -92,10 +97,26 @@ function syncVolume(world, id) {
   world.events.push(id === 'sfx' ? 'volsfx' : 'volmusic');
 }
 
+// La file de motifs alimente le spawn : vide -> on génère une salve.
+// La première salve d'un niveau (ou d'un retry) est toujours douce (flow),
+// ancrée au centre — ré-entrée lisible, pas de mur surprise au spawn.
+function fillQueue(world) {
+  const salve = world.freshLevel
+    ? flow(world.rand, CONFIG.HEIGHT / 2, world.diff)
+    : nextSalve(world.rand, world.lastGapY, world.diff);
+  world.freshLevel = false;
+  world.patternQueue.push(...salve);
+}
+
+function upcomingGate(world) {
+  if (world.patternQueue.length === 0) fillQueue(world);
+  return world.patternQueue[0];
+}
+
 function spawnObstacle(world) {
-  const gapH = world.gapMin + world.rand() * (world.gapMax - world.gapMin);
-  const gapY = randomGapY(world.rand, CONFIG.HEIGHT, gapH);
-  world.obstacles.push(createObstacle(CONFIG.WIDTH + CONFIG.OBSTACLE_W, gapY, gapH));
+  const gate = world.patternQueue.shift();
+  world.lastGapY = gate.gapY;
+  world.obstacles.push(createObstacle(CONFIG.WIDTH + CONFIG.OBSTACLE_W, gate.gapY, gate.gapH));
 }
 
 export function press(world, pointer) {
@@ -227,7 +248,7 @@ export function updateWorld(world, dt) {
   updateRobot(world.robot, dt);
   updateObstacles(world.obstacles, dt, world.scrollSpeed);
   world.obstacles = recycle(world.obstacles, CONFIG.OBSTACLE_W);
-  if (needsSpawn(world.obstacles, CONFIG.WIDTH)) spawnObstacle(world);
+  if (needsSpawn(world.obstacles, CONFIG.WIDTH, upcomingGate(world).spacing)) spawnObstacle(world);
 
   for (const o of world.obstacles) {
     if (checkPass(world.robot, o, CONFIG.OBSTACLE_W)) {

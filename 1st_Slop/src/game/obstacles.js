@@ -20,14 +20,8 @@ export function recycle(obstacles, width) {
   return obstacles.filter((o) => o.x + width > 0);
 }
 
-export function needsSpawn(obstacles, spawnX) {
+export function needsSpawn(obstacles, spawnX, spacing = CONFIG.OBSTACLE_SPACING) {
   if (obstacles.length === 0) return true;
   const rightmost = Math.max(...obstacles.map((o) => o.x));
-  return rightmost <= spawnX - CONFIG.OBSTACLE_SPACING;
-}
-
-export function randomGapY(rand, height, gapH) {
-  const minY = CONFIG.GAP_MARGIN;
-  const maxY = height - CONFIG.GAP_MARGIN - gapH;
-  return minY + rand() * (maxY - minY);
+  return rightmost <= spawnX - spacing;
 }
