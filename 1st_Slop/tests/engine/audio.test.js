@@ -130,4 +130,18 @@ describe('audio volumes & music', () => {
     audio.setMusic('music-menu');
     expect(instances[0].loop).toBe(true);
   });
+
+  it('setMusic réessaie après un play() rejeté (politique autoplay)', async () => {
+    const { FakeAudio, instances } = trackFake();
+    const audio = createAudio({ 'music-menu': 'm.wav' }, FakeAudio);
+    instances; // les instances sont créées par createAudio
+    const clip = instances[0];
+    let reject = true;
+    clip.play = vi.fn(() => (reject ? Promise.reject(new Error('NotAllowedError')) : Promise.resolve()));
+    audio.setMusic('music-menu');
+    await Promise.resolve(); // laisse le catch du rejet s'exécuter
+    reject = false;
+    audio.setMusic('music-menu'); // frame suivante : doit réessayer, pas déduper
+    expect(clip.play).toHaveBeenCalledTimes(2);
+  });
 });

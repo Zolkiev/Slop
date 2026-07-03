@@ -24,6 +24,10 @@ describe('musicFor', () => {
   it('joue le jingle au GAMEOVER', () => {
     expect(musicFor(States.GAMEOVER, 1)).toBe('jingle-gameover');
   });
+
+  it('retourne null pour un état inconnu', () => {
+    expect(musicFor('nope', 0)).toBe(null);
+  });
 });
 
 describe('isLooping', () => {

@@ -49,9 +49,18 @@ export function createAudio(sources, AudioCtor = Audio) {
         clip.loop = loop;
         clip.volume = musicGain;
         const p = clip.play();
-        if (p && typeof p.catch === 'function') p.catch(() => {});
+        if (p && typeof p.catch === 'function') {
+          // Politique d'autoplay des navigateurs : play() peut être rejeté
+          // (ex. premier frame, aucun geste utilisateur). On libère la clé
+          // pour que le prochain setMusic(key) du même frame loop réessaie
+          // au lieu d'être dédupliqué pour toujours.
+          p.catch(() => {
+            if (musicKey === key) musicKey = null;
+          });
+        }
       } catch {
-        /* lecture audio best-effort */
+        // Même logique en cas d'échec synchrone de play().
+        if (musicKey === key) musicKey = null;
       }
     },
   };
