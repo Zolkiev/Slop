@@ -3,7 +3,7 @@ import { createLoop } from './engine/loop.js';
 import { createInput } from './engine/input.js';
 import { createWorld, press, navMenu, escapeAction, updateWorld, submitSaveCode, adjustAction } from './game/world.js';
 import { saveSettings, volumeToGain } from './game/settings.js';
-import { musicFor } from './game/music.js';
+import { musicFor, isLooping } from './game/music.js';
 import { decodeSave } from './game/save.js';
 import { createScore, applySave } from './game/score.js';
 import { createCodeInput } from './ui/codeinput.js';
@@ -32,6 +32,8 @@ import crashUrl from '../assets/sfx-crash.wav';
 import music0Url from '../assets/music-0.wav';
 import music1Url from '../assets/music-1.wav';
 import music2Url from '../assets/music-2.wav';
+import musicMenuUrl from '../assets/music-menu.wav';
+import jingleGameoverUrl from '../assets/jingle-gameover.wav';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -67,6 +69,7 @@ const world = createWorld(window.localStorage);
 const audio = createAudio({
   thrust: thrustUrl, score: scoreUrl, crash: crashUrl,
   'music-0': music0Url, 'music-1': music1Url, 'music-2': music2Url,
+  'music-menu': musicMenuUrl, 'jingle-gameover': jingleGameoverUrl,
 });
 audio.setSfxVolume(volumeToGain(world.settings.sfx));
 audio.setMusicVolume(volumeToGain(world.settings.music));
@@ -142,7 +145,8 @@ Promise.all([imagesPromise, loadFont(CONFIG.BTN_FONT_FAMILY, fontUrl)]).then(([a
         }
       }
       world.events.length = 0;
-      audio.setMusic(musicFor(world.sm.get(), world.bgSet));
+      const musicKey = musicFor(world.sm.get(), world.bgSet, world.optionsReturn);
+      audio.setMusic(musicKey, isLooping(musicKey));
     },
     render: () => renderWorld(ctx, world, assets),
     fixedDt: CONFIG.FIXED_DT,
