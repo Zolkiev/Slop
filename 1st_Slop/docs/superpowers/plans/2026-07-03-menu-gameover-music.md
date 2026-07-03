@@ -30,7 +30,7 @@
 - Consumes: `States` de `src/engine/state.js` (MENU, PLAY, GAMEOVER, LEVEL_COMPLETE, PAUSE, SAVECODE, OPTIONS).
 - Produces: `musicFor(state, bgSet, optionsReturn = 'menu') -> string | null` et `isLooping(key) -> boolean`. Task 4 (main.js) consomme les deux. Clés produites : `music-{0,1,2}`, `music-menu`, `jingle-gameover`.
 
-- [ ] **Step 1: Écrire les tests (rouge)**
+- [x] **Step 1: Écrire les tests (rouge)**
 
 Remplacer intégralement `tests/game/music.test.js` :
 
@@ -73,12 +73,12 @@ describe('isLooping', () => {
 });
 ```
 
-- [ ] **Step 2: Vérifier l'échec**
+- [x] **Step 2: Vérifier l'échec**
 
 Run: `npx vitest run tests/game/music.test.js`
 Expected: FAIL — `isLooping` non exporté, `music-menu`/`jingle-gameover` non retournés (l'actuel renvoie `null`).
 
-- [ ] **Step 3: Implémentation minimale**
+- [x] **Step 3: Implémentation minimale**
 
 Remplacer intégralement `src/game/music.js` :
 
@@ -104,12 +104,12 @@ export function isLooping(key) {
 }
 ```
 
-- [ ] **Step 4: Vérifier le vert + non-régression**
+- [x] **Step 4: Vérifier le vert + non-régression**
 
 Run: `npx vitest run tests/game/music.test.js` puis `npm test`
 Expected: music.test.js PASS ; suite complète PASS (aucun autre test n'appelle `musicFor`).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/game/music.js tests/game/music.test.js
@@ -128,7 +128,7 @@ git commit -m "feat(music): table d'états complète — menu, options contextue
 - Consumes: rien de nouveau.
 - Produces: `setMusic(key, loop = true)` — même sémantique qu'avant (dédup par clé, stop de l'ancienne piste, gain musique), mais `clip.loop = loop`. Task 4 le consomme avec `isLooping(key)`.
 
-- [ ] **Step 1: Écrire les tests (rouge)**
+- [x] **Step 1: Écrire les tests (rouge)**
 
 Ajouter à la fin du describe `audio volumes & music` de `tests/engine/audio.test.js` (le helper `trackFake()` existe déjà dans ce fichier) :
 
@@ -157,21 +157,21 @@ Ajouter à la fin du describe `audio volumes & music` de `tests/engine/audio.tes
   });
 ```
 
-- [ ] **Step 2: Vérifier l'échec**
+- [x] **Step 2: Vérifier l'échec**
 
 Run: `npx vitest run tests/engine/audio.test.js`
 Expected: FAIL — `loop` vaut `true` en dur, le premier nouveau test échoue (`expect(false)` reçoit `true`).
 
-- [ ] **Step 3: Implémentation minimale**
+- [x] **Step 3: Implémentation minimale**
 
 Dans `src/engine/audio.js`, remplacer `setMusic(key) {` par `setMusic(key, loop = true) {` et `clip.loop = true;` par `clip.loop = loop;`. Rien d'autre ne change.
 
-- [ ] **Step 4: Vérifier le vert + non-régression**
+- [x] **Step 4: Vérifier le vert + non-régression**
 
 Run: `npx vitest run tests/engine/audio.test.js` puis `npm test`
 Expected: PASS partout (l'appel existant `setMusic(key)` garde `loop = true` par défaut).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/engine/audio.js tests/engine/audio.test.js
@@ -190,7 +190,7 @@ git commit -m "feat(audio): setMusic accepte un flag de boucle (jingles one-shot
 - Consumes: le renderer existant (`render`, `toWav`, voix `{ wave, vol, decay, sustain, vibrato, slide, note }`).
 - Produces: les deux fichiers WAV que Task 4 importe (`../assets/music-menu.wav`, `../assets/jingle-gameover.wav`).
 
-- [ ] **Step 1: Ajouter la piste menu**
+- [x] **Step 1: Ajouter la piste menu**
 
 Insérer après la définition de `music2` (ligne ~225) :
 
@@ -244,7 +244,7 @@ const musicMenu = {
 };
 ```
 
-- [ ] **Step 2: Ajouter le jingle game over**
+- [x] **Step 2: Ajouter le jingle game over**
 
 Insérer juste après `musicMenu` :
 
@@ -271,7 +271,7 @@ const jingleGameover = {
 };
 ```
 
-- [ ] **Step 3: Enregistrer les pistes et générer**
+- [x] **Step 3: Enregistrer les pistes et générer**
 
 Remplacer la ligne `const tracks = { 'music-0': music0, 'music-1': music1, 'music-2': music2 };` par :
 
@@ -285,7 +285,7 @@ const tracks = {
 Run: `node scripts/music.mjs`
 Expected: 5 lignes `wrote …` dont `music-menu.wav (38.4s, 100 BPM, 16 bars)` et `jingle-gameover.wav (2.6s, 92 BPM, 1 bars)`.
 
-- [ ] **Step 4: Vérifier la reproductibilité et la durée**
+- [x] **Step 4: Vérifier la reproductibilité et la durée**
 
 ```bash
 node scripts/music.mjs && sha1sum assets/music-menu.wav assets/jingle-gameover.wav > /tmp/h1
@@ -294,11 +294,11 @@ node scripts/music.mjs && sha1sum assets/music-menu.wav assets/jingle-gameover.w
 
 Expected: diff vide (hashes identiques). `npm test` toujours PASS (aucun test ne lit les wav).
 
-- [ ] **Step 5: Écoute de contrôle (implémenteur)**
+- [x] **Step 5: Écoute de contrôle (implémenteur)**
 
 Ouvrir les deux WAV (ex. `start assets/music-menu.wav`) et vérifier : le menu tient la répétition sans agresser, le jingle dure ~2,6 s et se résout vers le grave. Ajuster uniquement les `vol` si un canal écrase les autres (pas de refonte de composition — la validation musicale finale appartient à Jael, Task 5).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add scripts/music.mjs assets/music-menu.wav assets/jingle-gameover.wav
@@ -316,7 +316,7 @@ git commit -m "feat(music): piste menu chill-énergique 100 BPM + jingle game ov
 - Consumes: `musicFor(state, bgSet, optionsReturn)` et `isLooping(key)` (Task 1), `setMusic(key, loop)` (Task 2), les WAV de Task 3. `world.optionsReturn` existe déjà (`src/game/world.js:31`, valeurs `'menu'` | `'pause'`).
 - Produces: rien (feuille).
 
-- [ ] **Step 1: Brancher les nouvelles pistes**
+- [x] **Step 1: Brancher les nouvelles pistes**
 
 Ligne 6 :
 
@@ -348,12 +348,12 @@ Ligne 145, remplacer `audio.setMusic(musicFor(world.sm.get(), world.bgSet));` pa
       audio.setMusic(musicKey, isLooping(musicKey));
 ```
 
-- [ ] **Step 2: Vérifier tests + build**
+- [x] **Step 2: Vérifier tests + build**
 
 Run: `npm test && npm run build`
 Expected: suite PASS, build Vite OK (les deux wav sont résolus comme assets).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/main.js
@@ -366,12 +366,12 @@ git commit -m "feat(main): musique menu + jingle game over branchés sur le cana
 
 **Files:** aucun (vérification).
 
-- [ ] **Step 1: Suite complète + build**
+- [x] **Step 1: Suite complète + build**
 
 Run: `npm test && npm run build`
 Expected: tous les tests PASS, build OK.
 
-- [ ] **Step 2: Vérification manuelle en jeu**
+- [x] **Step 2: Vérification manuelle en jeu**
 
 Lancer `npx vite --port 5199 --strictPort` et vérifier au navigateur :
 - MENU : `music-menu` joue en boucle (après le premier input utilisateur — autoplay policy).
