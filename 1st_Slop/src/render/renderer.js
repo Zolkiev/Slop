@@ -5,6 +5,7 @@ import { gateGoalForLevel } from '../game/level.js';
 import { CONFIG } from '../config.js';
 import { renderMenu } from './menu.js';
 import { renderPause } from './pause.js';
+import { renderConfirm } from './confirm.js';
 import { renderSavecode } from './savecode.js';
 import { renderOptions } from './options.js';
 import { drawButtons } from './buttons.js';
@@ -121,6 +122,8 @@ export function renderWorld(ctx, world, assets) {
     renderOptions(ctx, world, assets);
   } else if (state === States.SKINS) {
     renderSkins(ctx, world, assets);
+  } else if (state === States.CONFIRM) {
+    renderConfirm(ctx, world, assets);
   } else if (state === States.LEVEL_COMPLETE) {
     ctx.fillText(`NIVEAU ${world.level} OK`, CONFIG.WIDTH / 2, 240);
     ctx.font = '16px system-ui';
