@@ -623,4 +623,104 @@ describe('world', () => {
       expect(w.sm.get()).toBe(States.MENU);
     });
   });
+
+  describe('skins routing (hangar)', () => {
+    function storageWith(entries) {
+      const d = { ...entries };
+      return { getItem: (k) => d[k] ?? null, setItem: (k, v) => { d[k] = String(v); } };
+    }
+
+    function openHangar(w) {
+      const b = w.menu.buttons[2]; // robots
+      press(w, { x: b.x + 1, y: b.y + 1 });
+    }
+
+    it('createWorld charge le skin persisté (débloqué)', () => {
+      const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '5', 'jetpackbot.skin': '2' }));
+      expect(w.skin).toBe(2);
+    });
+
+    it('createWorld ramène un skin verrouillé à 0', () => {
+      const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '3', 'jetpackbot.skin': '4' }));
+      expect(w.skin).toBe(0);
+    });
+
+    it('menu: clic ROBOTS ouvre le hangar sur le skin sélectionné (label ACTUEL)', () => {
+      const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '5', 'jetpackbot.skin': '2' }));
+      openHangar(w);
+      expect(w.sm.get()).toBe(States.SKINS);
+      expect(w.skinsScreen.slot).toBe(2);
+      expect(w.skinsScreen.menu.buttons[0].label).toBe('ACTUEL');
+      expect(w.skinsScreen.menu.buttons[0].enabled).toBe(false);
+    });
+
+    it('adjustAction boucle les slots 0<->4', () => {
+      const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '10' }));
+      openHangar(w);
+      expect(w.skinsScreen.slot).toBe(0);
+      adjustAction(w, -1);
+      expect(w.skinsScreen.slot).toBe(4);
+      adjustAction(w, 1);
+      expect(w.skinsScreen.slot).toBe(0);
+      adjustAction(w, 1);
+      expect(w.skinsScreen.slot).toBe(1);
+    });
+
+    it('CHOISIR débloqué: sélectionne, persiste, reste en SKINS, label ACTUEL', () => {
+      const storage = storageWith({ 'jetpackbot.bestLevel': '5' });
+      const w = createWorld(storage);
+      openHangar(w);
+      adjustAction(w, 1); // slot 1 (FORGE, débloqué à best 5)
+      expect(w.skinsScreen.menu.buttons[0].label).toBe('CHOISIR');
+      press(w); // clavier : focus sur CHOISIR (premier enabled)
+      expect(w.skin).toBe(1);
+      expect(storage.getItem('jetpackbot.skin')).toBe('1');
+      expect(w.sm.get()).toBe(States.SKINS);
+      expect(w.skinsScreen.menu.buttons[0].label).toBe('ACTUEL');
+      expect(w.skinsScreen.menu.buttons[0].enabled).toBe(false);
+    });
+
+    it('CHOISIR verrouillé inactif (clic = no-op, rien persisté)', () => {
+      const storage = storageWith({ 'jetpackbot.bestLevel': '3' });
+      const w = createWorld(storage);
+      openHangar(w);
+      adjustAction(w, 1); adjustAction(w, 1); // slot 2 (VENIN, verrouillé à best 3)
+      const b = w.skinsScreen.menu.buttons[0];
+      expect(b.enabled).toBe(false);
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.skin).toBe(0);
+      expect(storage.getItem('jetpackbot.skin')).toBe(null);
+      expect(w.sm.get()).toBe(States.SKINS);
+    });
+
+    it('tap sur les zones flèches < > change le slot', () => {
+      const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '10' }));
+      openHangar(w);
+      const A = CONFIG.SKINS_ARROW;
+      press(w, { x: A.rx + 1, y: A.y + 1 });
+      expect(w.skinsScreen.slot).toBe(1);
+      press(w, { x: A.lx + 1, y: A.y + 1 });
+      expect(w.skinsScreen.slot).toBe(0);
+    });
+
+    it('RETOUR et Escape ramènent au MENU', () => {
+      const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '5' }));
+      openHangar(w);
+      const back = w.skinsScreen.menu.buttons[1];
+      press(w, { x: back.x + 1, y: back.y + 1 });
+      expect(w.sm.get()).toBe(States.MENU);
+      openHangar(w);
+      escapeAction(w);
+      expect(w.sm.get()).toBe(States.MENU);
+    });
+
+    it('navMenu agit en SKINS', () => {
+      const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '5' }));
+      openHangar(w);
+      adjustAction(w, 1); // slot 1 : CHOISIR + RETOUR tous deux enabled
+      const before = w.skinsScreen.menu.focus;
+      navMenu(w, 1);
+      expect(w.skinsScreen.menu.focus).not.toBe(before);
+    });
+  });
 });
