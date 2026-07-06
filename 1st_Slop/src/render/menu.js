@@ -1,4 +1,5 @@
 import { CONFIG } from '../config.js';
+import { spriteKey } from '../game/skins.js';
 import { drawButtons } from './buttons.js';
 
 export function renderMenu(ctx, world, assets) {
@@ -8,8 +9,9 @@ export function renderMenu(ctx, world, assets) {
   const logoH = logo.height * (logoW / logo.width);
   ctx.drawImage(logo, Math.round((CONFIG.WIDTH - logoW) / 2), CONFIG.MENU_LOGO_Y, logoW, logoH);
 
-  // Idle robot — bobs vertically using menuTick (advances every frame)
-  const robot = assets.robot;
+  // Idle robot — bobs vertically using menuTick (advances every frame).
+  // Porte le skin sélectionné : la vitrine du menu montre TON robot.
+  const robot = assets[spriteKey(world.skin)];
   const bob = Math.sin(world.menuTick / 18) * 6;
   const size = 44;
   ctx.drawImage(
