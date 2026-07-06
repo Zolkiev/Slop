@@ -342,10 +342,56 @@ const music3 = {
   ],
 };
 
+// --- music-4 : orbite — la plus sombre, Do mineur, 72 BPM, 16 mesures ---
+// Climax par l'atmosphère, pas la vitesse : drone grave, lead lent à large
+// vibrato, arpège « télémétrie » constant en doubles-croches (cycle de 6 pas
+// qui tourne sur la mesure). A : lead seul. B : contre-chant en quintes.
+const DRONE4 = [36, 36, 44, 43]; // C2 C2 Ab2 G2
+// Arpège par accord de la mesure — Cm / Cm / Ab / G (si 59 = sensible vers do).
+const ARP4 = [
+  [60, 63, 67, 72],
+  [60, 63, 67, 72],
+  [56, 60, 63, 68],
+  [55, 59, 62, 67],
+];
+const SEQ4 = [0, 1, 2, 3, 2, 1];
+// Phrases lentes de 4 mesures (clé = pas 0..15), résolution si -> do en mesure 3.
+const LEAD4 = [
+  { 0: { m: 72, v: 1.0 }, 10: { m: 75, v: 0.8 } },
+  { 4: { m: 79, v: 0.9 }, 12: { m: 77, v: 0.7 } },
+  { 0: { m: 80, v: 0.9 }, 8: { m: 75, v: 0.8 } },
+  { 2: { m: 74, v: 0.85 }, 8: { m: 71, v: 0.9 }, 12: { m: 72, v: 1.0 } },
+];
+const music4 = {
+  bpm: 72,
+  bars: 16,
+  seed: 72,
+  voices: [
+    { wave: 'triangle', vol: 0.15, decay: 2, sustain: 6, vibrato: { rate: 4, depth: 0.5 },
+      note: (bar, step) => LEAD4[bar % 4][step] ?? null },
+    { wave: 'triangle', vol: 0.05, decay: 2, sustain: 6, // contre-chant en quintes, section B
+      note: (bar, step) => {
+        if (bar < 8) return null;
+        const hit = LEAD4[bar % 4][step];
+        return hit ? { m: hit.m + 7, v: hit.v * 0.6 } : null;
+      } },
+    { wave: 'pulse25', vol: 0.045, decay: 6, sustain: 0.9, // télémétrie (16es constantes)
+      note: (bar, step) => ({ m: ARP4[bar % 4][SEQ4[step % 6]], v: step % 4 === 0 ? 0.9 : 0.7 }) },
+    { wave: 'triangle', vol: 0.17, decay: 1.2, sustain: 14, // drone
+      note: (bar, step) => (step === 0 ? DRONE4[bar % 4] : null) },
+    { wave: 'triangle', vol: 0.2, decay: 10, slide: -10, // kick sourd, temps 1
+      note: (bar, step) => (step === 0 ? 38 : null) },
+  ],
+  noise: [
+    { vol: 0.04, decay: 30, sustain: 1.5, hit: (bar, step) => step === 8 && bar % 2 === 1 }, // tick
+    { vol: 0.015, decay: 22, hit: (bar, step) => step === 12 && bar % 2 === 1 },             // shimmer
+  ],
+};
+
 mkdirSync(ASSETS, { recursive: true });
 const tracks = {
   'music-0': music0, 'music-1': music1, 'music-2': music2,
-  'music-3': music3,
+  'music-3': music3, 'music-4': music4,
   'music-menu': musicMenu, 'jingle-gameover': jingleGameover,
 };
 for (const [name, track] of Object.entries(tracks)) {
