@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Synthesize three chiptune ambient loops for Jetpack Bot — zero dependencies.
-// One track per decor set (bgSet). 16-bit PCM, mono, 22050 Hz. Outputs to assets/.
+// Synthesize the Jetpack Bot chiptune tracks — zero dependencies.
+// One loop per decor set (bgSet 0-4) + menu loop + gameover jingle.
+// 16-bit PCM, mono, 22050 Hz. Outputs to assets/.
 //   node scripts/music.mjs
 // Loops are bar-aligned: total length = bars * 16 steps exactly, no fade-out,
 // so `loop = true` playback wraps cleanly.
