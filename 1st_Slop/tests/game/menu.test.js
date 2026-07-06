@@ -1,11 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { createMenu, createSavecodeMenu, createPauseMenu, createGameoverMenu, hitTest, inRect, moveFocus, focusedId, activate } from '../../src/game/menu.js';
+import { createMenu, createSavecodeMenu, createPauseMenu, createGameoverMenu, createSkinsMenu, hitTest, inRect, moveFocus, focusedId, activate } from '../../src/game/menu.js';
+import { CONFIG } from '../../src/config.js';
 
 describe('menu', () => {
-  it('createMenu: 4 boutons ordonnés, continue disabled par défaut, options/code enabled', () => {
+  it('createMenu: 5 boutons ordonnés, continue disabled par défaut, le reste enabled', () => {
     const m = createMenu();
-    expect(m.buttons.map((b) => b.id)).toEqual(['newgame', 'continue', 'options', 'code']);
-    expect(m.buttons.map((b) => b.enabled)).toEqual([true, false, true, true]);
+    expect(m.buttons.map((b) => b.id)).toEqual(['newgame', 'continue', 'robots', 'options', 'code']);
+    expect(m.buttons.map((b) => b.label)).toEqual(['NEW GAME', 'CONTINUE', 'ROBOTS', 'OPTIONS', 'CODE']);
+    expect(m.buttons.map((b) => b.enabled)).toEqual([true, false, true, true, true]);
     expect(focusedId(m)).toBe('newgame');
   });
 
@@ -39,19 +41,19 @@ describe('menu', () => {
     expect(hitTest(m, b.x + b.w / 2, b.y + b.h / 2)).toBe(null);
   });
 
-  it('moveFocus saute continue (disabled) et va sur options', () => {
+  it('moveFocus saute continue (disabled) et va sur robots', () => {
     const m = createMenu();
     moveFocus(m, 1);
-    expect(focusedId(m)).toBe('options');
+    expect(focusedId(m)).toBe('robots');
     moveFocus(m, -1);
     expect(focusedId(m)).toBe('newgame');
   });
 
   it('moveFocus parcourt tout quand tout est enabled', () => {
     const m = createMenu(true);
-    m.buttons.forEach((b) => { b.enabled = true; });
     expect(focusedId(m)).toBe('newgame');
     moveFocus(m, 1); expect(focusedId(m)).toBe('continue');
+    moveFocus(m, 1); expect(focusedId(m)).toBe('robots');
     moveFocus(m, 1); expect(focusedId(m)).toBe('options');
     moveFocus(m, 1); expect(focusedId(m)).toBe('code');
     moveFocus(m, 1); expect(focusedId(m)).toBe('newgame');
@@ -109,5 +111,43 @@ describe('menu', () => {
     const m = createSavecodeMenu(false);
     expect(m.buttons.map((b) => b.enabled)).toEqual([false, false, true, true]);
     expect(focusedId(m)).toBe('enter');
+  });
+
+  it('layout MENU_BTN resserré: y0 320, gap 62, le 5e bouton tient dans le canvas', () => {
+    const m = createMenu(true);
+    expect(m.buttons[0].y).toBe(320);
+    expect(m.buttons[1].y - m.buttons[0].y).toBe(62);
+    const last = m.buttons[4];
+    expect(last.y).toBe(320 + 4 * 62); // 568
+    expect(last.y + last.h).toBeLessThanOrEqual(640);
+  });
+
+  it('createSkinsMenu débloqué non courant: CHOISIR enabled + RETOUR, focus choose', () => {
+    const m = createSkinsMenu(true, 0, 1);
+    expect(m.buttons.map((b) => b.id)).toEqual(['choose', 'back']);
+    expect(m.buttons.map((b) => b.label)).toEqual(['CHOISIR', 'RETOUR']);
+    expect(m.buttons.map((b) => b.enabled)).toEqual([true, true]);
+    expect(focusedId(m)).toBe('choose');
+  });
+
+  it('createSkinsMenu slot courant: label ACTUEL disabled, focus back', () => {
+    const m = createSkinsMenu(true, 2, 2);
+    expect(m.buttons[0].label).toBe('ACTUEL');
+    expect(m.buttons[0].enabled).toBe(false);
+    expect(focusedId(m)).toBe('back');
+  });
+
+  it('createSkinsMenu verrouillé: CHOISIR disabled, focus back', () => {
+    const m = createSkinsMenu(false, 0, 3);
+    expect(m.buttons[0].label).toBe('CHOISIR');
+    expect(m.buttons[0].enabled).toBe(false);
+    expect(focusedId(m)).toBe('back');
+  });
+
+  it('createSkinsMenu utilise la géométrie SKINS_BTN', () => {
+    const m = createSkinsMenu(true, 0, 1);
+    expect(m.buttons[0].x).toBe(CONFIG.SKINS_BTN.x);
+    expect(m.buttons[0].y).toBe(CONFIG.SKINS_BTN.y0);
+    expect(m.buttons[1].y).toBe(CONFIG.SKINS_BTN.y0 + CONFIG.SKINS_BTN.gap);
   });
 });

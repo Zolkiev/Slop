@@ -458,7 +458,7 @@ describe('world', () => {
 
     it('CODE -> SAVECODE avec un écran savecode frais', () => {
       const w = createWorld(storageWithBest(3));
-      const b = w.menu.buttons[3];
+      const b = w.menu.buttons[4];
       press(w, { x: b.x + 1, y: b.y + 1 });
       expect(w.sm.get()).toBe(States.SAVECODE);
       expect(w.savecode.code).toBe(encodeSave({ bestLevel: 3 }));
@@ -466,7 +466,7 @@ describe('world', () => {
 
     it('SAVECODE: COPIER pousse copycode + feedback', () => {
       const w = createWorld(storageWithBest(3));
-      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       const b = w.savecode.menu.buttons[0];
       press(w, { x: b.x + 1, y: b.y + 1 });
       expect(w.events).toContain('copycode');
@@ -475,7 +475,7 @@ describe('world', () => {
 
     it('SAVECODE: LIEN pousse copylink, SAISIR pousse codeentry', () => {
       const w = createWorld(storageWithBest(3));
-      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       const link = w.savecode.menu.buttons[1];
       press(w, { x: link.x + 1, y: link.y + 1 });
       expect(w.events).toContain('copylink');
@@ -487,18 +487,18 @@ describe('world', () => {
 
     it('SAVECODE: RETOUR et Escape ramènent au MENU', () => {
       const w = createWorld(fakeStorage());
-      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       const back = w.savecode.menu.buttons[3];
       press(w, { x: back.x + 1, y: back.y + 1 });
       expect(w.sm.get()).toBe(States.MENU);
-      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       escapeAction(w);
       expect(w.sm.get()).toBe(States.MENU);
     });
 
     it('navMenu agit en SAVECODE', () => {
       const w = createWorld(storageWithBest(3));
-      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       const before = w.savecode.menu.focus;
       navMenu(w, 1);
       expect(w.savecode.menu.focus).not.toBe(before);
@@ -507,7 +507,7 @@ describe('world', () => {
     it('submitSaveCode valide: applique le max, recrée le menu, retourne au MENU', () => {
       const storage = fakeStorage();
       const w = createWorld(storage);
-      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       const ok = submitSaveCode(w, encodeSave({ bestLevel: 9 }));
       expect(ok).toBe(true);
       expect(w.sm.get()).toBe(States.MENU);
@@ -518,7 +518,7 @@ describe('world', () => {
 
     it('submitSaveCode invalide: false, reste en SAVECODE, score intact', () => {
       const w = createWorld(storageWithBest(4));
-      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       expect(submitSaveCode(w, 'JB1-ZZZZZZ')).toBe(false);
       expect(w.sm.get()).toBe(States.SAVECODE);
       expect(w.score.bestLevel).toBe(4);
@@ -539,7 +539,7 @@ describe('world', () => {
   describe('options routing', () => {
     it('menu: clic OPTIONS ouvre l\'écran avec les settings courants', () => {
       const w = createWorld(fakeStorage());
-      const b = w.menu.buttons[2]; // options
+      const b = w.menu.buttons[3]; // options
       press(w, { x: b.x + 1, y: b.y + 1 });
       expect(w.sm.get()).toBe(States.OPTIONS);
       expect(w.optionsReturn).toBe('menu');
@@ -548,7 +548,7 @@ describe('world', () => {
 
     it('OPTIONS: RETOUR (clic) revient à l\'origine menu', () => {
       const w = createWorld(fakeStorage());
-      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
       const r = CONFIG.OPTIONS_BTN;
       press(w, { x: r.x + 1, y: r.y + 1 });
       expect(w.sm.get()).toBe(States.MENU);
@@ -572,7 +572,7 @@ describe('world', () => {
 
     it('adjustAction change la valeur focusée, met à jour settings et pousse volsfx', () => {
       const w = createWorld(fakeStorage());
-      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
       const before = w.settings.sfx;
       adjustAction(w, -1);
       expect(w.options.rows[0].value).toBe(before - 1);
@@ -582,7 +582,7 @@ describe('world', () => {
 
     it('adjustAction sur la ligne MUSIQUE pousse volmusic', () => {
       const w = createWorld(fakeStorage());
-      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
       navMenu(w, 1); // focus MUSIQUE
       adjustAction(w, 1);
       expect(w.events).toContain('volmusic');
@@ -598,7 +598,7 @@ describe('world', () => {
 
     it('clic sur un segment règle la valeur et pousse l\'event', () => {
       const w = createWorld(fakeStorage());
-      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
       const R = CONFIG.OPTIONS_ROWS;
       press(w, { x: R.x + 2 * (R.segW + R.segGap) + 1, y: R.y0 + R.gap + 1 }); // music -> 2
       expect(w.settings.music).toBe(2);
@@ -607,7 +607,7 @@ describe('world', () => {
 
     it('clic sur un segment de la valeur courante ne pousse pas d\'event', () => {
       const w = createWorld(fakeStorage());
-      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
       const R = CONFIG.OPTIONS_ROWS;
       const cur = w.settings.sfx;
       press(w, { x: R.x + cur * (R.segW + R.segGap) + 1, y: R.y0 + 1 });
@@ -616,7 +616,7 @@ describe('world', () => {
 
     it('nav clavier: haut/bas change le focus, Enter sur RETOUR ferme', () => {
       const w = createWorld(fakeStorage());
-      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
       navMenu(w, -1); // wrap -> RETOUR (2)
       expect(w.options.focus).toBe(2);
       press(w); // activation clavier
