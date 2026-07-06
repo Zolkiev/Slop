@@ -36,6 +36,8 @@ import crashUrl from '../assets/sfx-crash.wav';
 import music0Url from '../assets/music-0.wav';
 import music1Url from '../assets/music-1.wav';
 import music2Url from '../assets/music-2.wav';
+import music3Url from '../assets/music-3.wav';
+import music4Url from '../assets/music-4.wav';
 import musicMenuUrl from '../assets/music-menu.wav';
 import jingleGameoverUrl from '../assets/jingle-gameover.wav';
 
@@ -73,6 +75,7 @@ const world = createWorld(window.localStorage);
 const audio = createAudio({
   thrust: thrustUrl, score: scoreUrl, crash: crashUrl,
   'music-0': music0Url, 'music-1': music1Url, 'music-2': music2Url,
+  'music-3': music3Url, 'music-4': music4Url,
   'music-menu': musicMenuUrl, 'jingle-gameover': jingleGameoverUrl,
 });
 audio.setSfxVolume(volumeToGain(world.settings.sfx));
