@@ -67,9 +67,7 @@ export function resetRun(world) {
 
 export function startLevel(world, level) {
   const diff = difficultyForLevel(level);
-  if (level !== world.level) {
-    world.bgSet = Math.floor(world.rand() * CONFIG.BG_SET_COUNT);
-  }
+  world.bgSet = diff.tier - 1; // le décor raconte la progression (1 monde par tier)
   world.level = level;
   world.scrollSpeed = diff.scrollSpeed;
   world.diff = diff;

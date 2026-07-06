@@ -19,9 +19,13 @@ import obstacleUrl from '../assets/obstacle.png';
 import bgFar0 from '../assets/bg-far-0.png';
 import bgFar1 from '../assets/bg-far-1.png';
 import bgFar2 from '../assets/bg-far-2.png';
+import bgFar3 from '../assets/bg-far-3.png';
+import bgFar4 from '../assets/bg-far-4.png';
 import bgNear0 from '../assets/bg-near-0.png';
 import bgNear1 from '../assets/bg-near-1.png';
 import bgNear2 from '../assets/bg-near-2.png';
+import bgNear3 from '../assets/bg-near-3.png';
+import bgNear4 from '../assets/bg-near-4.png';
 import uiLogo from '../assets/ui-logo.png';
 import btnPlate from '../assets/btn-plate.png';
 import btnPlateFocus from '../assets/btn-plate-focus.png';
@@ -113,6 +117,10 @@ const imagesPromise = loadImages({
   'bg-near-0': bgNear0,
   'bg-near-1': bgNear1,
   'bg-near-2': bgNear2,
+  'bg-far-3': bgFar3,
+  'bg-far-4': bgFar4,
+  'bg-near-3': bgNear3,
+  'bg-near-4': bgNear4,
   'ui-logo': uiLogo,
   'btn-plate': btnPlate,
   'btn-plate-focus': btnPlateFocus,
