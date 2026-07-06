@@ -15,6 +15,11 @@ describe('musicFor', () => {
     expect(musicFor(States.SAVECODE, 1)).toBe('music-menu');
   });
 
+  it('joue music-menu dans le hangar SKINS (écran du menu)', () => {
+    expect(musicFor(States.SKINS, 2)).toBe('music-menu');
+    expect(isLooping(musicFor(States.SKINS, 2))).toBe(true);
+  });
+
   it('OPTIONS garde la musique du contexte d\'ouverture', () => {
     expect(musicFor(States.OPTIONS, 1, 'menu')).toBe('music-menu');
     expect(musicFor(States.OPTIONS, 1, 'pause')).toBe('music-1');

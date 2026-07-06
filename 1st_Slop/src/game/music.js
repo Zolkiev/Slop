@@ -1,7 +1,7 @@
 import { States } from '../engine/state.js';
 
 const GAME_STATES = new Set([States.PLAY, States.PAUSE, States.LEVEL_COMPLETE]);
-const MENU_STATES = new Set([States.MENU, States.SAVECODE]);
+const MENU_STATES = new Set([States.MENU, States.SAVECODE, States.SKINS]);
 
 // Piste par décor — mapping définitif, une musique par monde.
 export const BG_MUSIC = ['music-0', 'music-1', 'music-2', 'music-3', 'music-4'];
