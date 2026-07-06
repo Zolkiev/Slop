@@ -29,11 +29,11 @@ describe('musicFor', () => {
     expect(musicFor('nope', 0)).toBe(null);
   });
 
-  it('mappe les nouveaux décors sur les pistes d\'intérim (table BG_MUSIC)', () => {
-    expect(musicFor(States.PLAY, 3)).toBe('music-1'); // tempête -> l'énergique
-    expect(musicFor(States.PLAY, 4)).toBe('music-2'); // orbite -> la mystérieuse
-    expect(musicFor(States.OPTIONS, 3, 'pause')).toBe('music-1');
-    expect(BG_MUSIC).toEqual(['music-0', 'music-1', 'music-2', 'music-1', 'music-2']);
+  it('mappe chaque décor sur sa piste dédiée (table BG_MUSIC)', () => {
+    expect(musicFor(States.PLAY, 3)).toBe('music-3'); // tempête néon
+    expect(musicFor(States.PLAY, 4)).toBe('music-4'); // orbite
+    expect(musicFor(States.OPTIONS, 4, 'pause')).toBe('music-4');
+    expect(BG_MUSIC).toEqual(['music-0', 'music-1', 'music-2', 'music-3', 'music-4']);
   });
 });
 
@@ -41,6 +41,8 @@ describe('isLooping', () => {
   it('seul le jingle ne boucle pas', () => {
     expect(isLooping('jingle-gameover')).toBe(false);
     expect(isLooping('music-0')).toBe(true);
+    expect(isLooping('music-3')).toBe(true);
+    expect(isLooping('music-4')).toBe(true);
     expect(isLooping('music-menu')).toBe(true);
     expect(isLooping(null)).toBe(true);
   });

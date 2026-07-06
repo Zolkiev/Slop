@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Synthesize three chiptune ambient loops for Jetpack Bot — zero dependencies.
-// One track per decor set (bgSet). 16-bit PCM, mono, 22050 Hz. Outputs to assets/.
+// Synthesize the Jetpack Bot chiptune tracks — zero dependencies.
+// One loop per decor set (bgSet 0-4) + menu loop + gameover jingle.
+// 16-bit PCM, mono, 22050 Hz. Outputs to assets/.
 //   node scripts/music.mjs
 // Loops are bar-aligned: total length = bars * 16 steps exactly, no fade-out,
 // so `loop = true` playback wraps cleanly.
@@ -293,9 +294,105 @@ const jingleGameover = {
   noise: [],
 };
 
+// --- music-3 : tempête néon — la plus agressive, La mineur harmonique, 128 BPM, 16 mesures ---
+// A : riff lead pulse25 incisif sur Am / F / Dm / E, basse martelée, kick
+// 4-on-the-floor, hats en croches. B : riff à l'octave, hats en doubles-croches.
+// Signature « éclair » : run descendant rapide en fin de section (mesures 7 et 15).
+const ROOTS3 = [45, 41, 38, 40]; // A2 F2 D2 E2 (Am / F / Dm / E)
+// Riff de 4 mesures (clé = pas 0..15) — le sol# (68/80) = sensible de la mineure
+// harmonique, la couleur de la piste ; la mesure E (bar % 4 === 3) monte en tension.
+const LEAD3 = [
+  { 0: { m: 69, v: 1.0 }, 3: { m: 72, v: 0.85 }, 6: { m: 76, v: 1.0 }, 10: { m: 74, v: 0.8 }, 12: { m: 76, v: 0.9 }, 14: { m: 72, v: 0.7 } },
+  { 0: { m: 77, v: 1.0 }, 3: { m: 76, v: 0.8 }, 6: { m: 72, v: 0.9 }, 8: { m: 69, v: 0.85 }, 12: { m: 65, v: 0.8 } },
+  { 0: { m: 74, v: 1.0 }, 3: { m: 77, v: 0.85 }, 6: { m: 81, v: 1.0 }, 10: { m: 77, v: 0.8 }, 12: { m: 74, v: 0.9 }, 14: { m: 72, v: 0.7 } },
+  { 0: { m: 76, v: 1.0 }, 3: { m: 80, v: 0.9 }, 6: { m: 83, v: 1.0 }, 8: { m: 80, v: 0.9 }, 11: { m: 76, v: 0.8 }, 14: { m: 68, v: 0.9 } },
+];
+// Run « éclair » : descente harmonique (la sol# mi ré do la sol# mi) sur la 2e moitié.
+const FLASH3 = [81, 80, 76, 74, 72, 69, 68, 64];
+const music3 = {
+  bpm: 128,
+  bars: 16,
+  seed: 128,
+  voices: [
+    { wave: 'pulse25', vol: 0.13, decay: 7, sustain: 2, vibrato: { rate: 6, depth: 0.25 },
+      note: (bar, step) => {
+        const hit = LEAD3[bar % 4][step];
+        if (!hit) return null;
+        return bar < 8 ? hit : { m: hit.m + 12, v: hit.v * 0.8 };
+      } },
+    { wave: 'square', vol: 0.09, decay: 10, sustain: 1, // éclair
+      note: (bar, step) => {
+        if (bar % 8 !== 7 || step < 8) return null;
+        return { m: FLASH3[step - 8], v: 1 - (step - 8) * 0.07 };
+      } },
+    { wave: 'square', vol: 0.15, decay: 7, // basse martelée
+      note: (bar, step) => (step % 2 === 0
+        ? { m: ROOTS3[bar % 4] + (step === 6 || step === 14 ? 12 : 0), v: step % 4 === 0 ? 1 : 0.8 }
+        : null) },
+    { wave: 'square', vol: 0.07, decay: 12, // stabs
+      note: (bar, step) => {
+        const on = step === 4 || step === 12 || (bar >= 8 && step === 7);
+        return on ? ROOTS3[bar % 4] + 19 : null;
+      } },
+    { wave: 'triangle', vol: 0.34, decay: 18, slide: -16, // kick 4-on-the-floor
+      note: (bar, step) => (step % 4 === 0 ? 43 : null) },
+  ],
+  noise: [
+    { vol: 0.1, decay: 24, sustain: 1.5, hit: (bar, step) => step === 4 || step === 12 }, // snare
+    { vol: 0.04, decay: 65, hit: (bar, step) => (bar < 8 ? step % 2 === 1 : true) },      // hats — 16es en B
+  ],
+};
+
+// --- music-4 : orbite — la plus sombre, Do mineur, 72 BPM, 16 mesures ---
+// Climax par l'atmosphère, pas la vitesse : drone grave, lead lent à large
+// vibrato, arpège « télémétrie » constant en doubles-croches (cycle de 6 pas
+// qui tourne sur la mesure). A : lead seul. B : contre-chant en quintes.
+const DRONE4 = [36, 36, 44, 43]; // C2 C2 Ab2 G2
+// Arpège par accord de la mesure — Cm / Cm / Ab / G (si 59 = sensible vers do).
+const ARP4 = [
+  [60, 63, 67, 72],
+  [60, 63, 67, 72],
+  [56, 60, 63, 68],
+  [55, 59, 62, 67],
+];
+const SEQ4 = [0, 1, 2, 3, 2, 1];
+// Phrases lentes de 4 mesures (clé = pas 0..15), résolution si -> do en mesure 3.
+const LEAD4 = [
+  { 0: { m: 72, v: 1.0 }, 10: { m: 75, v: 0.8 } },
+  { 4: { m: 79, v: 0.9 }, 12: { m: 77, v: 0.7 } },
+  { 0: { m: 80, v: 0.9 }, 8: { m: 75, v: 0.8 } },
+  { 2: { m: 74, v: 0.85 }, 8: { m: 71, v: 0.9 }, 12: { m: 72, v: 1.0 } },
+];
+const music4 = {
+  bpm: 72,
+  bars: 16,
+  seed: 72,
+  voices: [
+    { wave: 'triangle', vol: 0.15, decay: 2, sustain: 6, vibrato: { rate: 4, depth: 0.5 },
+      note: (bar, step) => LEAD4[bar % 4][step] ?? null },
+    { wave: 'triangle', vol: 0.05, decay: 2, sustain: 6, // contre-chant en quintes, section B
+      note: (bar, step) => {
+        if (bar < 8) return null;
+        const hit = LEAD4[bar % 4][step];
+        return hit ? { m: hit.m + 7, v: hit.v * 0.6 } : null;
+      } },
+    { wave: 'pulse25', vol: 0.045, decay: 6, sustain: 0.9, // télémétrie (16es constantes)
+      note: (bar, step) => ({ m: ARP4[bar % 4][SEQ4[step % 6]], v: step % 4 === 0 ? 0.9 : 0.7 }) },
+    { wave: 'triangle', vol: 0.17, decay: 1.2, sustain: 14, // drone
+      note: (bar, step) => (step === 0 ? DRONE4[bar % 4] : null) },
+    { wave: 'triangle', vol: 0.2, decay: 10, slide: -10, // kick sourd, temps 1
+      note: (bar, step) => (step === 0 ? 38 : null) },
+  ],
+  noise: [
+    { vol: 0.04, decay: 30, sustain: 1.5, hit: (bar, step) => step === 8 && bar % 2 === 1 }, // tick
+    { vol: 0.015, decay: 22, hit: (bar, step) => step === 12 && bar % 2 === 1 },             // shimmer
+  ],
+};
+
 mkdirSync(ASSETS, { recursive: true });
 const tracks = {
   'music-0': music0, 'music-1': music1, 'music-2': music2,
+  'music-3': music3, 'music-4': music4,
   'music-menu': musicMenu, 'jingle-gameover': jingleGameover,
 };
 for (const [name, track] of Object.entries(tracks)) {
