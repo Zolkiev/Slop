@@ -52,7 +52,10 @@ seuil, `PATTERN_TIERS` est la source unique.
 
 ## Déblocage & persistance
 
-- `skinUnlocked(i, bestLevel)` = `bestLevel >= CONFIG.PATTERN_TIERS[i]`.
+- `skinUnlocked(i, bestLevel)` = `i === 0 || bestLevel >=
+  CONFIG.PATTERN_TIERS[i]` — PROTO est toujours débloqué : un nouveau
+  joueur a `bestLevel = 0` (< seuil 1) et doit quand même posséder son
+  robot de départ.
 - Sélection persistée en localStorage `jetpackbot.skin` (préférence
   d'appareil, comme les volumes — PAS dans le code de sauvegarde ; le
   déblocage se recalcule de `bestLevel`, qui EST dans le save).
