@@ -192,7 +192,7 @@ describe('world', () => {
   describe('bgSet par tier (décor = progression)', () => {
     it('startLevel fixe le décor du tier', () => {
       const w = createWorld(fakeStorage());
-      for (const [level, bg] of [[1, 0], [2, 0], [3, 1], [5, 2], [7, 3], [9, 3], [10, 4], [100, 4]]) {
+      for (const [level, bg] of [[1, 0], [2, 0], [3, 1], [4, 1], [5, 2], [6, 2], [7, 3], [9, 3], [10, 4], [100, 4]]) {
         startLevel(w, level);
         expect(w.bgSet).toBe(bg);
       }

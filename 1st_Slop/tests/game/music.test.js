@@ -3,7 +3,7 @@ import { musicFor, isLooping, BG_MUSIC } from '../../src/game/music.js';
 import { States } from '../../src/engine/state.js';
 
 describe('musicFor', () => {
-  it('joue music-<bgSet> en PLAY, PAUSE et LEVEL_COMPLETE', () => {
+  it('joue la piste BG_MUSIC[bgSet] en PLAY, PAUSE et LEVEL_COMPLETE', () => {
     for (const s of [States.PLAY, States.PAUSE, States.LEVEL_COMPLETE]) {
       expect(musicFor(s, 0)).toBe('music-0');
       expect(musicFor(s, 2)).toBe('music-2');
