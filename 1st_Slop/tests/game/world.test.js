@@ -540,7 +540,17 @@ describe('world', () => {
       expect(w.savecode.menu.focus).not.toBe(before);
     });
 
-    it('submitSaveCode valide: applique le max, recrée le menu, retourne au MENU', () => {
+    it('submitSaveCode restaure exactement, même vers le bas (saisie = geste délibéré)', () => {
+      const storage = storageWithBest(14);
+      const w = createWorld(storage);
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
+      expect(submitSaveCode(w, encodeSave({ bestLevel: 7 }))).toBe(true);
+      expect(w.score.bestLevel).toBe(7);
+      expect(storage.getItem('jetpackbot.bestLevel')).toBe('7');
+      expect(w.menu.buttons[1].enabled).toBe(true); // CONTINUER -> niveau 7
+    });
+
+    it('submitSaveCode valide: applique le code, recrée le menu, retourne au MENU', () => {
       const storage = fakeStorage();
       const w = createWorld(storage);
       press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });

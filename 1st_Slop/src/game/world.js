@@ -6,7 +6,7 @@ import {
 } from './obstacles.js';
 import { nextSalve, flow } from './patterns.js';
 import { aabb, hitsBounds } from './collision.js';
-import { createScore, checkPass, finalizeLevel, applySave } from './score.js';
+import { createScore, checkPass, finalizeLevel, restoreSave } from './score.js';
 import { gateGoalForLevel, difficultyForLevel } from './level.js';
 import { createLayer, updateLayer } from './background.js';
 import { createParticleField, spawnReactor, updateParticles } from './particles.js';
@@ -272,7 +272,7 @@ export function escapeAction(world) {
 export function submitSaveCode(world, text) {
   const decoded = decodeSave(text);
   if (!decoded) return false;
-  applySave(world.score, decoded.bestLevel, world.storage);
+  restoreSave(world.score, decoded.bestLevel, world.storage);
   toMenu(world);
   return true;
 }
