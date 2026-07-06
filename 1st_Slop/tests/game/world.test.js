@@ -249,6 +249,42 @@ describe('world', () => {
     });
   });
 
+  describe('parallaxe du fond lointain par décor (repères uniques = statique)', () => {
+    it('startLevel applique la vitesse far du décor', () => {
+      const w = createWorld(fakeStorage());
+      for (const [level, speed] of [[1, 0.25], [3, 0.25], [5, 0], [7, 0], [10, 0]]) {
+        startLevel(w, level);
+        expect(w.layers[0].speedFactor).toBe(speed);
+      }
+    });
+
+    it('startLevel remet l offset far à 0 (pas de joint gelé hors écran)', () => {
+      const w = createWorld(fakeStorage());
+      startLevel(w, 1); // décor scrollant
+      w.sm.to(States.PLAY);
+      for (let i = 0; i < 30; i += 1) updateWorld(w, 1 / 60);
+      expect(w.layers[0].offset).toBeGreaterThan(0);
+      startLevel(w, 10); // décor statique : l offset doit repartir de 0
+      expect(w.layers[0].offset).toBe(0);
+    });
+
+    it('un décor statique ne scrolle pas pendant le jeu', () => {
+      const w = createWorld(fakeStorage());
+      startLevel(w, 10);
+      w.sm.to(States.PLAY);
+      for (let i = 0; i < 30; i += 1) updateWorld(w, 1 / 60);
+      expect(w.layers[0].offset).toBe(0);
+      expect(w.layers[1].offset).toBeGreaterThan(0); // le premier plan, lui, vit
+    });
+
+    it('le menu (createWorld) applique la vitesse far de son décor vitrine', () => {
+      for (let i = 0; i < 20; i += 1) {
+        const w = createWorld(fakeStorage());
+        expect(w.layers[0].speedFactor).toBe(CONFIG.BG_FAR_SPEED[w.bgSet]);
+      }
+    });
+  });
+
   describe('menu routing', () => {
     it('press avec pointer sur New Game démarre le niveau 1', () => {
       const w = createWorld(fakeStorage());

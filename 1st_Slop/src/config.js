@@ -16,6 +16,10 @@ export const CONFIG = {
 
   // Background sets
   BG_SET_COUNT: 5,
+  // Vitesse de parallaxe du fond lointain par décor. Les fonds à repère
+  // unique (soleil, orage, planète) ne sont pas raccordables : tuilés en
+  // scroll, le repère se répète et se coupe au joint -> statiques (0).
+  BG_FAR_SPEED: [0.25, 0.25, 0, 0, 0],
 
   // Obstacles
   OBSTACLE_W: 62,

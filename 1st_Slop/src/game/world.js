@@ -20,9 +20,17 @@ import { createOptions, moveOptionsFocus, adjust, barHitTest } from './options.j
 import { loadSettings } from './settings.js';
 import { SKINS, skinUnlocked, loadSkin, saveSkin } from './skins.js';
 
+// Change de décor : le fond lointain prend la vitesse de son monde
+// (statique pour les fonds à repère unique) et repart du joint invisible.
+function applyBgSet(world, set) {
+  world.bgSet = set;
+  world.layers[0].speedFactor = CONFIG.BG_FAR_SPEED[set];
+  world.layers[0].offset = 0;
+}
+
 export function createWorld(storage) {
   const score = createScore(storage);
-  return {
+  const world = {
     sm: createStateMachine(States.MENU),
     menu: createMenu(score.bestLevel >= 1),
     pause: createPauseMenu(),
@@ -46,7 +54,7 @@ export function createWorld(storage) {
     freshLevel: true,
     layers: [createLayer(0.25, CONFIG.WIDTH), createLayer(0.6, CONFIG.WIDTH)],
     rand: Math.random,
-    bgSet: Math.floor(Math.random() * CONFIG.BG_SET_COUNT),
+    bgSet: 0,
     storage,
     events: [],
     tick: 0,
@@ -56,6 +64,8 @@ export function createWorld(storage) {
     shake: 0,
     flash: 0,
   };
+  applyBgSet(world, Math.floor(Math.random() * CONFIG.BG_SET_COUNT)); // vitrine du menu
+  return world;
 }
 
 export function resetRun(world) {
@@ -70,7 +80,7 @@ export function resetRun(world) {
 
 export function startLevel(world, level) {
   const diff = difficultyForLevel(level);
-  world.bgSet = diff.tier - 1; // le décor raconte la progression (1 monde par tier)
+  applyBgSet(world, diff.tier - 1); // le décor raconte la progression (1 monde par tier)
   world.level = level;
   world.scrollSpeed = diff.scrollSpeed;
   world.diff = diff;
