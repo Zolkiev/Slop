@@ -249,6 +249,42 @@ describe('world', () => {
     });
   });
 
+  describe('parallaxe du fond lointain par décor (repères uniques = statique)', () => {
+    it('startLevel applique la vitesse far du décor', () => {
+      const w = createWorld(fakeStorage());
+      for (const [level, speed] of [[1, 0.25], [3, 0.25], [5, 0], [7, 0], [10, 0]]) {
+        startLevel(w, level);
+        expect(w.layers[0].speedFactor).toBe(speed);
+      }
+    });
+
+    it('startLevel remet l offset far à 0 (pas de joint gelé hors écran)', () => {
+      const w = createWorld(fakeStorage());
+      startLevel(w, 1); // décor scrollant
+      w.sm.to(States.PLAY);
+      for (let i = 0; i < 30; i += 1) updateWorld(w, 1 / 60);
+      expect(w.layers[0].offset).toBeGreaterThan(0);
+      startLevel(w, 10); // décor statique : l offset doit repartir de 0
+      expect(w.layers[0].offset).toBe(0);
+    });
+
+    it('un décor statique ne scrolle pas pendant le jeu', () => {
+      const w = createWorld(fakeStorage());
+      startLevel(w, 10);
+      w.sm.to(States.PLAY);
+      for (let i = 0; i < 30; i += 1) updateWorld(w, 1 / 60);
+      expect(w.layers[0].offset).toBe(0);
+      expect(w.layers[1].offset).toBeGreaterThan(0); // le premier plan, lui, vit
+    });
+
+    it('le menu (createWorld) applique la vitesse far de son décor vitrine', () => {
+      for (let i = 0; i < 20; i += 1) {
+        const w = createWorld(fakeStorage());
+        expect(w.layers[0].speedFactor).toBe(CONFIG.BG_FAR_SPEED[w.bgSet]);
+      }
+    });
+  });
+
   describe('menu routing', () => {
     it('press avec pointer sur New Game démarre le niveau 1', () => {
       const w = createWorld(fakeStorage());
@@ -458,7 +494,7 @@ describe('world', () => {
 
     it('CODE -> SAVECODE avec un écran savecode frais', () => {
       const w = createWorld(storageWithBest(3));
-      const b = w.menu.buttons[3];
+      const b = w.menu.buttons[4];
       press(w, { x: b.x + 1, y: b.y + 1 });
       expect(w.sm.get()).toBe(States.SAVECODE);
       expect(w.savecode.code).toBe(encodeSave({ bestLevel: 3 }));
@@ -466,7 +502,7 @@ describe('world', () => {
 
     it('SAVECODE: COPIER pousse copycode + feedback', () => {
       const w = createWorld(storageWithBest(3));
-      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       const b = w.savecode.menu.buttons[0];
       press(w, { x: b.x + 1, y: b.y + 1 });
       expect(w.events).toContain('copycode');
@@ -475,7 +511,7 @@ describe('world', () => {
 
     it('SAVECODE: LIEN pousse copylink, SAISIR pousse codeentry', () => {
       const w = createWorld(storageWithBest(3));
-      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       const link = w.savecode.menu.buttons[1];
       press(w, { x: link.x + 1, y: link.y + 1 });
       expect(w.events).toContain('copylink');
@@ -487,27 +523,37 @@ describe('world', () => {
 
     it('SAVECODE: RETOUR et Escape ramènent au MENU', () => {
       const w = createWorld(fakeStorage());
-      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       const back = w.savecode.menu.buttons[3];
       press(w, { x: back.x + 1, y: back.y + 1 });
       expect(w.sm.get()).toBe(States.MENU);
-      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       escapeAction(w);
       expect(w.sm.get()).toBe(States.MENU);
     });
 
     it('navMenu agit en SAVECODE', () => {
       const w = createWorld(storageWithBest(3));
-      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       const before = w.savecode.menu.focus;
       navMenu(w, 1);
       expect(w.savecode.menu.focus).not.toBe(before);
     });
 
-    it('submitSaveCode valide: applique le max, recrée le menu, retourne au MENU', () => {
+    it('submitSaveCode restaure exactement, même vers le bas (saisie = geste délibéré)', () => {
+      const storage = storageWithBest(14);
+      const w = createWorld(storage);
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
+      expect(submitSaveCode(w, encodeSave({ bestLevel: 7 }))).toBe(true);
+      expect(w.score.bestLevel).toBe(7);
+      expect(storage.getItem('jetpackbot.bestLevel')).toBe('7');
+      expect(w.menu.buttons[1].enabled).toBe(true); // CONTINUER -> niveau 7
+    });
+
+    it('submitSaveCode valide: applique le code, recrée le menu, retourne au MENU', () => {
       const storage = fakeStorage();
       const w = createWorld(storage);
-      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       const ok = submitSaveCode(w, encodeSave({ bestLevel: 9 }));
       expect(ok).toBe(true);
       expect(w.sm.get()).toBe(States.MENU);
@@ -518,7 +564,7 @@ describe('world', () => {
 
     it('submitSaveCode invalide: false, reste en SAVECODE, score intact', () => {
       const w = createWorld(storageWithBest(4));
-      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
+      press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       expect(submitSaveCode(w, 'JB1-ZZZZZZ')).toBe(false);
       expect(w.sm.get()).toBe(States.SAVECODE);
       expect(w.score.bestLevel).toBe(4);
@@ -539,7 +585,7 @@ describe('world', () => {
   describe('options routing', () => {
     it('menu: clic OPTIONS ouvre l\'écran avec les settings courants', () => {
       const w = createWorld(fakeStorage());
-      const b = w.menu.buttons[2]; // options
+      const b = w.menu.buttons[3]; // options
       press(w, { x: b.x + 1, y: b.y + 1 });
       expect(w.sm.get()).toBe(States.OPTIONS);
       expect(w.optionsReturn).toBe('menu');
@@ -548,7 +594,7 @@ describe('world', () => {
 
     it('OPTIONS: RETOUR (clic) revient à l\'origine menu', () => {
       const w = createWorld(fakeStorage());
-      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
       const r = CONFIG.OPTIONS_BTN;
       press(w, { x: r.x + 1, y: r.y + 1 });
       expect(w.sm.get()).toBe(States.MENU);
@@ -572,7 +618,7 @@ describe('world', () => {
 
     it('adjustAction change la valeur focusée, met à jour settings et pousse volsfx', () => {
       const w = createWorld(fakeStorage());
-      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
       const before = w.settings.sfx;
       adjustAction(w, -1);
       expect(w.options.rows[0].value).toBe(before - 1);
@@ -582,7 +628,7 @@ describe('world', () => {
 
     it('adjustAction sur la ligne MUSIQUE pousse volmusic', () => {
       const w = createWorld(fakeStorage());
-      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
       navMenu(w, 1); // focus MUSIQUE
       adjustAction(w, 1);
       expect(w.events).toContain('volmusic');
@@ -598,7 +644,7 @@ describe('world', () => {
 
     it('clic sur un segment règle la valeur et pousse l\'event', () => {
       const w = createWorld(fakeStorage());
-      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
       const R = CONFIG.OPTIONS_ROWS;
       press(w, { x: R.x + 2 * (R.segW + R.segGap) + 1, y: R.y0 + R.gap + 1 }); // music -> 2
       expect(w.settings.music).toBe(2);
@@ -607,7 +653,7 @@ describe('world', () => {
 
     it('clic sur un segment de la valeur courante ne pousse pas d\'event', () => {
       const w = createWorld(fakeStorage());
-      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
       const R = CONFIG.OPTIONS_ROWS;
       const cur = w.settings.sfx;
       press(w, { x: R.x + cur * (R.segW + R.segGap) + 1, y: R.y0 + 1 });
@@ -616,11 +662,111 @@ describe('world', () => {
 
     it('nav clavier: haut/bas change le focus, Enter sur RETOUR ferme', () => {
       const w = createWorld(fakeStorage());
-      press(w, { x: w.menu.buttons[2].x + 1, y: w.menu.buttons[2].y + 1 });
+      press(w, { x: w.menu.buttons[3].x + 1, y: w.menu.buttons[3].y + 1 });
       navMenu(w, -1); // wrap -> RETOUR (2)
       expect(w.options.focus).toBe(2);
       press(w); // activation clavier
       expect(w.sm.get()).toBe(States.MENU);
+    });
+  });
+
+  describe('skins routing (hangar)', () => {
+    function storageWith(entries) {
+      const d = { ...entries };
+      return { getItem: (k) => d[k] ?? null, setItem: (k, v) => { d[k] = String(v); } };
+    }
+
+    function openHangar(w) {
+      const b = w.menu.buttons[2]; // robots
+      press(w, { x: b.x + 1, y: b.y + 1 });
+    }
+
+    it('createWorld charge le skin persisté (débloqué)', () => {
+      const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '5', 'jetpackbot.skin': '2' }));
+      expect(w.skin).toBe(2);
+    });
+
+    it('createWorld ramène un skin verrouillé à 0', () => {
+      const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '3', 'jetpackbot.skin': '4' }));
+      expect(w.skin).toBe(0);
+    });
+
+    it('menu: clic ROBOTS ouvre le hangar sur le skin sélectionné (label ACTUEL)', () => {
+      const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '5', 'jetpackbot.skin': '2' }));
+      openHangar(w);
+      expect(w.sm.get()).toBe(States.SKINS);
+      expect(w.skinsScreen.slot).toBe(2);
+      expect(w.skinsScreen.menu.buttons[0].label).toBe('ACTUEL');
+      expect(w.skinsScreen.menu.buttons[0].enabled).toBe(false);
+    });
+
+    it('adjustAction boucle les slots 0<->4', () => {
+      const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '10' }));
+      openHangar(w);
+      expect(w.skinsScreen.slot).toBe(0);
+      adjustAction(w, -1);
+      expect(w.skinsScreen.slot).toBe(4);
+      adjustAction(w, 1);
+      expect(w.skinsScreen.slot).toBe(0);
+      adjustAction(w, 1);
+      expect(w.skinsScreen.slot).toBe(1);
+    });
+
+    it('CHOISIR débloqué: sélectionne, persiste, reste en SKINS, label ACTUEL', () => {
+      const storage = storageWith({ 'jetpackbot.bestLevel': '5' });
+      const w = createWorld(storage);
+      openHangar(w);
+      adjustAction(w, 1); // slot 1 (FORGE, débloqué à best 5)
+      expect(w.skinsScreen.menu.buttons[0].label).toBe('CHOISIR');
+      press(w); // clavier : focus sur CHOISIR (premier enabled)
+      expect(w.skin).toBe(1);
+      expect(storage.getItem('jetpackbot.skin')).toBe('1');
+      expect(w.sm.get()).toBe(States.SKINS);
+      expect(w.skinsScreen.menu.buttons[0].label).toBe('ACTUEL');
+      expect(w.skinsScreen.menu.buttons[0].enabled).toBe(false);
+    });
+
+    it('CHOISIR verrouillé inactif (clic = no-op, rien persisté)', () => {
+      const storage = storageWith({ 'jetpackbot.bestLevel': '3' });
+      const w = createWorld(storage);
+      openHangar(w);
+      adjustAction(w, 1); adjustAction(w, 1); // slot 2 (VENIN, verrouillé à best 3)
+      const b = w.skinsScreen.menu.buttons[0];
+      expect(b.enabled).toBe(false);
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.skin).toBe(0);
+      expect(storage.getItem('jetpackbot.skin')).toBe(null);
+      expect(w.sm.get()).toBe(States.SKINS);
+    });
+
+    it('tap sur les zones flèches < > change le slot', () => {
+      const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '10' }));
+      openHangar(w);
+      const A = CONFIG.SKINS_ARROW;
+      press(w, { x: A.rx + 1, y: A.y + 1 });
+      expect(w.skinsScreen.slot).toBe(1);
+      press(w, { x: A.lx + 1, y: A.y + 1 });
+      expect(w.skinsScreen.slot).toBe(0);
+    });
+
+    it('RETOUR et Escape ramènent au MENU', () => {
+      const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '5' }));
+      openHangar(w);
+      const back = w.skinsScreen.menu.buttons[1];
+      press(w, { x: back.x + 1, y: back.y + 1 });
+      expect(w.sm.get()).toBe(States.MENU);
+      openHangar(w);
+      escapeAction(w);
+      expect(w.sm.get()).toBe(States.MENU);
+    });
+
+    it('navMenu agit en SKINS', () => {
+      const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '5' }));
+      openHangar(w);
+      adjustAction(w, 1); // slot 1 : CHOISIR + RETOUR tous deux enabled
+      const before = w.skinsScreen.menu.focus;
+      navMenu(w, 1);
+      expect(w.skinsScreen.menu.focus).not.toBe(before);
     });
   });
 });

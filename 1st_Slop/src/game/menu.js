@@ -11,6 +11,7 @@ export function createMenu(hasSave = false) {
   return build([
     { id: 'newgame', label: 'NEW GAME', enabled: true },
     { id: 'continue', label: 'CONTINUE', enabled: hasSave },
+    { id: 'robots', label: 'ROBOTS', enabled: true },
     { id: 'options', label: 'OPTIONS', enabled: true },
     { id: 'code', label: 'CODE', enabled: true },
   ], CONFIG.MENU_BTN);
@@ -39,6 +40,16 @@ export function createGameoverMenu() {
     { id: 'restart', label: 'RECOMMENCER', enabled: true },
     { id: 'menu', label: 'MENU', enabled: true },
   ], CONFIG.GAMEOVER_BTN);
+}
+
+// Boutons du hangar : le libellé et l'état de `choose` dépendent du slot
+// affiché (drawButton lit `label`) — le menu est recréé à chaque changement.
+export function createSkinsMenu(unlocked, current, slot) {
+  const actuel = slot === current;
+  return build([
+    { id: 'choose', label: actuel ? 'ACTUEL' : 'CHOISIR', enabled: unlocked && !actuel },
+    { id: 'back', label: 'RETOUR', enabled: true },
+  ], CONFIG.SKINS_BTN);
 }
 
 export function inRect(rect, px, py) {

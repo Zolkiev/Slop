@@ -21,6 +21,15 @@ export function applySave(score, bestLevel, storage) {
   return score;
 }
 
+// Restauration explicite (SAISIR un code) : le code fait foi, même vers le
+// bas — geste délibéré du joueur, façon password rétro. Le jeu naturel et le
+// lien #save= passent par applySave et ne régressent jamais.
+export function restoreSave(score, bestLevel, storage) {
+  score.bestLevel = bestLevel;
+  storage?.setItem(KEY, String(bestLevel));
+  return score;
+}
+
 export function finalizeLevel(score, level, storage) {
   return applySave(score, level, storage);
 }

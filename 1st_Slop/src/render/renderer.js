@@ -8,6 +8,8 @@ import { renderPause } from './pause.js';
 import { renderSavecode } from './savecode.js';
 import { renderOptions } from './options.js';
 import { drawButtons } from './buttons.js';
+import { renderSkins } from './skins.js';
+import { SKINS, spriteKey } from '../game/skins.js';
 
 export function renderWorld(ctx, world, assets) {
   // 0. Dark base — fills any shake-gap edges with the background colour
@@ -60,19 +62,22 @@ export function renderWorld(ctx, world, assets) {
   // 3b. Reactor particle trail (drawn before robot so it appears behind)
   for (const p of world.particles.particles) {
     ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
-    ctx.fillStyle = '#3ef0ff';
+    ctx.fillStyle = SKINS[world.skin].accent; // accent du skin (cyan pour PROTO)
     ctx.fillRect(Math.round(p.x), Math.round(p.y), 2, 2);
   }
   ctx.globalAlpha = 1;
 
-  // 4. Robot (64×64 sprite centered on hitbox, drawn at 44×44 for crisp pixel art)
+  // 4. Robot (sprites du skin sélectionné, 64×64 dessinés en 44×44)
   const hudState = world.sm.get();
-  if (hudState !== States.MENU && hudState !== States.SAVECODE && hudState !== States.OPTIONS) {
+  if (hudState !== States.MENU && hudState !== States.SAVECODE
+      && hudState !== States.OPTIONS && hudState !== States.SKINS) {
     const r = world.robot;
-    let sprite = assets.robot; // idle / falling
+    const key = spriteKey(world.skin);
+    let sprite = assets[key]; // idle / chute
     if (r.alive && r.vy < 0) {
-      // rising = thrusting: flicker between the two thrust frames
-      sprite = (Math.floor(world.tick / 6) % 2 === 0) ? assets['robot-thrust-0'] : assets['robot-thrust-1'];
+      // montée = poussée : alternance des deux frames thrust
+      sprite = (Math.floor(world.tick / 6) % 2 === 0)
+        ? assets[key + '-thrust-0'] : assets[key + '-thrust-1'];
     }
     const size = 44;
     const cx = r.x + r.w / 2;
@@ -114,6 +119,8 @@ export function renderWorld(ctx, world, assets) {
     renderSavecode(ctx, world, assets);
   } else if (state === States.OPTIONS) {
     renderOptions(ctx, world, assets);
+  } else if (state === States.SKINS) {
+    renderSkins(ctx, world, assets);
   } else if (state === States.LEVEL_COMPLETE) {
     ctx.fillText(`NIVEAU ${world.level} OK`, CONFIG.WIDTH / 2, 240);
     ctx.font = '16px system-ui';

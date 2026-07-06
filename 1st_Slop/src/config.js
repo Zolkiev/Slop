@@ -16,6 +16,10 @@ export const CONFIG = {
 
   // Background sets
   BG_SET_COUNT: 5,
+  // Vitesse de parallaxe du fond lointain par décor. Les fonds à repère
+  // unique (soleil, orage, planète) ne sont pas raccordables : tuilés en
+  // scroll, le repère se répète et se coupe au joint -> statiques (0).
+  BG_FAR_SPEED: [0.25, 0.25, 0, 0, 0],
 
   // Obstacles
   OBSTACLE_W: 62,
@@ -30,10 +34,10 @@ export const CONFIG = {
   FLASH_TIME: 0.16,
 
   // Menu / UI layout (canvas 360×640)
-  MENU_BTN: { x: 80, w: 200, h: 56, y0: 330, gap: 66 },
+  MENU_BTN: { x: 80, w: 200, h: 56, y0: 320, gap: 62 }, // 5 boutons, dernier à 568-624
   MENU_LOGO_Y: 120,
   MENU_ROBOT_Y: 250,
-  MENU_BEST_Y: 600,
+  MENU_BEST_Y: 636, // sous le 5e bouton (568-624)
 
   // Pause overlay + HUD
   PAUSE_BTN: { x: 80, w: 200, h: 56, y0: 230, gap: 72 },
@@ -50,6 +54,13 @@ export const CONFIG = {
   OPTIONS_ROWS: { x: 28, y0: 240, gap: 84, segW: 24, segGap: 4, segH: 28, count: 11 },
   OPTIONS_LABEL_DY: -16,
   OPTIONS_BTN: { x: 80, y: 440, w: 200, h: 56 },
+
+  // Écran ROBOTS (hangar de skins)
+  SKINS_TITLE_Y: 96,
+  SKINS_PREVIEW: { x: 84, y: 150, size: 192 }, // sprite 64 agrandi ×3, centré
+  SKINS_NAME_Y: 392,
+  SKINS_ARROW: { w: 40, h: 60, lx: 16, rx: 304, y: 216 }, // zones tap des flèches < >
+  SKINS_BTN: { x: 80, w: 200, h: 56, y0: 470, gap: 66 },  // CHOISIR / RETOUR
 
   // Button text (canvas-drawn labels over shared plate)
   BTN_FONT_FAMILY: 'PressStart2P',

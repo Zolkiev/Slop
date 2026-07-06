@@ -19,12 +19,12 @@ function fakeCtx() {
 }
 
 function fakeAssets() {
-  const keys = ['ui-logo', 'robot', 'btn-plate', 'btn-plate-focus'];
+  const keys = ['ui-logo', 'robot', 'robot-s2', 'btn-plate', 'btn-plate-focus'];
   return Object.fromEntries(keys.map((k) => [k, { key: k }]));
 }
 
-function worldWith(menu) {
-  return { menu, menuTick: 0, score: { bestLevel: 3 } };
+function worldWith(menu, skin = 0) {
+  return { menu, menuTick: 0, skin, score: { bestLevel: 3 } };
 }
 
 describe('renderMenu', () => {
@@ -43,6 +43,14 @@ describe('renderMenu', () => {
     expect(keys).toContain('btn-plate-focus'); // newgame focused
     expect(keys).toContain('btn-plate');       // continue/options disabled
     expect(ctx.texts).toEqual(expect.arrayContaining(['NEW GAME', 'CONTINUE', 'OPTIONS']));
+  });
+
+  it('le robot du menu porte le skin sélectionné', () => {
+    const ctx = fakeCtx();
+    renderMenu(ctx, worldWith(createMenu(), 2), fakeAssets());
+    const keys = ctx.drawn.map((d) => d.img.key);
+    expect(keys).toContain('robot-s2');
+    expect(keys).not.toContain('robot');
   });
 
   it('un seul bouton focus -> une seule plate focus', () => {

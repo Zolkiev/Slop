@@ -71,4 +71,14 @@ describe('stateMachine', () => {
     const sm2 = createStateMachine(States.PAUSE);
     expect(sm2.can(States.OPTIONS)).toBe(true);
   });
+
+  it('MENU <-> SKINS (hangar), SKINS ne va pas en PLAY', () => {
+    const sm = createStateMachine();
+    expect(sm.can(States.SKINS)).toBe(true);
+    sm.to(States.SKINS);
+    expect(sm.can(States.PLAY)).toBe(false);
+    expect(sm.can(States.MENU)).toBe(true);
+    sm.to(States.MENU);
+    expect(sm.get()).toBe(States.MENU);
+  });
 });

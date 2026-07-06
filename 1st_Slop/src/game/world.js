@@ -6,28 +6,39 @@ import {
 } from './obstacles.js';
 import { nextSalve, flow } from './patterns.js';
 import { aabb, hitsBounds } from './collision.js';
-import { createScore, checkPass, finalizeLevel, applySave } from './score.js';
+import { createScore, checkPass, finalizeLevel, restoreSave } from './score.js';
 import { gateGoalForLevel, difficultyForLevel } from './level.js';
 import { createLayer, updateLayer } from './background.js';
 import { createParticleField, spawnReactor, updateParticles } from './particles.js';
 import { createAmbiance, updateAmbiance } from './ambiance.js';
 import { createTwinkles } from './twinkle.js';
 import { CONFIG } from '../config.js';
-import { createMenu, createPauseMenu, createGameoverMenu, hitTest, activate, moveFocus, inRect } from './menu.js';
+import { createMenu, createPauseMenu, createGameoverMenu, createSkinsMenu, hitTest, activate, moveFocus, inRect } from './menu.js';
 import { createSavecode, setFeedback } from './savecode.js';
 import { decodeSave } from './save.js';
 import { createOptions, moveOptionsFocus, adjust, barHitTest } from './options.js';
 import { loadSettings } from './settings.js';
+import { SKINS, skinUnlocked, loadSkin, saveSkin } from './skins.js';
+
+// Change de décor : le fond lointain prend la vitesse de son monde
+// (statique pour les fonds à repère unique) et repart du joint invisible.
+function applyBgSet(world, set) {
+  world.bgSet = set;
+  world.layers[0].speedFactor = CONFIG.BG_FAR_SPEED[set];
+  world.layers[0].offset = 0;
+}
 
 export function createWorld(storage) {
   const score = createScore(storage);
-  return {
+  const world = {
     sm: createStateMachine(States.MENU),
     menu: createMenu(score.bestLevel >= 1),
     pause: createPauseMenu(),
     gameover: createGameoverMenu(),
     savecode: createSavecode(score),
     settings: loadSettings(storage),
+    skin: loadSkin(storage, score.bestLevel),
+    skinsScreen: null,
     options: null,
     optionsReturn: 'menu',
     menuTick: 0,
@@ -43,7 +54,7 @@ export function createWorld(storage) {
     freshLevel: true,
     layers: [createLayer(0.25, CONFIG.WIDTH), createLayer(0.6, CONFIG.WIDTH)],
     rand: Math.random,
-    bgSet: Math.floor(Math.random() * CONFIG.BG_SET_COUNT),
+    bgSet: 0,
     storage,
     events: [],
     tick: 0,
@@ -53,6 +64,8 @@ export function createWorld(storage) {
     shake: 0,
     flash: 0,
   };
+  applyBgSet(world, Math.floor(Math.random() * CONFIG.BG_SET_COUNT)); // vitrine du menu
+  return world;
 }
 
 export function resetRun(world) {
@@ -67,7 +80,7 @@ export function resetRun(world) {
 
 export function startLevel(world, level) {
   const diff = difficultyForLevel(level);
-  world.bgSet = diff.tier - 1; // le décor raconte la progression (1 monde par tier)
+  applyBgSet(world, diff.tier - 1); // le décor raconte la progression (1 monde par tier)
   world.level = level;
   world.scrollSpeed = diff.scrollSpeed;
   world.diff = diff;
@@ -88,6 +101,23 @@ function openOptions(world, from) {
 function closeOptions(world) {
   if (world.optionsReturn === 'pause') world.sm.to(States.PAUSE);
   else toMenu(world);
+}
+
+// Hangar de skins — le menu CHOISIR/RETOUR est recréé à chaque changement
+// de slot (libellé ACTUEL et enabled dépendent du slot affiché).
+function skinsMenuFor(world, slot) {
+  return createSkinsMenu(skinUnlocked(slot, world.score.bestLevel), world.skin, slot);
+}
+
+function openSkins(world) {
+  world.skinsScreen = { slot: world.skin, menu: skinsMenuFor(world, world.skin) };
+  world.sm.to(States.SKINS);
+}
+
+export function adjustSkins(world, dir) {
+  const s = world.skinsScreen;
+  s.slot = (s.slot + dir + SKINS.length) % SKINS.length;
+  s.menu = skinsMenuFor(world, s.slot);
 }
 
 function syncVolume(world, id) {
@@ -130,6 +160,8 @@ export function press(world, pointer) {
     } else if (id === 'code') {
       world.savecode = createSavecode(world.score);
       world.sm.to(States.SAVECODE);
+    } else if (id === 'robots') {
+      openSkins(world);
     } else if (id === 'options') {
       openOptions(world, 'menu');
     }
@@ -196,6 +228,24 @@ export function press(world, pointer) {
     } else if (world.options.focus === 2) {
       closeOptions(world);
     }
+  } else if (state === States.SKINS) {
+    const sc = world.skinsScreen;
+    const A = CONFIG.SKINS_ARROW;
+    if (pointer && inRect({ x: A.lx, y: A.y, w: A.w, h: A.h }, pointer.x, pointer.y)) {
+      adjustSkins(world, -1);
+    } else if (pointer && inRect({ x: A.rx, y: A.y, w: A.w, h: A.h }, pointer.x, pointer.y)) {
+      adjustSkins(world, 1);
+    } else {
+      const id = pointer ? hitTest(sc.menu, pointer.x, pointer.y) : activate(sc.menu);
+      if (id === 'choose') {
+        world.skin = sc.slot;
+        saveSkin(world.storage, sc.slot);
+        sc.menu = skinsMenuFor(world, sc.slot); // le libellé passe à ACTUEL
+      } else if (id === 'back') {
+        toMenu(world);
+      }
+      // null -> no-op
+    }
   }
 }
 
@@ -206,6 +256,7 @@ export function navMenu(world, dir) {
   else if (s === States.GAMEOVER) moveFocus(world.gameover, dir);
   else if (s === States.SAVECODE) moveFocus(world.savecode.menu, dir);
   else if (s === States.OPTIONS) moveOptionsFocus(world.options, dir);
+  else if (s === States.SKINS) moveFocus(world.skinsScreen.menu, dir);
 }
 
 export function escapeAction(world) {
@@ -215,18 +266,21 @@ export function escapeAction(world) {
   else if (s === States.GAMEOVER) toMenu(world);
   else if (s === States.SAVECODE) toMenu(world);
   else if (s === States.OPTIONS) closeOptions(world);
+  else if (s === States.SKINS) toMenu(world);
 }
 
 export function submitSaveCode(world, text) {
   const decoded = decodeSave(text);
   if (!decoded) return false;
-  applySave(world.score, decoded.bestLevel, world.storage);
+  restoreSave(world.score, decoded.bestLevel, world.storage);
   toMenu(world);
   return true;
 }
 
 export function adjustAction(world, dir) {
-  if (world.sm.get() !== States.OPTIONS) return;
+  const s = world.sm.get();
+  if (s === States.SKINS) { adjustSkins(world, dir); return; }
+  if (s !== States.OPTIONS) return;
   const id = adjust(world.options, dir);
   if (id) syncVolume(world, id);
 }

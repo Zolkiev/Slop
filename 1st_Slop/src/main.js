@@ -15,6 +15,18 @@ import { loadFont } from './engine/font.js';
 import robotUrl from '../assets/robot.png';
 import robotThrust0 from '../assets/robot-thrust-0.png';
 import robotThrust1 from '../assets/robot-thrust-1.png';
+import robotS1 from '../assets/robot-s1.png';
+import robotS1Thrust0 from '../assets/robot-s1-thrust-0.png';
+import robotS1Thrust1 from '../assets/robot-s1-thrust-1.png';
+import robotS2 from '../assets/robot-s2.png';
+import robotS2Thrust0 from '../assets/robot-s2-thrust-0.png';
+import robotS2Thrust1 from '../assets/robot-s2-thrust-1.png';
+import robotS3 from '../assets/robot-s3.png';
+import robotS3Thrust0 from '../assets/robot-s3-thrust-0.png';
+import robotS3Thrust1 from '../assets/robot-s3-thrust-1.png';
+import robotS4 from '../assets/robot-s4.png';
+import robotS4Thrust0 from '../assets/robot-s4-thrust-0.png';
+import robotS4Thrust1 from '../assets/robot-s4-thrust-1.png';
 import obstacleUrl from '../assets/obstacle.png';
 import bgFar0 from '../assets/bg-far-0.png';
 import bgFar1 from '../assets/bg-far-1.png';
@@ -113,6 +125,18 @@ const imagesPromise = loadImages({
   robot: robotUrl,
   'robot-thrust-0': robotThrust0,
   'robot-thrust-1': robotThrust1,
+  'robot-s1': robotS1,
+  'robot-s1-thrust-0': robotS1Thrust0,
+  'robot-s1-thrust-1': robotS1Thrust1,
+  'robot-s2': robotS2,
+  'robot-s2-thrust-0': robotS2Thrust0,
+  'robot-s2-thrust-1': robotS2Thrust1,
+  'robot-s3': robotS3,
+  'robot-s3-thrust-0': robotS3Thrust0,
+  'robot-s3-thrust-1': robotS3Thrust1,
+  'robot-s4': robotS4,
+  'robot-s4-thrust-0': robotS4Thrust0,
+  'robot-s4-thrust-1': robotS4Thrust1,
   obstacle: obstacleUrl,
   'bg-far-0': bgFar0,
   'bg-far-1': bgFar1,
