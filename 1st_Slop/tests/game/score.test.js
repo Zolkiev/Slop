@@ -1,107 +1,103 @@
 import { describe, it, expect } from 'vitest';
-import { createScore, checkPass, finalizeLevel, applySave, restoreSave } from '../../src/game/score.js';
+import { createScore, checkPass, saveProgress, resetProgress, applyCode } from '../../src/game/score.js';
 
 function fakeStorage(initial = {}) {
-  const data = { ...initial };
+  const d = { ...initial };
   return {
-    getItem: (k) => (k in data ? data[k] : null),
-    setItem: (k, v) => { data[k] = String(v); },
+    getItem: (k) => d[k] ?? null,
+    setItem: (k, v) => { d[k] = String(v); },
   };
 }
 
-describe('score', () => {
-  it('charge le bestLevel depuis le storage', () => {
-    const s = createScore(fakeStorage({ 'jetpackbot.bestLevel': '7' }));
-    expect(s.bestLevel).toBe(7);
+describe('createScore — migration', () => {
+  it('appareil vierge : level 0, record 0', () => {
+    expect(createScore(fakeStorage())).toEqual({ level: 0, record: 0 });
   });
 
-  it('bestLevel vaut 0 quand rien n\'est stocké', () => {
-    expect(createScore(fakeStorage()).bestLevel).toBe(0);
+  it('save historique (bestLevel seul) : level = record', () => {
+    const s = createScore(fakeStorage({ 'jetpackbot.bestLevel': '10' }));
+    expect(s).toEqual({ level: 10, record: 10 });
   });
 
-  it('checkPass true quand le robot a dépassé, false ensuite', () => {
+  it('les deux clés : chacune la sienne', () => {
+    const s = createScore(fakeStorage({ 'jetpackbot.bestLevel': '10', 'jetpackbot.level': '2' }));
+    expect(s).toEqual({ level: 2, record: 10 });
+  });
+
+  it('tolère un storage absent', () => {
+    expect(createScore(undefined)).toEqual({ level: 0, record: 0 });
+  });
+});
+
+describe('checkPass', () => {
+  it('true quand le robot a dépassé, false ensuite', () => {
     const robot = { x: 100 };
     const obstacle = { x: 30, passed: false };
     expect(checkPass(robot, obstacle, 60)).toBe(true);
     expect(obstacle.passed).toBe(true);
     expect(checkPass(robot, obstacle, 60)).toBe(false);
   });
-
-  it('finalizeLevel persiste le niveau quand il dépasse le best', () => {
-    const storage = fakeStorage({ 'jetpackbot.bestLevel': '3' });
-    const s = createScore(storage);
-    finalizeLevel(s, 9, storage);
-    expect(s.bestLevel).toBe(9);
-    expect(storage.getItem('jetpackbot.bestLevel')).toBe('9');
-  });
-
-  it('finalizeLevel ne baisse jamais le best', () => {
-    const storage = fakeStorage({ 'jetpackbot.bestLevel': '10' });
-    const s = createScore(storage);
-    finalizeLevel(s, 4, storage);
-    expect(s.bestLevel).toBe(10);
-  });
 });
 
-describe('applySave', () => {
-  function fakeStorage() {
-    const d = {};
-    return {
-      getItem: (k) => d[k] ?? null,
-      setItem: (k, v) => { d[k] = String(v); },
-      data: d,
-    };
-  }
-
-  it('prend le niveau restauré quand il est meilleur et persiste', () => {
-    const storage = fakeStorage();
-    const score = { bestLevel: 2 };
-    applySave(score, 5, storage);
-    expect(score.bestLevel).toBe(5);
-    expect(storage.getItem('jetpackbot.bestLevel')).toBe('5');
+describe('saveProgress (jeu naturel + lien #save= : max sur les deux)', () => {
+  it('monte level et record et persiste les deux', () => {
+    const st = fakeStorage();
+    const s = { level: 1, record: 1 };
+    saveProgress(s, 3, st);
+    expect(s).toEqual({ level: 3, record: 3 });
+    expect(st.getItem('jetpackbot.level')).toBe('3');
+    expect(st.getItem('jetpackbot.bestLevel')).toBe('3');
   });
 
-  it('ne régresse jamais et ne persiste pas si rien ne change', () => {
-    const storage = fakeStorage();
-    const score = { bestLevel: 7 };
-    applySave(score, 3, storage);
-    expect(score.bestLevel).toBe(7);
-    expect(storage.getItem('jetpackbot.bestLevel')).toBe(null);
+  it('après un reset, le record ne bouge pas tant qu il n est pas dépassé', () => {
+    const st = fakeStorage({ 'jetpackbot.bestLevel': '10', 'jetpackbot.level': '1' });
+    const s = createScore(st);
+    saveProgress(s, 2, st);
+    expect(s).toEqual({ level: 2, record: 10 });
+    expect(st.getItem('jetpackbot.bestLevel')).toBe('10');
+  });
+
+  it('ne régresse jamais et ne persiste rien si rien ne change', () => {
+    const st = fakeStorage();
+    const s = { level: 7, record: 10 };
+    saveProgress(s, 3, st);
+    expect(s).toEqual({ level: 7, record: 10 });
+    expect(st.getItem('jetpackbot.level')).toBe(null);
   });
 
   it('tolère un storage absent', () => {
-    const score = { bestLevel: 1 };
-    expect(() => applySave(score, 4, undefined)).not.toThrow();
-    expect(score.bestLevel).toBe(4);
+    const s = { level: 1, record: 1 };
+    expect(() => saveProgress(s, 4, undefined)).not.toThrow();
+    expect(s.level).toBe(4);
   });
 });
 
-describe('restoreSave (saisie explicite : le code fait foi)', () => {
-  function fakeStorage() {
-    const d = {};
-    return {
-      getItem: (k) => d[k] ?? null,
-      setItem: (k, v) => { d[k] = String(v); },
-    };
-  }
+describe('resetProgress (NEW GAME confirmé)', () => {
+  it('level repart à 1, record intact', () => {
+    const st = fakeStorage({ 'jetpackbot.bestLevel': '10', 'jetpackbot.level': '10' });
+    const s = createScore(st);
+    resetProgress(s, st);
+    expect(s).toEqual({ level: 1, record: 10 });
+    expect(st.getItem('jetpackbot.level')).toBe('1');
+    expect(st.getItem('jetpackbot.bestLevel')).toBe('10');
+  });
+});
 
-  it('applique le niveau du code même vers le bas et persiste', () => {
-    const storage = fakeStorage();
-    const score = { bestLevel: 14 };
-    restoreSave(score, 7, storage);
-    expect(score.bestLevel).toBe(7);
-    expect(storage.getItem('jetpackbot.bestLevel')).toBe('7');
+describe('applyCode (SAISIR : level exact, record max — skins jamais re-verrouillés)', () => {
+  it('code plus bas : level régresse, record intact', () => {
+    const st = fakeStorage({ 'jetpackbot.bestLevel': '14', 'jetpackbot.level': '14' });
+    const s = createScore(st);
+    applyCode(s, 5, st);
+    expect(s).toEqual({ level: 5, record: 14 });
+    expect(st.getItem('jetpackbot.level')).toBe('5');
+    expect(st.getItem('jetpackbot.bestLevel')).toBe('14');
   });
 
-  it('applique aussi vers le haut', () => {
-    const score = { bestLevel: 2 };
-    restoreSave(score, 5, fakeStorage());
-    expect(score.bestLevel).toBe(5);
-  });
-
-  it('tolère un storage absent', () => {
-    const score = { bestLevel: 3 };
-    expect(() => restoreSave(score, 1, undefined)).not.toThrow();
-    expect(score.bestLevel).toBe(1);
+  it('code plus haut : les deux montent', () => {
+    const st = fakeStorage();
+    const s = { level: 2, record: 2 };
+    applyCode(s, 9, st);
+    expect(s).toEqual({ level: 9, record: 9 });
+    expect(st.getItem('jetpackbot.bestLevel')).toBe('9');
   });
 });

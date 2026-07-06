@@ -129,7 +129,7 @@ export function renderWorld(ctx, world, assets) {
     ctx.fillText('GAME OVER', CONFIG.WIDTH / 2, 240);
     ctx.font = '16px system-ui';
     ctx.fillText(`Niveau ${world.level}`, CONFIG.WIDTH / 2, 280);
-    ctx.fillText(`Best: niveau ${world.score.bestLevel}`, CONFIG.WIDTH / 2, 308);
+    ctx.fillText(`Best: niveau ${world.score.record}`, CONFIG.WIDTH / 2, 308);
     drawButtons(ctx, world.gameover, assets);
   }
 

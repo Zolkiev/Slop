@@ -28,5 +28,5 @@ export function renderMenu(ctx, world, assets) {
   ctx.fillStyle = '#ffffff';
   ctx.font = '16px system-ui';
   ctx.textAlign = 'center';
-  ctx.fillText(`Best: niveau ${world.score.bestLevel}`, CONFIG.WIDTH / 2, CONFIG.MENU_BEST_Y);
+  ctx.fillText(`Best: niveau ${world.score.record}`, CONFIG.WIDTH / 2, CONFIG.MENU_BEST_Y);
 }

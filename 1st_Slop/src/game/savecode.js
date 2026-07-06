@@ -2,7 +2,7 @@ import { createSavecodeMenu } from './menu.js';
 import { encodeSave } from './save.js';
 
 export function createSavecode(score) {
-  const code = score.bestLevel >= 1 ? encodeSave({ bestLevel: score.bestLevel }) : null;
+  const code = score.record >= 1 ? encodeSave({ bestLevel: score.record }) : null;
   return { code, menu: createSavecodeMenu(code !== null), feedbackText: null, feedbackUntil: 0 };
 }
 

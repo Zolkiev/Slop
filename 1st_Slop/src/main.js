@@ -5,7 +5,7 @@ import { createWorld, press, navMenu, escapeAction, updateWorld, submitSaveCode,
 import { saveSettings, volumeToGain } from './game/settings.js';
 import { musicFor, isLooping } from './game/music.js';
 import { decodeSave } from './game/save.js';
-import { createScore, applySave } from './game/score.js';
+import { createScore, saveProgress } from './game/score.js';
 import { createCodeInput } from './ui/codeinput.js';
 import { renderWorld } from './render/renderer.js';
 import { loadImages } from './engine/assets.js';
@@ -76,7 +76,7 @@ if (hashMatch) {
   }
   const decoded = decodeSave(raw);
   if (decoded) {
-    applySave(createScore(window.localStorage), decoded.bestLevel, window.localStorage);
+    saveProgress(createScore(window.localStorage), decoded.bestLevel, window.localStorage);
   } else {
     console.warn('Code de sauvegarde invalide dans l\'URL');
   }

@@ -6,7 +6,7 @@ import {
 } from './obstacles.js';
 import { nextSalve, flow } from './patterns.js';
 import { aabb, hitsBounds } from './collision.js';
-import { createScore, checkPass, finalizeLevel, restoreSave } from './score.js';
+import { createScore, checkPass, saveProgress, applyCode } from './score.js';
 import { gateGoalForLevel, difficultyForLevel } from './level.js';
 import { createLayer, updateLayer } from './background.js';
 import { createParticleField, spawnReactor, updateParticles } from './particles.js';
@@ -32,12 +32,12 @@ export function createWorld(storage) {
   const score = createScore(storage);
   const world = {
     sm: createStateMachine(States.MENU),
-    menu: createMenu(score.bestLevel >= 1),
+    menu: createMenu(score.level >= 1),
     pause: createPauseMenu(),
     gameover: createGameoverMenu(),
     savecode: createSavecode(score),
     settings: loadSettings(storage),
-    skin: loadSkin(storage, score.bestLevel),
+    skin: loadSkin(storage, score.record),
     skinsScreen: null,
     options: null,
     optionsReturn: 'menu',
@@ -88,7 +88,7 @@ export function startLevel(world, level) {
 }
 
 export function toMenu(world) {
-  world.menu = createMenu(world.score.bestLevel >= 1);
+  world.menu = createMenu(world.score.level >= 1);
   world.sm.to(States.MENU);
 }
 
@@ -106,7 +106,7 @@ function closeOptions(world) {
 // Hangar de skins — le menu CHOISIR/RETOUR est recréé à chaque changement
 // de slot (libellé ACTUEL et enabled dépendent du slot affiché).
 function skinsMenuFor(world, slot) {
-  return createSkinsMenu(skinUnlocked(slot, world.score.bestLevel), world.skin, slot);
+  return createSkinsMenu(skinUnlocked(slot, world.score.record), world.skin, slot);
 }
 
 function openSkins(world) {
@@ -155,7 +155,7 @@ export function press(world, pointer) {
       startLevel(world, 1);
       world.sm.to(States.PLAY);
     } else if (id === 'continue') {
-      startLevel(world, world.score.bestLevel);
+      startLevel(world, world.score.level);
       world.sm.to(States.PLAY);
     } else if (id === 'code') {
       world.savecode = createSavecode(world.score);
@@ -272,7 +272,7 @@ export function escapeAction(world) {
 export function submitSaveCode(world, text) {
   const decoded = decodeSave(text);
   if (!decoded) return false;
-  restoreSave(world.score, decoded.bestLevel, world.storage);
+  applyCode(world.score, decoded.bestLevel, world.storage);
   toMenu(world);
   return true;
 }
@@ -310,7 +310,7 @@ export function updateWorld(world, dt) {
   }
 
   if (world.gatesThisLevel >= gateGoalForLevel(world.level)) {
-    finalizeLevel(world.score, world.level, world.storage);
+    saveProgress(world.score, world.level + 1, world.storage);
     world.events.push('levelcomplete');
     world.sm.to(States.LEVEL_COMPLETE);
     return;
@@ -328,7 +328,7 @@ export function updateWorld(world, dt) {
     world.shake = CONFIG.SHAKE_TIME;
     world.flash = CONFIG.FLASH_TIME;
     world.robot.alive = false;
-    finalizeLevel(world.score, world.level, world.storage);
+    saveProgress(world.score, world.level, world.storage);
     world.gameover = createGameoverMenu();
     world.sm.to(States.GAMEOVER);
   }

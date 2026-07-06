@@ -24,7 +24,7 @@ function fakeAssets() {
 }
 
 function worldWith(menu, skin = 0) {
-  return { menu, menuTick: 0, skin, score: { bestLevel: 3 } };
+  return { menu, menuTick: 0, skin, score: { record: 3 } };
 }
 
 describe('renderMenu', () => {
