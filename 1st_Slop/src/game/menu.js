@@ -52,6 +52,17 @@ export function createSkinsMenu(unlocked, current, slot) {
   ], CONFIG.SKINS_BTN);
 }
 
+// Confirmation NEW GAME — focus initial sur NON : l'action destructrice
+// (repartir au niveau 1) ne doit jamais être le défaut.
+export function createConfirmMenu() {
+  const m = build([
+    { id: 'yes', label: 'OUI', enabled: true },
+    { id: 'no', label: 'NON', enabled: true },
+  ], CONFIG.CONFIRM_BTN);
+  m.focus = 1;
+  return m;
+}
+
 export function inRect(rect, px, py) {
   return px >= rect.x && px < rect.x + rect.w && py >= rect.y && py < rect.y + rect.h;
 }

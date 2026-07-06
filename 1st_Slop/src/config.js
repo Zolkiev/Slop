@@ -62,6 +62,11 @@ export const CONFIG = {
   SKINS_ARROW: { w: 40, h: 60, lx: 16, rx: 304, y: 216 }, // zones tap des flèches < >
   SKINS_BTN: { x: 80, w: 200, h: 56, y0: 470, gap: 66 },  // CHOISIR / RETOUR
 
+  // Confirmation NEW GAME (repartir au niveau 1)
+  CONFIRM_BTN: { x: 80, w: 200, h: 56, y0: 330, gap: 72 },
+  CONFIRM_TITLE_Y: 200,
+  CONFIRM_SUB_Y: 248,
+
   // Button text (canvas-drawn labels over shared plate)
   BTN_FONT_FAMILY: 'PressStart2P',
   BTN_FONT_MAX: 18,

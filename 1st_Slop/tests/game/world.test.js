@@ -246,7 +246,11 @@ describe('world', () => {
       for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
       escapeAction(w); // GAMEOVER -> MENU
       const b = w.menu.buttons[0]; // newgame
-      press(w, { x: b.x + 1, y: b.y + 1 }); // startLevel(1) -> tier 1
+      // score.level a été porté à 3 par le crash-save : NEW GAME passe par CONFIRM
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.CONFIRM);
+      const oui = w.confirm.buttons[0];
+      press(w, { x: oui.x + 1, y: oui.y + 1 }); // OUI -> startLevel(1) -> tier 1
       expect(w.bgSet).toBe(0);
     });
   });
@@ -794,6 +798,67 @@ describe('world', () => {
       const before = w.skinsScreen.menu.focus;
       navMenu(w, 1);
       expect(w.skinsScreen.menu.focus).not.toBe(before);
+    });
+  });
+
+  describe('confirmation NEW GAME', () => {
+    function storageWithBest(level) {
+      const d = { 'jetpackbot.bestLevel': String(level) };
+      return { getItem: (k) => d[k] ?? null, setItem: (k, v) => { d[k] = String(v); } };
+    }
+
+    it('partie en cours > 1 : NEW GAME ouvre CONFIRM sans rien toucher', () => {
+      const storage = storageWithBest(10);
+      const w = createWorld(storage);
+      const b = w.menu.buttons[0];
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.CONFIRM);
+      expect(w.score.level).toBe(10);
+    });
+
+    it('OUI : level repart à 1, record intact, partie lancée au 1', () => {
+      const storage = storageWithBest(10);
+      const w = createWorld(storage);
+      press(w, { x: w.menu.buttons[0].x + 1, y: w.menu.buttons[0].y + 1 });
+      const oui = w.confirm.buttons[0];
+      press(w, { x: oui.x + 1, y: oui.y + 1 });
+      expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.level).toBe(1);
+      expect(w.score).toEqual({ level: 1, record: 10 });
+      expect(storage.getItem('jetpackbot.level')).toBe('1');
+    });
+
+    it('NON : retour MENU, rien ne change', () => {
+      const storage = storageWithBest(10);
+      const w = createWorld(storage);
+      press(w, { x: w.menu.buttons[0].x + 1, y: w.menu.buttons[0].y + 1 });
+      const non = w.confirm.buttons[1];
+      press(w, { x: non.x + 1, y: non.y + 1 });
+      expect(w.sm.get()).toBe(States.MENU);
+      expect(w.score.level).toBe(10);
+    });
+
+    it('Escape depuis CONFIRM = NON', () => {
+      const w = createWorld(storageWithBest(10));
+      press(w, { x: w.menu.buttons[0].x + 1, y: w.menu.buttons[0].y + 1 });
+      escapeAction(w);
+      expect(w.sm.get()).toBe(States.MENU);
+    });
+
+    it('clavier : nav + Enter (focus par défaut NON) ne reset pas', () => {
+      const w = createWorld(storageWithBest(10));
+      press(w, { x: w.menu.buttons[0].x + 1, y: w.menu.buttons[0].y + 1 });
+      press(w); // activate(focus NON)
+      expect(w.sm.get()).toBe(States.MENU);
+      expect(w.score.level).toBe(10);
+    });
+
+    it('partie en cours à 1 (ou vierge) : pas de confirmation, direct PLAY', () => {
+      const w = createWorld(fakeStorage());
+      const b = w.menu.buttons[0];
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.level).toBe(1);
     });
   });
 });

@@ -6,14 +6,14 @@ import {
 } from './obstacles.js';
 import { nextSalve, flow } from './patterns.js';
 import { aabb, hitsBounds } from './collision.js';
-import { createScore, checkPass, saveProgress, applyCode } from './score.js';
+import { createScore, checkPass, saveProgress, applyCode, resetProgress } from './score.js';
 import { gateGoalForLevel, difficultyForLevel } from './level.js';
 import { createLayer, updateLayer } from './background.js';
 import { createParticleField, spawnReactor, updateParticles } from './particles.js';
 import { createAmbiance, updateAmbiance } from './ambiance.js';
 import { createTwinkles } from './twinkle.js';
 import { CONFIG } from '../config.js';
-import { createMenu, createPauseMenu, createGameoverMenu, createSkinsMenu, hitTest, activate, moveFocus, inRect } from './menu.js';
+import { createMenu, createPauseMenu, createGameoverMenu, createSkinsMenu, createConfirmMenu, hitTest, activate, moveFocus, inRect } from './menu.js';
 import { createSavecode, setFeedback } from './savecode.js';
 import { decodeSave } from './save.js';
 import { createOptions, moveOptionsFocus, adjust, barHitTest } from './options.js';
@@ -35,6 +35,7 @@ export function createWorld(storage) {
     menu: createMenu(score.level >= 1),
     pause: createPauseMenu(),
     gameover: createGameoverMenu(),
+    confirm: null,
     savecode: createSavecode(score),
     settings: loadSettings(storage),
     skin: loadSkin(storage, score.record),
@@ -90,6 +91,14 @@ export function startLevel(world, level) {
 export function toMenu(world) {
   world.menu = createMenu(world.score.level >= 1);
   world.sm.to(States.MENU);
+}
+
+// NEW GAME confirmé (ou direct si rien à écraser) : la partie repart au
+// niveau 1, le record (skins) reste acquis — voir resetProgress.
+function launchNewGame(world) {
+  resetProgress(world.score, world.storage);
+  startLevel(world, 1);
+  world.sm.to(States.PLAY);
 }
 
 function openOptions(world, from) {
@@ -152,8 +161,13 @@ export function press(world, pointer) {
   if (state === States.MENU) {
     const id = pointer ? hitTest(world.menu, pointer.x, pointer.y) : activate(world.menu);
     if (id === 'newgame') {
-      startLevel(world, 1);
-      world.sm.to(States.PLAY);
+      // Partie en cours déjà entamée : confirmer avant d'écraser (NON par défaut).
+      if (world.score.level > 1) {
+        world.confirm = createConfirmMenu();
+        world.sm.to(States.CONFIRM);
+      } else {
+        launchNewGame(world);
+      }
     } else if (id === 'continue') {
       startLevel(world, world.score.level);
       world.sm.to(States.PLAY);
@@ -246,6 +260,11 @@ export function press(world, pointer) {
       }
       // null -> no-op
     }
+  } else if (state === States.CONFIRM) {
+    const id = pointer ? hitTest(world.confirm, pointer.x, pointer.y) : activate(world.confirm);
+    if (id === 'yes') launchNewGame(world);
+    else if (id === 'no') toMenu(world);
+    // null -> no-op
   }
 }
 
@@ -257,6 +276,7 @@ export function navMenu(world, dir) {
   else if (s === States.SAVECODE) moveFocus(world.savecode.menu, dir);
   else if (s === States.OPTIONS) moveOptionsFocus(world.options, dir);
   else if (s === States.SKINS) moveFocus(world.skinsScreen.menu, dir);
+  else if (s === States.CONFIRM) moveFocus(world.confirm, dir);
 }
 
 export function escapeAction(world) {
@@ -267,6 +287,7 @@ export function escapeAction(world) {
   else if (s === States.SAVECODE) toMenu(world);
   else if (s === States.OPTIONS) closeOptions(world);
   else if (s === States.SKINS) toMenu(world);
+  else if (s === States.CONFIRM) toMenu(world);
 }
 
 export function submitSaveCode(world, text) {

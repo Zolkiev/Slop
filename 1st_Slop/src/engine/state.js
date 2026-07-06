@@ -1,10 +1,11 @@
 export const States = {
   MENU: 'menu', PLAY: 'play', GAMEOVER: 'gameover', LEVEL_COMPLETE: 'levelcomplete',
   PAUSE: 'pause', SAVECODE: 'savecode', OPTIONS: 'options', SKINS: 'skins',
+  CONFIRM: 'confirm',
 };
 
 const TRANSITIONS = {
-  [States.MENU]: [States.PLAY, States.SAVECODE, States.OPTIONS, States.SKINS],
+  [States.MENU]: [States.PLAY, States.SAVECODE, States.OPTIONS, States.SKINS, States.CONFIRM],
   [States.PLAY]: [States.GAMEOVER, States.LEVEL_COMPLETE, States.PAUSE],
   [States.GAMEOVER]: [States.PLAY, States.MENU],
   [States.LEVEL_COMPLETE]: [States.PLAY],
@@ -12,6 +13,7 @@ const TRANSITIONS = {
   [States.SAVECODE]: [States.MENU],
   [States.OPTIONS]: [States.MENU, States.PAUSE],
   [States.SKINS]: [States.MENU],
+  [States.CONFIRM]: [States.PLAY, States.MENU],
 };
 
 export function createStateMachine(initial = States.MENU) {
