@@ -26,7 +26,7 @@ function fakeAssets() {
 describe('renderSavecode', () => {
   it('avec save: titre, code, 4 labels de boutons', () => {
     const ctx = fakeCtx();
-    const world = { savecode: createSavecode({ bestLevel: 7 }), menuTick: 0 };
+    const world = { savecode: createSavecode({ record: 7 }), menuTick: 0 };
     renderSavecode(ctx, world, fakeAssets());
     expect(ctx.texts[0]).toBe('SAUVEGARDE');
     expect(ctx.texts).toContain(world.savecode.code);
@@ -35,14 +35,14 @@ describe('renderSavecode', () => {
 
   it('sans save: PAS DE SAUVEGARDE affiché', () => {
     const ctx = fakeCtx();
-    const world = { savecode: createSavecode({ bestLevel: 0 }), menuTick: 0 };
+    const world = { savecode: createSavecode({ record: 0 }), menuTick: 0 };
     renderSavecode(ctx, world, fakeAssets());
     expect(ctx.texts).toContain('PAS DE SAUVEGARDE');
   });
 
   it('feedback affiché tant que menuTick < feedbackUntil, puis disparaît', () => {
     const ctx1 = fakeCtx();
-    const world = { savecode: createSavecode({ bestLevel: 7 }), menuTick: 10 };
+    const world = { savecode: createSavecode({ record: 7 }), menuTick: 10 };
     setFeedback(world.savecode, 'COPIÉ !', 10);
     renderSavecode(ctx1, world, fakeAssets());
     expect(ctx1.texts).toContain('COPIÉ !');

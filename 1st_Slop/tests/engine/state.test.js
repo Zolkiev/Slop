@@ -81,4 +81,12 @@ describe('stateMachine', () => {
     sm.to(States.MENU);
     expect(sm.get()).toBe(States.MENU);
   });
+
+  it('MENU -> CONFIRM -> PLAY et CONFIRM -> MENU sont permis', () => {
+    const sm = createStateMachine(States.MENU);
+    sm.to(States.CONFIRM);
+    expect(sm.can(States.PLAY)).toBe(true);
+    expect(sm.can(States.MENU)).toBe(true);
+    expect(sm.can(States.SAVECODE)).toBe(false);
+  });
 });

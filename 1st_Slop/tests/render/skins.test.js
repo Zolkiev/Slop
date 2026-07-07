@@ -38,11 +38,11 @@ function fakeAssets() {
   return Object.fromEntries(keys.map((k) => [k, { key: k, width: 64, height: 64 }]));
 }
 
-function worldWith(slot, bestLevel, skin = 0) {
-  const unlocked = bestLevel >= CONFIG.PATTERN_TIERS[slot];
+function worldWith(slot, record, skin = 0) {
+  const unlocked = record >= CONFIG.PATTERN_TIERS[slot];
   return {
     skin,
-    score: { bestLevel },
+    score: { record },
     skinsScreen: { slot, menu: createSkinsMenu(unlocked, skin, slot) },
   };
 }

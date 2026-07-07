@@ -81,7 +81,7 @@ describe('world', () => {
     expect(w.gatesThisLevel).toBe(0);
   });
 
-  it('finir un niveau met à jour bestLevel (et le persiste)', () => {
+  it('finir un niveau fait progresser level et record (et les persiste)', () => {
     const storage = fakeStorage();
     const w = createWorld(storage);
     press(w);
@@ -89,8 +89,10 @@ describe('world', () => {
     w.gatesThisLevel = gateGoalForLevel(w.level);
     w.obstacles = [{ x: 20, gapY: 0, gapH: CONFIG.HEIGHT, passed: false }];
     updateWorld(w, 1 / 60);
-    expect(w.score.bestLevel).toBe(4);
-    expect(storage.getItem('jetpackbot.bestLevel')).toBe('4');
+    expect(w.score.level).toBe(5);
+    expect(w.score.record).toBe(5);
+    expect(storage.getItem('jetpackbot.level')).toBe('5');
+    expect(storage.getItem('jetpackbot.bestLevel')).toBe('5');
   });
 
   it('startLevel applique la difficulté du niveau', () => {
@@ -244,7 +246,11 @@ describe('world', () => {
       for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
       escapeAction(w); // GAMEOVER -> MENU
       const b = w.menu.buttons[0]; // newgame
-      press(w, { x: b.x + 1, y: b.y + 1 }); // startLevel(1) -> tier 1
+      // score.level a été porté à 3 par le crash-save : NEW GAME passe par CONFIRM
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.CONFIRM);
+      const oui = w.confirm.buttons[0];
+      press(w, { x: oui.x + 1, y: oui.y + 1 }); // OUI -> startLevel(1) -> tier 1
       expect(w.bgSet).toBe(0);
     });
   });
@@ -475,13 +481,23 @@ describe('world', () => {
       return { getItem: (k) => d[k] ?? null, setItem: (k, v) => { d[k] = String(v); } };
     }
 
-    it('CONTINUE enabled avec une save, démarre au bestLevel', () => {
+    it('CONTINUE enabled avec une save, démarre au niveau courant (migration : level = record)', () => {
       const w = createWorld(storageWithBest(5));
       expect(w.menu.buttons[1].enabled).toBe(true);
       const b = w.menu.buttons[1];
       press(w, { x: b.x + 1, y: b.y + 1 });
       expect(w.sm.get()).toBe(States.PLAY);
       expect(w.level).toBe(5);
+    });
+
+    it('CONTINUE reprend la partie en cours, pas le record (retour Jael)', () => {
+      const storage = storageWithBest(10);          // vieille save niveau 10
+      storage.setItem('jetpackbot.level', '2');     // partie en cours au 2
+      const w = createWorld(storage);
+      const b = w.menu.buttons[1];                  // CONTINUE
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.level).toBe(2);
     });
 
     it('CONTINUE disabled sans save (clic = no-op)', () => {
@@ -540,13 +556,15 @@ describe('world', () => {
       expect(w.savecode.menu.focus).not.toBe(before);
     });
 
-    it('submitSaveCode restaure exactement, même vers le bas (saisie = geste délibéré)', () => {
+    it('submitSaveCode vers le bas : level régresse, record intact (saisie = geste délibéré)', () => {
       const storage = storageWithBest(14);
       const w = createWorld(storage);
       press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       expect(submitSaveCode(w, encodeSave({ bestLevel: 7 }))).toBe(true);
-      expect(w.score.bestLevel).toBe(7);
-      expect(storage.getItem('jetpackbot.bestLevel')).toBe('7');
+      expect(w.score.level).toBe(7);
+      expect(w.score.record).toBe(14);
+      expect(storage.getItem('jetpackbot.level')).toBe('7');
+      expect(storage.getItem('jetpackbot.bestLevel')).toBe('14');
       expect(w.menu.buttons[1].enabled).toBe(true); // CONTINUER -> niveau 7
     });
 
@@ -557,7 +575,8 @@ describe('world', () => {
       const ok = submitSaveCode(w, encodeSave({ bestLevel: 9 }));
       expect(ok).toBe(true);
       expect(w.sm.get()).toBe(States.MENU);
-      expect(w.score.bestLevel).toBe(9);
+      expect(w.score.level).toBe(9);
+      expect(w.score.record).toBe(9);
       expect(w.menu.buttons[1].enabled).toBe(true);
       expect(storage.getItem('jetpackbot.bestLevel')).toBe('9');
     });
@@ -567,18 +586,30 @@ describe('world', () => {
       press(w, { x: w.menu.buttons[4].x + 1, y: w.menu.buttons[4].y + 1 });
       expect(submitSaveCode(w, 'JB1-ZZZZZZ')).toBe(false);
       expect(w.sm.get()).toBe(States.SAVECODE);
-      expect(w.score.bestLevel).toBe(4);
+      expect(w.score.level).toBe(4);
     });
 
-    it('retour au MENU depuis la pause recrée le menu (CONTINUE reflète la save)', () => {
+    it('retour au MENU depuis la pause recrée le menu (CONTINUE reflète la partie en cours)', () => {
       const w = createWorld(fakeStorage());
       press(w); // newgame -> PLAY
-      w.score.bestLevel = 2; // progression pendant la partie
+      w.score.level = 2; // progression pendant la partie
       escapeAction(w); // PAUSE
       const b = w.pause.buttons[2]; // menu
       press(w, { x: b.x + 1, y: b.y + 1 });
       expect(w.sm.get()).toBe(States.MENU);
       expect(w.menu.buttons[1].enabled).toBe(true);
+    });
+
+    it('mourir au niveau 2 après reset ne réveille pas le record', () => {
+      const storage = storageWithBest(10);
+      storage.setItem('jetpackbot.level', '2');
+      const w = createWorld(storage);
+      startLevel(w, 2);
+      w.sm.to(States.PLAY);
+      for (let i = 0; i < 600 && w.sm.get() !== States.GAMEOVER; i += 1) updateWorld(w, 1 / 60);
+      expect(w.score.level).toBe(2);
+      expect(w.score.record).toBe(10);
+      expect(storage.getItem('jetpackbot.bestLevel')).toBe('10');
     });
   });
 
@@ -767,6 +798,67 @@ describe('world', () => {
       const before = w.skinsScreen.menu.focus;
       navMenu(w, 1);
       expect(w.skinsScreen.menu.focus).not.toBe(before);
+    });
+  });
+
+  describe('confirmation NEW GAME', () => {
+    function storageWithBest(level) {
+      const d = { 'jetpackbot.bestLevel': String(level) };
+      return { getItem: (k) => d[k] ?? null, setItem: (k, v) => { d[k] = String(v); } };
+    }
+
+    it('partie en cours > 1 : NEW GAME ouvre CONFIRM sans rien toucher', () => {
+      const storage = storageWithBest(10);
+      const w = createWorld(storage);
+      const b = w.menu.buttons[0];
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.CONFIRM);
+      expect(w.score.level).toBe(10);
+    });
+
+    it('OUI : level repart à 1, record intact, partie lancée au 1', () => {
+      const storage = storageWithBest(10);
+      const w = createWorld(storage);
+      press(w, { x: w.menu.buttons[0].x + 1, y: w.menu.buttons[0].y + 1 });
+      const oui = w.confirm.buttons[0];
+      press(w, { x: oui.x + 1, y: oui.y + 1 });
+      expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.level).toBe(1);
+      expect(w.score).toEqual({ level: 1, record: 10 });
+      expect(storage.getItem('jetpackbot.level')).toBe('1');
+    });
+
+    it('NON : retour MENU, rien ne change', () => {
+      const storage = storageWithBest(10);
+      const w = createWorld(storage);
+      press(w, { x: w.menu.buttons[0].x + 1, y: w.menu.buttons[0].y + 1 });
+      const non = w.confirm.buttons[1];
+      press(w, { x: non.x + 1, y: non.y + 1 });
+      expect(w.sm.get()).toBe(States.MENU);
+      expect(w.score.level).toBe(10);
+    });
+
+    it('Escape depuis CONFIRM = NON', () => {
+      const w = createWorld(storageWithBest(10));
+      press(w, { x: w.menu.buttons[0].x + 1, y: w.menu.buttons[0].y + 1 });
+      escapeAction(w);
+      expect(w.sm.get()).toBe(States.MENU);
+    });
+
+    it('clavier : nav + Enter (focus par défaut NON) ne reset pas', () => {
+      const w = createWorld(storageWithBest(10));
+      press(w, { x: w.menu.buttons[0].x + 1, y: w.menu.buttons[0].y + 1 });
+      press(w); // activate(focus NON)
+      expect(w.sm.get()).toBe(States.MENU);
+      expect(w.score.level).toBe(10);
+    });
+
+    it('partie en cours à 1 (ou vierge) : pas de confirmation, direct PLAY', () => {
+      const w = createWorld(fakeStorage());
+      const b = w.menu.buttons[0];
+      press(w, { x: b.x + 1, y: b.y + 1 });
+      expect(w.sm.get()).toBe(States.PLAY);
+      expect(w.level).toBe(1);
     });
   });
 });

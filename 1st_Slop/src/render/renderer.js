@@ -5,6 +5,7 @@ import { gateGoalForLevel } from '../game/level.js';
 import { CONFIG } from '../config.js';
 import { renderMenu } from './menu.js';
 import { renderPause } from './pause.js';
+import { renderConfirm } from './confirm.js';
 import { renderSavecode } from './savecode.js';
 import { renderOptions } from './options.js';
 import { drawButtons } from './buttons.js';
@@ -70,7 +71,8 @@ export function renderWorld(ctx, world, assets) {
   // 4. Robot (sprites du skin sélectionné, 64×64 dessinés en 44×44)
   const hudState = world.sm.get();
   if (hudState !== States.MENU && hudState !== States.SAVECODE
-      && hudState !== States.OPTIONS && hudState !== States.SKINS) {
+      && hudState !== States.OPTIONS && hudState !== States.SKINS
+      && hudState !== States.CONFIRM) {
     const r = world.robot;
     const key = spriteKey(world.skin);
     let sprite = assets[key]; // idle / chute
@@ -121,6 +123,8 @@ export function renderWorld(ctx, world, assets) {
     renderOptions(ctx, world, assets);
   } else if (state === States.SKINS) {
     renderSkins(ctx, world, assets);
+  } else if (state === States.CONFIRM) {
+    renderConfirm(ctx, world, assets);
   } else if (state === States.LEVEL_COMPLETE) {
     ctx.fillText(`NIVEAU ${world.level} OK`, CONFIG.WIDTH / 2, 240);
     ctx.font = '16px system-ui';
@@ -129,7 +133,7 @@ export function renderWorld(ctx, world, assets) {
     ctx.fillText('GAME OVER', CONFIG.WIDTH / 2, 240);
     ctx.font = '16px system-ui';
     ctx.fillText(`Niveau ${world.level}`, CONFIG.WIDTH / 2, 280);
-    ctx.fillText(`Best: niveau ${world.score.bestLevel}`, CONFIG.WIDTH / 2, 308);
+    ctx.fillText(`Best: niveau ${world.score.record}`, CONFIG.WIDTH / 2, 308);
     drawButtons(ctx, world.gameover, assets);
   }
 

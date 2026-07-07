@@ -6,14 +6,14 @@ import {
 } from './obstacles.js';
 import { nextSalve, flow } from './patterns.js';
 import { aabb, hitsBounds } from './collision.js';
-import { createScore, checkPass, finalizeLevel, restoreSave } from './score.js';
+import { createScore, checkPass, saveProgress, applyCode, resetProgress } from './score.js';
 import { gateGoalForLevel, difficultyForLevel } from './level.js';
 import { createLayer, updateLayer } from './background.js';
 import { createParticleField, spawnReactor, updateParticles } from './particles.js';
 import { createAmbiance, updateAmbiance } from './ambiance.js';
 import { createTwinkles } from './twinkle.js';
 import { CONFIG } from '../config.js';
-import { createMenu, createPauseMenu, createGameoverMenu, createSkinsMenu, hitTest, activate, moveFocus, inRect } from './menu.js';
+import { createMenu, createPauseMenu, createGameoverMenu, createSkinsMenu, createConfirmMenu, hitTest, activate, moveFocus, inRect } from './menu.js';
 import { createSavecode, setFeedback } from './savecode.js';
 import { decodeSave } from './save.js';
 import { createOptions, moveOptionsFocus, adjust, barHitTest } from './options.js';
@@ -32,12 +32,13 @@ export function createWorld(storage) {
   const score = createScore(storage);
   const world = {
     sm: createStateMachine(States.MENU),
-    menu: createMenu(score.bestLevel >= 1),
+    menu: createMenu(score.level >= 1),
     pause: createPauseMenu(),
     gameover: createGameoverMenu(),
+    confirm: null,
     savecode: createSavecode(score),
     settings: loadSettings(storage),
-    skin: loadSkin(storage, score.bestLevel),
+    skin: loadSkin(storage, score.record),
     skinsScreen: null,
     options: null,
     optionsReturn: 'menu',
@@ -88,8 +89,16 @@ export function startLevel(world, level) {
 }
 
 export function toMenu(world) {
-  world.menu = createMenu(world.score.bestLevel >= 1);
+  world.menu = createMenu(world.score.level >= 1);
   world.sm.to(States.MENU);
+}
+
+// NEW GAME confirmé (ou direct si rien à écraser) : la partie repart au
+// niveau 1, le record (skins) reste acquis — voir resetProgress.
+function launchNewGame(world) {
+  resetProgress(world.score, world.storage);
+  startLevel(world, 1);
+  world.sm.to(States.PLAY);
 }
 
 function openOptions(world, from) {
@@ -106,7 +115,7 @@ function closeOptions(world) {
 // Hangar de skins — le menu CHOISIR/RETOUR est recréé à chaque changement
 // de slot (libellé ACTUEL et enabled dépendent du slot affiché).
 function skinsMenuFor(world, slot) {
-  return createSkinsMenu(skinUnlocked(slot, world.score.bestLevel), world.skin, slot);
+  return createSkinsMenu(skinUnlocked(slot, world.score.record), world.skin, slot);
 }
 
 function openSkins(world) {
@@ -152,10 +161,15 @@ export function press(world, pointer) {
   if (state === States.MENU) {
     const id = pointer ? hitTest(world.menu, pointer.x, pointer.y) : activate(world.menu);
     if (id === 'newgame') {
-      startLevel(world, 1);
-      world.sm.to(States.PLAY);
+      // Partie en cours déjà entamée : confirmer avant d'écraser (NON par défaut).
+      if (world.score.level > 1) {
+        world.confirm = createConfirmMenu();
+        world.sm.to(States.CONFIRM);
+      } else {
+        launchNewGame(world);
+      }
     } else if (id === 'continue') {
-      startLevel(world, world.score.bestLevel);
+      startLevel(world, world.score.level);
       world.sm.to(States.PLAY);
     } else if (id === 'code') {
       world.savecode = createSavecode(world.score);
@@ -246,6 +260,11 @@ export function press(world, pointer) {
       }
       // null -> no-op
     }
+  } else if (state === States.CONFIRM) {
+    const id = pointer ? hitTest(world.confirm, pointer.x, pointer.y) : activate(world.confirm);
+    if (id === 'yes') launchNewGame(world);
+    else if (id === 'no') toMenu(world);
+    // null -> no-op
   }
 }
 
@@ -257,6 +276,7 @@ export function navMenu(world, dir) {
   else if (s === States.SAVECODE) moveFocus(world.savecode.menu, dir);
   else if (s === States.OPTIONS) moveOptionsFocus(world.options, dir);
   else if (s === States.SKINS) moveFocus(world.skinsScreen.menu, dir);
+  else if (s === States.CONFIRM) moveFocus(world.confirm, dir);
 }
 
 export function escapeAction(world) {
@@ -267,12 +287,13 @@ export function escapeAction(world) {
   else if (s === States.SAVECODE) toMenu(world);
   else if (s === States.OPTIONS) closeOptions(world);
   else if (s === States.SKINS) toMenu(world);
+  else if (s === States.CONFIRM) toMenu(world);
 }
 
 export function submitSaveCode(world, text) {
   const decoded = decodeSave(text);
   if (!decoded) return false;
-  restoreSave(world.score, decoded.bestLevel, world.storage);
+  applyCode(world.score, decoded.bestLevel, world.storage);
   toMenu(world);
   return true;
 }
@@ -310,7 +331,7 @@ export function updateWorld(world, dt) {
   }
 
   if (world.gatesThisLevel >= gateGoalForLevel(world.level)) {
-    finalizeLevel(world.score, world.level, world.storage);
+    saveProgress(world.score, world.level + 1, world.storage);
     world.events.push('levelcomplete');
     world.sm.to(States.LEVEL_COMPLETE);
     return;
@@ -328,7 +349,7 @@ export function updateWorld(world, dt) {
     world.shake = CONFIG.SHAKE_TIME;
     world.flash = CONFIG.FLASH_TIME;
     world.robot.alive = false;
-    finalizeLevel(world.score, world.level, world.storage);
+    saveProgress(world.score, world.level, world.storage);
     world.gameover = createGameoverMenu();
     world.sm.to(States.GAMEOVER);
   }

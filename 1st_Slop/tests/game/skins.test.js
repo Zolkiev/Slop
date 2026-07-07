@@ -21,7 +21,7 @@ describe('skins — table', () => {
 });
 
 describe('skinUnlocked', () => {
-  it('PROTO (0) est toujours débloqué, même à bestLevel 0 (nouveau joueur)', () => {
+  it('PROTO (0) est toujours débloqué, même à record 0 (nouveau joueur)', () => {
     expect(skinUnlocked(0, 0)).toBe(true);
   });
 
@@ -33,12 +33,12 @@ describe('skinUnlocked', () => {
     }
   });
 
-  it('bestLevel 2: seul PROTO est débloqué', () => {
+  it('record 2: seul PROTO est débloqué', () => {
     expect([0, 1, 2, 3, 4].map((i) => skinUnlocked(i, 2)))
       .toEqual([true, false, false, false, false]);
   });
 
-  it('bestLevel 10: tout est débloqué', () => {
+  it('record 10: tout est débloqué', () => {
     expect([0, 1, 2, 3, 4].every((i) => skinUnlocked(i, 10))).toBe(true);
   });
 });
@@ -57,13 +57,13 @@ describe('loadSkin / saveSkin (localStorage jetpackbot.skin)', () => {
     expect(loadSkin(undefined, 10)).toBe(0);
   });
 
-  it("'2' avec bestLevel 5 -> 2 (débloqué)", () => {
+  it("'2' avec record 5 -> 2 (débloqué)", () => {
     const s = fakeStorage();
     s.setItem('jetpackbot.skin', '2');
     expect(loadSkin(s, 5)).toBe(2);
   });
 
-  it("'4' avec bestLevel 5 -> 0 (verrouillé pour ce bestLevel)", () => {
+  it("'4' avec record 5 -> 0 (verrouillé pour ce record)", () => {
     const s = fakeStorage();
     s.setItem('jetpackbot.skin', '4');
     expect(loadSkin(s, 5)).toBe(0);

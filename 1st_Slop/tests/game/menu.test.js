@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createMenu, createSavecodeMenu, createPauseMenu, createGameoverMenu, createSkinsMenu, hitTest, inRect, moveFocus, focusedId, activate } from '../../src/game/menu.js';
+import { createMenu, createSavecodeMenu, createPauseMenu, createGameoverMenu, createSkinsMenu, createConfirmMenu, hitTest, inRect, moveFocus, focusedId, activate } from '../../src/game/menu.js';
 import { CONFIG } from '../../src/config.js';
 
 describe('menu', () => {
@@ -149,5 +149,12 @@ describe('menu', () => {
     expect(m.buttons[0].x).toBe(CONFIG.SKINS_BTN.x);
     expect(m.buttons[0].y).toBe(CONFIG.SKINS_BTN.y0);
     expect(m.buttons[1].y).toBe(CONFIG.SKINS_BTN.y0 + CONFIG.SKINS_BTN.gap);
+  });
+
+  it('createConfirmMenu : OUI/NON, focus initial sur NON', () => {
+    const m = createConfirmMenu();
+    expect(m.buttons.map((b) => b.id)).toEqual(['yes', 'no']);
+    expect(m.buttons.every((b) => b.enabled)).toBe(true);
+    expect(m.focus).toBe(1);
   });
 });

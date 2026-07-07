@@ -26,7 +26,7 @@ function drawSilhouette(ctx, sprite, x, y, size, makeCanvas) {
 // Écran hangar — dessiné par-dessus le décor parallaxe vivant (comme le menu).
 export function renderSkins(ctx, world, assets, makeCanvas = defaultMakeCanvas) {
   const { slot } = world.skinsScreen;
-  const unlocked = skinUnlocked(slot, world.score.bestLevel);
+  const unlocked = skinUnlocked(slot, world.score.record);
   const P = CONFIG.SKINS_PREVIEW;
   const sprite = assets[spriteKey(slot)];
 
