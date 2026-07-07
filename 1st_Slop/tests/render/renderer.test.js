@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderWorld } from '../../src/render/renderer.js';
 import { createWorld, press } from '../../src/game/world.js';
+import { States } from '../../src/engine/state.js';
 
 function fakeStorage() {
   const d = {};
@@ -74,5 +75,20 @@ describe('renderWorld — skin en jeu', () => {
     const ctx = fakeCtx();
     renderWorld(ctx, w, fakeAssets());
     expect(ctx.drawn.map((d) => d.img.key)).toContain('robot');
+  });
+});
+
+describe('renderWorld — écran CONFIRM', () => {
+  it('le robot est masqué comme sur les autres écrans de menu', () => {
+    const w = createWorld(fakeStorage());
+    w.bgSet = 0;
+    w.score.level = 5; // partie entamée -> NEW GAME demande confirmation
+    press(w); // MENU -> CONFIRM (focus NEW GAME)
+    const ctx = fakeCtx();
+    renderWorld(ctx, w, fakeAssets());
+    const keys = ctx.drawn.map((d) => d.img.key);
+    expect(w.sm.get()).toBe(States.CONFIRM);
+    expect(keys).not.toContain('robot');
+    expect(ctx.texts).toContain('REPARTIR AU NIVEAU 1 ?');
   });
 });

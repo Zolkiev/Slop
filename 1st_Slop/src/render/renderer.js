@@ -71,7 +71,8 @@ export function renderWorld(ctx, world, assets) {
   // 4. Robot (sprites du skin sélectionné, 64×64 dessinés en 44×44)
   const hudState = world.sm.get();
   if (hudState !== States.MENU && hudState !== States.SAVECODE
-      && hudState !== States.OPTIONS && hudState !== States.SKINS) {
+      && hudState !== States.OPTIONS && hudState !== States.SKINS
+      && hudState !== States.CONFIRM) {
     const r = world.robot;
     const key = spriteKey(world.skin);
     let sprite = assets[key]; // idle / chute
