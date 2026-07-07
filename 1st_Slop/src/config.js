@@ -92,4 +92,8 @@ export const CONFIG = {
   SAFETY_UP: 0.55,   // marge de sécurité sur la capacité de montée entre 2 portes
   SAFETY_DOWN: 0.6,  // idem descente (plus permissive : la gravité aide)
   PATTERN_TIERS: [1, 3, 5, 7, 10], // niveaux d'entrée des tiers de motifs
+
+  // Seuils de déblocage des skins (source unique — les 5 premiers = entrées
+  // des mondes, les suivants sont des objectifs au-delà de l'orbite).
+  SKIN_THRESHOLDS: [1, 3, 5, 7, 10, 15],
 };

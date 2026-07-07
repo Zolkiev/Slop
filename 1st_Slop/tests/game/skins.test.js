@@ -8,15 +8,20 @@ function fakeStorage() {
 }
 
 describe('skins — table', () => {
-  it('5 skins, un par tier, ids et noms attendus', () => {
-    expect(SKINS.map((s) => s.id)).toEqual(['proto', 'forge', 'venin', 'orage', 'nova']);
-    expect(SKINS.map((s) => s.name)).toEqual(['PROTO', 'FORGE', 'VENIN', 'ORAGE', 'NOVA']);
-    expect(SKINS.length).toBe(CONFIG.PATTERN_TIERS.length);
+  it('6 skins, ids et noms attendus, un seuil chacun', () => {
+    expect(SKINS.map((s) => s.id)).toEqual(['proto', 'forge', 'venin', 'orage', 'nova', 'vortex']);
+    expect(SKINS.map((s) => s.name)).toEqual(['PROTO', 'FORGE', 'VENIN', 'ORAGE', 'NOVA', 'VORTEX']);
+    expect(SKINS.length).toBe(CONFIG.SKIN_THRESHOLDS.length);
   });
 
-  it('accents: cyan historique pour PROTO puis un accent par monde', () => {
+  it('accents: un par skin, rouge néon pour VORTEX', () => {
     expect(SKINS.map((s) => s.accent))
-      .toEqual(['#3ef0ff', '#ff9a3e', '#7dff3e', '#c93eff', '#fff7d6']);
+      .toEqual(['#3ef0ff', '#ff9a3e', '#7dff3e', '#c93eff', '#fff7d6', '#ff3e5e']);
+  });
+
+  it('les 5 premiers seuils restent ceux des tiers de patterns (mondes)', () => {
+    expect(CONFIG.SKIN_THRESHOLDS.slice(0, 5)).toEqual(CONFIG.PATTERN_TIERS);
+    expect(CONFIG.SKIN_THRESHOLDS[5]).toBe(15);
   });
 });
 
@@ -25,8 +30,8 @@ describe('skinUnlocked', () => {
     expect(skinUnlocked(0, 0)).toBe(true);
   });
 
-  it('frontières des seuils PATTERN_TIERS (3/5/7/10)', () => {
-    for (const [i, seuil] of CONFIG.PATTERN_TIERS.entries()) {
+  it('frontières de tous les seuils (3/5/7/10/15)', () => {
+    for (const [i, seuil] of CONFIG.SKIN_THRESHOLDS.entries()) {
       if (i === 0) continue; // PROTO : toujours débloqué (testé ci-dessus)
       expect(skinUnlocked(i, seuil)).toBe(true);
       expect(skinUnlocked(i, seuil - 1)).toBe(false);
@@ -34,12 +39,14 @@ describe('skinUnlocked', () => {
   });
 
   it('record 2: seul PROTO est débloqué', () => {
-    expect([0, 1, 2, 3, 4].map((i) => skinUnlocked(i, 2)))
-      .toEqual([true, false, false, false, false]);
+    expect([0, 1, 2, 3, 4, 5].map((i) => skinUnlocked(i, 2)))
+      .toEqual([true, false, false, false, false, false]);
   });
 
-  it('record 10: tout est débloqué', () => {
-    expect([0, 1, 2, 3, 4].every((i) => skinUnlocked(i, 10))).toBe(true);
+  it('record 10: tout sauf VORTEX ; record 15: tout', () => {
+    expect([0, 1, 2, 3, 4, 5].map((i) => skinUnlocked(i, 10)))
+      .toEqual([true, true, true, true, true, false]);
+    expect([0, 1, 2, 3, 4, 5].every((i) => skinUnlocked(i, 15))).toBe(true);
   });
 });
 
