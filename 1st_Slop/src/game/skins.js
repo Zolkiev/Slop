@@ -11,6 +11,12 @@ export const SKINS = [
   { id: 'orage', name: 'ORAGE', accent: '#c93eff' }, // tempête néon (violet)
   { id: 'nova', name: 'NOVA', accent: '#fff7d6' },   // orbite (blanc doré)
   { id: 'vortex', name: 'VORTEX', accent: '#ff3e5e' }, // drone (rouge néon, seuil 15)
+  { id: 'titan', name: 'TITAN', accent: '#ffd23e' },   // mécha trapu (jaune chantier, seuil 18)
+  { id: 'abysse', name: 'ABYSSE', accent: '#3e6bff' }, // poisson-sous-marin (bleu abyssal, seuil 22)
+  { id: 'zenith', name: 'ZENITH', accent: '#3effb2' }, // soucoupe (menthe, seuil 26)
+  { id: 'ronin', name: 'RONIN', accent: '#ff3ec8' },   // samouraï (magenta, seuil 32)
+  { id: 'givre', name: 'GIVRE', accent: '#bfe8ff' },   // cristal de glace (bleu glacier, seuil 40)
+  { id: 'omega', name: 'OMEGA', accent: '#e0c8ff' },   // l'ultime (violet plasma, seuil 50)
 ];
 
 // Préférence d'appareil (convention volumes) — PAS dans le code de sauvegarde.
