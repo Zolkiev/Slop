@@ -27,7 +27,7 @@ function applyBgSet(world, set) {
   world.bgSet = set;
   world.layers[0].speedFactor = CONFIG.BG_FAR_SPEED[set];
   world.layers[0].offset = 0;
-  resetBgEvents(world.bgEvents, world.rand); // nouvel écran, nouveau tirage
+  resetBgEvents(world.bgEvents, set); // nouvel écran : premier événement rapide
 }
 
 export function createWorld(storage) {
@@ -64,7 +64,7 @@ export function createWorld(storage) {
     particles: createParticleField(),
     ambiance: createAmbiance(Math.random, 40, CONFIG.WIDTH, CONFIG.HEIGHT),
     twinkles: createTwinkles(Math.random, 50, CONFIG.WIDTH, CONFIG.HEIGHT),
-    bgEvents: createBgEvents(Math.random),
+    bgEvents: createBgEvents(),
     shake: 0,
     flash: 0,
   };

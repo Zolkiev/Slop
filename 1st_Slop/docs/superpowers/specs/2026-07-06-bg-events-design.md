@@ -32,8 +32,16 @@ le flash.
 
 ## Cadence et lisibilité
 
-- Un événement toutes les **6 à 12 s** (tirage uniforme via `world.rand`),
-  un seul actif à la fois. Timer réarmé à la fin de l'événement.
+- ~~Un événement toutes les **6 à 12 s** (tirage uniforme via `world.rand`),
+  un seul actif à la fois. Timer réarmé à la fin de l'événement.~~
+  **AMENDÉ au gate Jael du 08/07** (« si tu meurs, tu vois jamais les
+  animations ») : cadence PAR DÉCOR — premier déclenchement rapide
+  (`first`, aussi utilisé à chaque restart), puis relance tirée dans
+  `next` à la fin de l'événement. Un seul actif à la fois, inchangé.
+  Table `CADENCE` dans `src/game/bgevents.js` : rafale 1,5 s puis 4-6 s ;
+  torchère 0,6 s puis enchaînée en continu (« la fumée verte, c'est tout
+  le temps ») ; oiseaux 1,5 s puis 5-8 s ; foudre 2 s puis 5-6 s (chiffres
+  de Jael) ; étoile 2 s puis 4-6 s.
 - Actif partout où le décor est visible (PLAY, menu vitrine, pause —
   même politique d'update que `ambiance`).
 - **Lisibilité gameplay non négociable** : tout est dessiné ENTRE le fond

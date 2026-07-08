@@ -1,9 +1,17 @@
 import { CONFIG } from '../config.js';
 
-// Un événement signature par décor (spec 2026-07-06-bg-events-design).
-// Cadence : un déclenchement toutes les 6-12 s, un seul actif à la fois.
-const DELAY_MIN = 6;
-const DELAY_RANGE = 6;
+// Un événement signature par décor (spec 2026-07-06-bg-events-design,
+// cadence amendée au gate Jael du 08/07) : premier déclenchement rapide
+// (visible même sur une partie courte — le restart réarme sur `first`),
+// puis relance régulière tirée dans `next` à la fin de chaque événement.
+// Un seul actif à la fois ; torchère : next [0,0] = enchaînée en continu.
+const CADENCE = [
+  { first: 1.5, next: [4, 6] },  // rafale néon
+  { first: 0.6, next: [0, 0] },  // torchère (la fumée verte brûle tout le temps)
+  { first: 1.5, next: [5, 8] },  // oiseaux (la traversée elle-même dure 9 s)
+  { first: 2, next: [5, 6] },    // foudre (« premier à 2 s, puis toutes les 5-6 s »)
+  { first: 2, next: [4, 6] },    // étoile filante
+];
 
 // Bouches de cheminées sur bg-far-1, en ESPACE IMAGE (canvas 360×643) —
 // repérées aux bases des panaches verts de l'asset natif ; le renderer
@@ -26,17 +34,15 @@ const EVENTS = [
   }),
 ];
 
-function drawDelay(rand) {
-  return DELAY_MIN + rand() * DELAY_RANGE;
+export function createBgEvents() {
+  // Désarmé à la création : armé par resetBgEvents au premier applyBgSet
+  // (le délai dépend du décor, inconnu ici).
+  return { timer: Infinity, event: null };
 }
 
-export function createBgEvents(rand) {
-  return { timer: drawDelay(rand), event: null };
-}
-
-export function resetBgEvents(ev, rand) {
+export function resetBgEvents(ev, bgSet) {
   ev.event = null;
-  ev.timer = drawDelay(rand);
+  ev.timer = CADENCE[bgSet].first;
 }
 
 export function updateBgEvents(ev, dt, bgSet, rand) {
@@ -44,7 +50,8 @@ export function updateBgEvents(ev, dt, bgSet, rand) {
     ev.event.t += dt;
     if (ev.event.t >= ev.event.dur) {
       ev.event = null;
-      ev.timer = drawDelay(rand);
+      const [min, max] = CADENCE[bgSet].next;
+      ev.timer = min + rand() * (max - min);
     }
     return;
   }

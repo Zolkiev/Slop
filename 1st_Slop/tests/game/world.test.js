@@ -863,11 +863,11 @@ describe('world', () => {
   });
 
   describe('événements de fond (bgEvents)', () => {
-    it('createWorld arme les événements : timer dans [6, 12), aucun actif', () => {
+    it('createWorld arme les événements : premier déclenchement rapide (≤ 2 s), aucun actif', () => {
       const w = createWorld(fakeStorage());
       expect(w.bgEvents.event).toBe(null);
-      expect(w.bgEvents.timer).toBeGreaterThanOrEqual(6);
-      expect(w.bgEvents.timer).toBeLessThan(12);
+      expect(w.bgEvents.timer).toBeGreaterThan(0);
+      expect(w.bgEvents.timer).toBeLessThanOrEqual(2);
     });
 
     it('updateWorld fait vivre les événements même au MENU (vitrine)', () => {
@@ -882,7 +882,7 @@ describe('world', () => {
       w.bgEvents.event = { kind: 'etoile', t: 0.1, dur: 0.7, x0: 0, y0: 0, vx: 260, vy: 110 };
       startLevel(w, 7);
       expect(w.bgEvents.event).toBe(null);
-      expect(w.bgEvents.timer).toBeGreaterThanOrEqual(6);
+      expect(w.bgEvents.timer).toBe(2); // foudre : premier éclair à 2 s, même après un restart
     });
 
     it('un événement finit par se déclencher en jeu puis s éteint', () => {
