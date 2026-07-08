@@ -5,10 +5,11 @@ import { CONFIG } from '../config.js';
 const DELAY_MIN = 6;
 const DELAY_RANGE = 6;
 
-// Sommets de cheminées sur bg-far-1 (canvas 360×640) — à ajuster au
-// vérif visuel si le halo ne tombe pas pile sur les fumées vertes.
+// Bouches de cheminées sur bg-far-1, en ESPACE IMAGE (canvas 360×643) —
+// repérées aux bases des panaches verts de l'asset natif ; le renderer
+// convertit en espace écran au dessin (le fond défile, le halo suit).
 const TORCH_SPOTS = [
-  { x: 305, y: 298 }, { x: 78, y: 248 }, { x: 330, y: 300 },
+  { x: 73, y: 339 }, { x: 324, y: 320 },
 ];
 
 // Générateur de params par décor. Durées courtes = événement ponctuel ;

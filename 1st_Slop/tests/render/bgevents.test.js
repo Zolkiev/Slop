@@ -12,8 +12,8 @@ function fakeCtx() {
   };
 }
 
-function worldWith(event) {
-  return { bgEvents: { timer: 6, event } };
+function worldWith(event, farOffset = 0) {
+  return { bgEvents: { timer: 6, event }, layers: [{ offset: farOffset }] };
 }
 
 describe('renderBgEvents', () => {
@@ -44,11 +44,23 @@ describe('renderBgEvents', () => {
     expect(ctx.calls.length).toBe(15);
   });
 
-  it('torchère : 3 halos concentriques sur le spot', () => {
+  it('torchère : 3 halos concentriques ancrés à l image (suivent le défilement)', () => {
     const ctx = fakeCtx();
-    renderBgEvents(ctx, worldWith({ kind: 'torchere', t: 1, dur: 2.5, spot: { x: 46, y: 268 } }));
+    renderBgEvents(ctx, worldWith({ kind: 'torchere', t: 1, dur: 2.5, spot: { x: 73, y: 339 } }));
     expect(ctx.calls.length).toBe(3);
+    expect(ctx.calls[0][0]).toBe(73 - 14); // offset 0 : espace image = espace écran
     expect(ctx.globalAlpha).toBe(1);
+
+    const scrolled = fakeCtx();
+    renderBgEvents(scrolled, worldWith({ kind: 'torchere', t: 1, dur: 2.5, spot: { x: 73, y: 339 } }, 50));
+    expect(scrolled.calls[0][0]).toBe(73 - 50 - 14); // le halo suit sa cheminée
+  });
+
+  it('torchère : la position écran se replie modulo la largeur (fond tuilé)', () => {
+    const ctx = fakeCtx();
+    renderBgEvents(ctx, worldWith({ kind: 'torchere', t: 1, dur: 2.5, spot: { x: 73, y: 339 } }, 100));
+    // 73 - 100 = -27 -> la cheminée visible est celle de la 2e tuile : x = 333
+    expect(ctx.calls[0][0]).toBe(333 - 14);
   });
 
   it('rafale : no-op ici (gérée par le boost des twinkles)', () => {

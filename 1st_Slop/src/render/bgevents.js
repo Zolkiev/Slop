@@ -37,14 +37,18 @@ function drawOiseaux(ctx, e) {
   }
 }
 
-function drawTorchere(ctx, e) {
+function drawTorchere(ctx, e, farOffset) {
+  // Le spot est en espace image (bg-far-1 défile) : conversion en espace
+  // écran avec repli sur la tuile visible, pour que le halo suive sa cheminée.
+  const farOff = farOffset % CONFIG.WIDTH;
+  const sx = (((e.spot.x - farOff) % CONFIG.WIDTH) + CONFIG.WIDTH) % CONFIG.WIDTH;
   const env = Math.min(1, e.t / 0.4, (e.dur - e.t) / 0.4); // fondu in/out
   const pulse = 0.5 + 0.5 * Math.sin(e.t * 6);
   const base = 0.26 * env * (0.6 + 0.4 * pulse);
   ctx.fillStyle = '#7dffb0';
   for (const [r, a] of [[14, base * 0.35], [9, base * 0.6], [5, base]]) {
     ctx.globalAlpha = a;
-    ctx.fillRect(e.spot.x - r, e.spot.y - r, r * 2, r * 2);
+    ctx.fillRect(sx - r, e.spot.y - r, r * 2, r * 2);
   }
   ctx.globalAlpha = 1;
 }
@@ -55,6 +59,6 @@ export function renderBgEvents(ctx, world) {
   if (e.kind === 'foudre') drawFoudre(ctx, e);
   else if (e.kind === 'etoile') drawEtoile(ctx, e);
   else if (e.kind === 'oiseaux') drawOiseaux(ctx, e);
-  else if (e.kind === 'torchere') drawTorchere(ctx, e);
+  else if (e.kind === 'torchere') drawTorchere(ctx, e, world.layers[0].offset);
   // 'rafale' : boost des twinkles, rendu à l'étape 2a du renderer.
 }
