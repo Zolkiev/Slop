@@ -8,20 +8,29 @@ function fakeStorage() {
 }
 
 describe('skins — table', () => {
-  it('6 skins, ids et noms attendus, un seuil chacun', () => {
-    expect(SKINS.map((s) => s.id)).toEqual(['proto', 'forge', 'venin', 'orage', 'nova', 'vortex']);
-    expect(SKINS.map((s) => s.name)).toEqual(['PROTO', 'FORGE', 'VENIN', 'ORAGE', 'NOVA', 'VORTEX']);
+  it('12 skins, ids et noms attendus, un seuil chacun', () => {
+    expect(SKINS.map((s) => s.id)).toEqual([
+      'proto', 'forge', 'venin', 'orage', 'nova', 'vortex',
+      'titan', 'abysse', 'zenith', 'ronin', 'givre', 'omega',
+    ]);
+    expect(SKINS.map((s) => s.name)).toEqual([
+      'PROTO', 'FORGE', 'VENIN', 'ORAGE', 'NOVA', 'VORTEX',
+      'TITAN', 'ABYSSE', 'ZENITH', 'RONIN', 'GIVRE', 'OMEGA',
+    ]);
     expect(SKINS.length).toBe(CONFIG.SKIN_THRESHOLDS.length);
   });
 
-  it('accents: un par skin, rouge néon pour VORTEX', () => {
-    expect(SKINS.map((s) => s.accent))
-      .toEqual(['#3ef0ff', '#ff9a3e', '#7dff3e', '#c93eff', '#fff7d6', '#ff3e5e']);
+  it('accents: un par skin, tous distincts', () => {
+    expect(SKINS.map((s) => s.accent)).toEqual([
+      '#3ef0ff', '#ff9a3e', '#7dff3e', '#c93eff', '#fff7d6', '#ff3e5e',
+      '#ffd23e', '#3e6bff', '#3effb2', '#ff3ec8', '#bfe8ff', '#e0c8ff',
+    ]);
+    expect(new Set(SKINS.map((s) => s.accent)).size).toBe(12);
   });
 
-  it('les 5 premiers seuils restent ceux des tiers de patterns (mondes)', () => {
+  it('seuils: les 5 premiers = tiers de patterns, puis 15/18/22/26/32/40/50', () => {
     expect(CONFIG.SKIN_THRESHOLDS.slice(0, 5)).toEqual(CONFIG.PATTERN_TIERS);
-    expect(CONFIG.SKIN_THRESHOLDS[5]).toBe(15);
+    expect(CONFIG.SKIN_THRESHOLDS.slice(5)).toEqual([15, 18, 22, 26, 32, 40, 50]);
   });
 });
 
@@ -30,7 +39,7 @@ describe('skinUnlocked', () => {
     expect(skinUnlocked(0, 0)).toBe(true);
   });
 
-  it('frontières de tous les seuils (3/5/7/10/15)', () => {
+  it('frontières de tous les seuils', () => {
     for (const [i, seuil] of CONFIG.SKIN_THRESHOLDS.entries()) {
       if (i === 0) continue; // PROTO : toujours débloqué (testé ci-dessus)
       expect(skinUnlocked(i, seuil)).toBe(true);
@@ -39,14 +48,14 @@ describe('skinUnlocked', () => {
   });
 
   it('record 2: seul PROTO est débloqué', () => {
-    expect([0, 1, 2, 3, 4, 5].map((i) => skinUnlocked(i, 2)))
-      .toEqual([true, false, false, false, false, false]);
+    expect(SKINS.map((_, i) => skinUnlocked(i, 2)))
+      .toEqual([true, ...Array(11).fill(false)]);
   });
 
-  it('record 10: tout sauf VORTEX ; record 15: tout', () => {
-    expect([0, 1, 2, 3, 4, 5].map((i) => skinUnlocked(i, 10)))
-      .toEqual([true, true, true, true, true, false]);
-    expect([0, 1, 2, 3, 4, 5].every((i) => skinUnlocked(i, 15))).toBe(true);
+  it('record 15: tout jusqu à VORTEX, rien au-delà ; record 50: tout', () => {
+    expect(SKINS.map((_, i) => skinUnlocked(i, 15)))
+      .toEqual([...Array(6).fill(true), ...Array(6).fill(false)]);
+    expect(SKINS.every((_, i) => skinUnlocked(i, 50))).toBe(true);
   });
 });
 
@@ -76,8 +85,8 @@ describe('loadSkin / saveSkin (localStorage jetpackbot.skin)', () => {
     expect(loadSkin(s, 5)).toBe(0);
   });
 
-  it("gardes: 'zorg', '-1', '9', '2.5' -> 0", () => {
-    for (const raw of ['zorg', '-1', '9', '2.5']) {
+  it("gardes: 'zorg', '-1', '12', '2.5' -> 0", () => {
+    for (const raw of ['zorg', '-1', '12', '2.5']) {
       const s = fakeStorage();
       s.setItem('jetpackbot.skin', raw);
       expect(loadSkin(s, 10)).toBe(0);

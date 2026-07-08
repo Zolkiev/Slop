@@ -30,6 +30,24 @@ import robotS4Thrust1 from '../assets/robot-s4-thrust-1.png';
 import robotS5 from '../assets/robot-s5.png';
 import robotS5Thrust0 from '../assets/robot-s5-thrust-0.png';
 import robotS5Thrust1 from '../assets/robot-s5-thrust-1.png';
+import robotS6 from '../assets/robot-s6.png';
+import robotS6Thrust0 from '../assets/robot-s6-thrust-0.png';
+import robotS6Thrust1 from '../assets/robot-s6-thrust-1.png';
+import robotS7 from '../assets/robot-s7.png';
+import robotS7Thrust0 from '../assets/robot-s7-thrust-0.png';
+import robotS7Thrust1 from '../assets/robot-s7-thrust-1.png';
+import robotS8 from '../assets/robot-s8.png';
+import robotS8Thrust0 from '../assets/robot-s8-thrust-0.png';
+import robotS8Thrust1 from '../assets/robot-s8-thrust-1.png';
+import robotS9 from '../assets/robot-s9.png';
+import robotS9Thrust0 from '../assets/robot-s9-thrust-0.png';
+import robotS9Thrust1 from '../assets/robot-s9-thrust-1.png';
+import robotS10 from '../assets/robot-s10.png';
+import robotS10Thrust0 from '../assets/robot-s10-thrust-0.png';
+import robotS10Thrust1 from '../assets/robot-s10-thrust-1.png';
+import robotS11 from '../assets/robot-s11.png';
+import robotS11Thrust0 from '../assets/robot-s11-thrust-0.png';
+import robotS11Thrust1 from '../assets/robot-s11-thrust-1.png';
 import obstacleUrl from '../assets/obstacle.png';
 import bgFar0 from '../assets/bg-far-0.png';
 import bgFar1 from '../assets/bg-far-1.png';
@@ -143,6 +161,24 @@ const imagesPromise = loadImages({
   'robot-s5': robotS5,
   'robot-s5-thrust-0': robotS5Thrust0,
   'robot-s5-thrust-1': robotS5Thrust1,
+  'robot-s6': robotS6,
+  'robot-s6-thrust-0': robotS6Thrust0,
+  'robot-s6-thrust-1': robotS6Thrust1,
+  'robot-s7': robotS7,
+  'robot-s7-thrust-0': robotS7Thrust0,
+  'robot-s7-thrust-1': robotS7Thrust1,
+  'robot-s8': robotS8,
+  'robot-s8-thrust-0': robotS8Thrust0,
+  'robot-s8-thrust-1': robotS8Thrust1,
+  'robot-s9': robotS9,
+  'robot-s9-thrust-0': robotS9Thrust0,
+  'robot-s9-thrust-1': robotS9Thrust1,
+  'robot-s10': robotS10,
+  'robot-s10-thrust-0': robotS10Thrust0,
+  'robot-s10-thrust-1': robotS10Thrust1,
+  'robot-s11': robotS11,
+  'robot-s11-thrust-0': robotS11Thrust0,
+  'robot-s11-thrust-1': robotS11Thrust1,
   obstacle: obstacleUrl,
   'bg-far-0': bgFar0,
   'bg-far-1': bgFar1,

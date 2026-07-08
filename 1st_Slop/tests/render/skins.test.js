@@ -34,7 +34,7 @@ function fakeOffscreen() {
 }
 
 function fakeAssets() {
-  const keys = ['robot', 'robot-s1', 'robot-s2', 'robot-s3', 'robot-s4', 'robot-s5', 'btn-plate', 'btn-plate-focus'];
+  const keys = ['robot', 'robot-s1', 'robot-s2', 'robot-s3', 'robot-s4', 'robot-s5', 'robot-s6', 'robot-s7', 'robot-s8', 'robot-s9', 'robot-s10', 'robot-s11', 'btn-plate', 'btn-plate-focus'];
   return Object.fromEntries(keys.map((k) => [k, { key: k, width: 64, height: 64 }]));
 }
 
@@ -76,6 +76,14 @@ describe('renderSkins', () => {
     renderSkins(ctx, worldWith(5, 10), fakeAssets(), () => off);
     expect(ctx.texts).toContain('NIVEAU 15');
     expect(ctx.texts).not.toContain('VORTEX');
+  });
+
+  it('slot 11 (OMEGA) verrouillé à record 49: NIVEAU 50 affiché', () => {
+    const ctx = fakeCtx();
+    const off = fakeOffscreen();
+    renderSkins(ctx, worldWith(11, 49), fakeAssets(), () => off);
+    expect(ctx.texts).toContain('NIVEAU 50');
+    expect(ctx.texts).not.toContain('OMEGA');
   });
 
   it('flèches < > et boutons partagés dessinés', () => {

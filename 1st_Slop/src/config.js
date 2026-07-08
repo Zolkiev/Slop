@@ -95,5 +95,5 @@ export const CONFIG = {
 
   // Seuils de déblocage des skins (source unique — les 5 premiers = entrées
   // des mondes, les suivants sont des objectifs au-delà de l'orbite).
-  SKIN_THRESHOLDS: [1, 3, 5, 7, 10, 15],
+  SKIN_THRESHOLDS: [1, 3, 5, 7, 10, 15, 18, 22, 26, 32, 40, 50],
 };
