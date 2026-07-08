@@ -8,7 +8,7 @@ const DELAY_RANGE = 6;
 // Sommets de cheminées sur bg-far-1 (canvas 360×640) — à ajuster au
 // vérif visuel si le halo ne tombe pas pile sur les fumées vertes.
 const TORCH_SPOTS = [
-  { x: 46, y: 268 }, { x: 78, y: 248 }, { x: 330, y: 300 },
+  { x: 305, y: 298 }, { x: 78, y: 248 }, { x: 330, y: 300 },
 ];
 
 // Générateur de params par décor. Durées courtes = événement ponctuel ;
