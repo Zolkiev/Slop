@@ -141,6 +141,40 @@ async function edit(args, key) {
   saveJobImages(job, args);
 }
 
+async function animate(args, key) {
+  const inputBuf = readFileSync(join(PROJECT_ROOT, args.input));
+  const { width, height } = pngSize(inputBuf);
+  const frames = Number(args.frames || 8);
+  if (frames % 2 !== 0 || frames < 4 || frames > 16) throw new Error('frames doit être pair, entre 4 et 16');
+  if (width > 256 || height > 256) throw new Error(`entrée ${width}x${height} > 256x256`);
+  if (width * height * frames > 524288) throw new Error(`budget pixels dépassé: ${width * height * frames} > 524288`);
+  const body = {
+    first_frame: { image: { type: 'base64', base64: inputBuf.toString('base64'), format: 'png' }, width, height },
+    action: args.action,
+    frame_count: frames,
+  };
+  if (args.seed) body.seed = Number(args.seed);
+
+  console.log(`POST animate-with-text-v3  ${width}x${height}  ${frames} frames`);
+  console.log(`  "${args.action}"`);
+  const res = await fetch(`${API}/animate-with-text-v3`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`animate failed: ${res.status} ${await res.text()}`);
+  const { background_job_id: jobId } = await res.json();
+  console.log(`  job ${jobId} — polling…`);
+  const job = await pollJob(key, jobId);
+  saveJobImages(job, args);
+}
+
+async function balance(key) {
+  const res = await fetch(`${API}/balance`, { headers: { Authorization: `Bearer ${key}` } });
+  if (!res.ok) throw new Error(`balance failed: ${res.status} ${await res.text()}`);
+  console.log(JSON.stringify(await res.json()));
+}
+
 const [cmd, ...rest] = process.argv.slice(2);
 const args = parseArgs(rest);
 const key = loadKey();
@@ -160,9 +194,21 @@ if (cmd === 'generate') {
     console.error('ERROR:', e.message);
     process.exit(1);
   });
+} else if (cmd === 'animate') {
+  animate(args, key).catch((e) => {
+    console.error('ERROR:', e.message);
+    process.exit(1);
+  });
+} else if (cmd === 'balance') {
+  balance(key).catch((e) => {
+    console.error('ERROR:', e.message);
+    process.exit(1);
+  });
 } else {
   console.error('usage: pixellab.mjs generate --description "..." --size WxH --no-bg true|false --out-dir DIR --name NAME [--seed N]');
   console.error('       pixellab.mjs poll --job JOB_ID --out-dir DIR --name NAME');
   console.error('       pixellab.mjs edit --input PATH --description "..." --no-bg true|false --out-dir DIR --name NAME [--seed N]');
+  console.error('       pixellab.mjs animate --input PATH --action "..." --frames N(pair 4-16) --out-dir DIR --name NAME [--seed N]');
+  console.error('       pixellab.mjs balance');
   process.exit(2);
 }
