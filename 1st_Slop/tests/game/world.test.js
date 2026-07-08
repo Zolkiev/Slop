@@ -731,12 +731,12 @@ describe('world', () => {
       expect(w.skinsScreen.menu.buttons[0].enabled).toBe(false);
     });
 
-    it('adjustAction boucle les slots 0<->4', () => {
+    it('adjustAction boucle les slots 0<->5', () => {
       const w = createWorld(storageWith({ 'jetpackbot.bestLevel': '10' }));
       openHangar(w);
       expect(w.skinsScreen.slot).toBe(0);
       adjustAction(w, -1);
-      expect(w.skinsScreen.slot).toBe(4);
+      expect(w.skinsScreen.slot).toBe(5);
       adjustAction(w, 1);
       expect(w.skinsScreen.slot).toBe(0);
       adjustAction(w, 1);

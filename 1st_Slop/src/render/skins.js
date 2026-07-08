@@ -47,7 +47,7 @@ export function renderSkins(ctx, world, assets, makeCanvas = defaultMakeCanvas) 
   ctx.font = `16px ${CONFIG.BTN_FONT_FAMILY}`;
   ctx.fillStyle = unlocked ? SKINS[slot].accent : CONFIG.BTN_TEXT_DISABLED;
   ctx.fillText(
-    unlocked ? SKINS[slot].name : `NIVEAU ${CONFIG.PATTERN_TIERS[slot]}`,
+    unlocked ? SKINS[slot].name : `NIVEAU ${CONFIG.SKIN_THRESHOLDS[slot]}`,
     CONFIG.WIDTH / 2, CONFIG.SKINS_NAME_Y,
   );
 
