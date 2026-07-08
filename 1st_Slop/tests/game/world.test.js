@@ -861,4 +861,41 @@ describe('world', () => {
       expect(w.level).toBe(1);
     });
   });
+
+  describe('événements de fond (bgEvents)', () => {
+    it('createWorld arme les événements : premier déclenchement rapide (≤ 2 s), aucun actif', () => {
+      const w = createWorld(fakeStorage());
+      expect(w.bgEvents.event).toBe(null);
+      expect(w.bgEvents.timer).toBeGreaterThan(0);
+      expect(w.bgEvents.timer).toBeLessThanOrEqual(2);
+    });
+
+    it('updateWorld fait vivre les événements même au MENU (vitrine)', () => {
+      const w = createWorld(fakeStorage());
+      const before = w.bgEvents.timer;
+      updateWorld(w, 1 / 60);
+      expect(w.bgEvents.timer).toBeLessThan(before);
+    });
+
+    it('startLevel coupe l événement en cours (pas d étoile filante sur la tempête)', () => {
+      const w = createWorld(fakeStorage());
+      w.bgEvents.event = { kind: 'etoile', t: 0.1, dur: 0.7, x0: 0, y0: 0, vx: 260, vy: 110 };
+      startLevel(w, 7);
+      expect(w.bgEvents.event).toBe(null);
+      expect(w.bgEvents.timer).toBe(2); // foudre : premier éclair à 2 s, même après un restart
+    });
+
+    it('un événement finit par se déclencher en jeu puis s éteint', () => {
+      const w = createWorld(fakeStorage());
+      startLevel(w, 10);
+      w.sm.to(States.PLAY);
+      let seen = false;
+      for (let i = 0; i < 13 * 60 && !seen; i += 1) {
+        updateWorld(w, 1 / 60);
+        if (w.bgEvents.event) seen = true;
+        if (w.sm.get() !== States.PLAY) w.sm.to(States.PLAY); // on ignore la mort du robot
+      }
+      expect(seen).toBe(true);
+    });
+  });
 });

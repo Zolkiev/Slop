@@ -19,6 +19,7 @@ import { decodeSave } from './save.js';
 import { createOptions, moveOptionsFocus, adjust, barHitTest } from './options.js';
 import { loadSettings } from './settings.js';
 import { SKINS, skinUnlocked, loadSkin, saveSkin } from './skins.js';
+import { createBgEvents, updateBgEvents, resetBgEvents } from './bgevents.js';
 
 // Change de décor : le fond lointain prend la vitesse de son monde
 // (statique pour les fonds à repère unique) et repart du joint invisible.
@@ -26,6 +27,7 @@ function applyBgSet(world, set) {
   world.bgSet = set;
   world.layers[0].speedFactor = CONFIG.BG_FAR_SPEED[set];
   world.layers[0].offset = 0;
+  resetBgEvents(world.bgEvents, set); // nouvel écran : premier événement rapide
 }
 
 export function createWorld(storage) {
@@ -62,6 +64,7 @@ export function createWorld(storage) {
     particles: createParticleField(),
     ambiance: createAmbiance(Math.random, 40, CONFIG.WIDTH, CONFIG.HEIGHT),
     twinkles: createTwinkles(Math.random, 50, CONFIG.WIDTH, CONFIG.HEIGHT),
+    bgEvents: createBgEvents(),
     shake: 0,
     flash: 0,
   };
@@ -310,6 +313,7 @@ export function updateWorld(world, dt) {
   world.menuTick += 1;
   for (const layer of world.layers) updateLayer(layer, world.scrollSpeed, dt);
   updateAmbiance(world.ambiance, dt, CONFIG.WIDTH, CONFIG.HEIGHT);
+  updateBgEvents(world.bgEvents, dt, world.bgSet, world.rand);
   world.shake = Math.max(0, world.shake - dt);
   world.flash = Math.max(0, world.flash - dt);
   if (world.sm.get() !== States.PLAY) return;
