@@ -149,7 +149,9 @@ async function animate(args, key) {
   if (width > 256 || height > 256) throw new Error(`entrée ${width}x${height} > 256x256`);
   if (width * height * frames > 524288) throw new Error(`budget pixels dépassé: ${width * height * frames} > 524288`);
   const body = {
-    first_frame: { image: { type: 'base64', base64: inputBuf.toString('base64'), format: 'png' }, width, height },
+    // NB (Task 3): l'API v3 attend first_frame à plat { type, base64, format } —
+    // pas l'enveloppe { image, width, height } (confirmé par un 422 en live le 2026-07-08).
+    first_frame: { type: 'base64', base64: inputBuf.toString('base64'), format: 'png' },
     action: args.action,
     frame_count: frames,
   };
