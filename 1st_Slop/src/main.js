@@ -142,7 +142,15 @@ function saveLink(code) {
   return `${window.location.origin}${window.location.pathname}#save=${code}`;
 }
 
+// Frames des éléments de fond animés : assets/bg-anim/<clé>-<i>.png,
+// la clé d'asset est le nom de fichier sans extension.
+const bgAnimUrls = import.meta.glob('../assets/bg-anim/*.png', { eager: true, query: '?url', import: 'default' });
+const bgAnimMap = Object.fromEntries(
+  Object.entries(bgAnimUrls).map(([p, url]) => [p.split('/').pop().replace('.png', ''), url]),
+);
+
 const imagesPromise = loadImages({
+  ...bgAnimMap,
   robot: robotUrl,
   'robot-thrust-0': robotThrust0,
   'robot-thrust-1': robotThrust1,
