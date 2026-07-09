@@ -6,7 +6,14 @@ import { CONFIG } from '../config.js';
 // `phase` (en frames) désynchronise les éléments entre eux.
 // Renseigné décor par décor au fil des batchs de production.
 export const BG_ANIM = [
-  [], // 0 urbain — batch décor 0
+  [
+    // n=16 : ping-pong déjà déplié dans la numérotation 0..15 (aller f-0..f-8,
+    // retour f-7..f-1), jouer en boucle simple suffit. Deux enseignes néon qui
+    // clignotent (repli spec : pas de vapeur exploitable dans l'asset, 2e
+    // enseigne d'une autre couleur). Périodes coprimes 7/9 -> jamais en phase.
+    { key: 'bg0-enseigne-rose', x: 246, y: 225, n: 16, period: 7, phase: 0 },
+    { key: 'bg0-enseigne-cyan', x: 166, y: 226, n: 16, period: 9, phase: 8 },
+  ], // 0 urbain — batch décor 0
   [
     // n=16 : Task 3 a livré 16 frames par panache (boucle ping-pong déjà
     // dépliée dans la numérotation 0..15, jouer en boucle simple suffit).
