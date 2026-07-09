@@ -20,7 +20,15 @@ export const BG_ANIM = [
     { key: 'bg1-fumee-g', x: 0, y: 190, n: 16, period: 8, phase: 0 },
     { key: 'bg1-fumee-d', x: 260, y: 240, n: 16, period: 8, phase: 3 },
   ],
-  [], // 2 coucher de soleil
+  [
+    // n=16 : ping-pong déjà déplié dans la numérotation 0..15 (aller f-0..f-8,
+    // retour f-7..f-1), jouer en boucle simple suffit. Un seul élément : le
+    // soleil couchant dont le halo/les bandes de chaleur ondulent doucement
+    // pendant que le disque reste rond et fixe (masque canal g : jaune g haut
+    // vs ciel rouge g bas). Fond STATIQUE (offset toujours 0). period 10 =
+    // respiration lente (~2.7 s par cycle ping-pong) ; phase 0 (élément unique).
+    { key: 'bg2-soleil', x: 88, y: 272, n: 16, period: 10, phase: 0 },
+  ], // 2 coucher de soleil
   [], // 3 tempête (éclairs = sprites d'événement, pas de boucle ici)
   [], // 4 orbite
 ];
