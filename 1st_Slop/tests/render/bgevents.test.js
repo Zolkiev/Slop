@@ -31,6 +31,23 @@ describe('renderBgEvents', () => {
     expect(alpha).toBeCloseTo(0.35, 3);
   });
 
+  it('foudre : dessine le sprite d éclair tiré, puis le voile par-dessus', () => {
+    const ctx = fakeCtx();
+    ctx.drawImage = (...a) => ctx.calls.push(['img', ...a]);
+    const assets = { 'bg3-eclair-1': { width: 96, height: 288 } };
+    renderBgEvents(ctx, worldWith({ kind: 'foudre', t: 0, dur: 0.5, bolt: 1, boltX: 130 }), assets);
+    expect(ctx.calls.length).toBe(2);
+    expect(ctx.calls[0][0]).toBe('img');
+    expect(ctx.calls[0][2]).toBe(130); // dx = boltX
+    expect(ctx.calls[1]).toEqual([0, 0, CONFIG.WIDTH, CONFIG.HEIGHT]); // voile après
+  });
+
+  it('foudre sans assets : seul le voile (rétro-compatible)', () => {
+    const ctx = fakeCtx();
+    renderBgEvents(ctx, worldWith({ kind: 'foudre', t: 0, dur: 0.5, bolt: 0, boltX: 30 }));
+    expect(ctx.calls.length).toBe(1);
+  });
+
   it('étoile : tête + traînée (7 points), globalAlpha restauré à 1', () => {
     const ctx = fakeCtx();
     renderBgEvents(ctx, worldWith({ kind: 'etoile', t: 0.2, dur: 0.7, x0: 60, y0: 40, vx: 260, vy: 110 }));

@@ -26,7 +26,7 @@ const EVENTS = [
   (rand) => ({ kind: 'rafale', dur: 1.2 }),
   (rand) => ({ kind: 'torchere', dur: 2.5, spot: TORCH_SPOTS[Math.floor(rand() * TORCH_SPOTS.length)] }),
   (rand) => ({ kind: 'oiseaux', dur: 9, baseY: 150 + rand() * 110, dir: rand() < 0.5 ? 1 : -1 }),
-  (rand) => ({ kind: 'foudre', dur: 0.5 }),
+  (rand) => ({ kind: 'foudre', dur: 0.5, bolt: Math.floor(rand() * 3), boltX: 30 + rand() * 200 }),
   (rand) => ({
     kind: 'etoile', dur: 0.7,
     x0: 40 + rand() * 200, y0: 30 + rand() * 150,

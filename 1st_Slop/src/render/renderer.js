@@ -41,7 +41,7 @@ export function renderWorld(ctx, world, assets) {
 
   // 1b. Événement de fond (foudre, étoile filante, oiseaux, torchère) —
   // derrière le premier plan : les silhouettes restent en contre-jour.
-  renderBgEvents(ctx, world);
+  renderBgEvents(ctx, world, assets);
 
   // 2. Near foreground (horizontal parallax, tiled twice)
   const drawHeight = Math.round(180 * CONFIG.WIDTH / 320);

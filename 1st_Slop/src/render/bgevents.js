@@ -1,10 +1,18 @@
 import { CONFIG } from '../config.js';
 import { foudreAlpha } from '../game/bgevents.js';
 
-function drawFoudre(ctx, e) {
-  // Dessiné AVANT le premier plan : le ciel s'illumine, les silhouettes
-  // near restent sombres (contre-jour plausible).
-  ctx.fillStyle = `rgba(210,225,255,${foudreAlpha(e).toFixed(3)})`;
+function drawFoudre(ctx, e, assets) {
+  // L'éclair (sprite tiré au déclenchement) déchire le ciel, le voile
+  // plafonné passe par-dessus — les portes restent lisibles. Dessiné AVANT
+  // le premier plan : les silhouettes near restent en contre-jour.
+  const a = foudreAlpha(e);
+  const bolt = assets && assets['bg3-eclair-' + e.bolt];
+  if (bolt) {
+    ctx.globalAlpha = Math.min(1, a / 0.35);
+    ctx.drawImage(bolt, Math.round(e.boltX), 0);
+    ctx.globalAlpha = 1;
+  }
+  ctx.fillStyle = `rgba(210,225,255,${a.toFixed(3)})`;
   ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
 }
 
@@ -53,10 +61,10 @@ function drawTorchere(ctx, e, farOffset) {
   ctx.globalAlpha = 1;
 }
 
-export function renderBgEvents(ctx, world) {
+export function renderBgEvents(ctx, world, assets) {
   const e = world.bgEvents.event;
   if (!e) return;
-  if (e.kind === 'foudre') drawFoudre(ctx, e);
+  if (e.kind === 'foudre') drawFoudre(ctx, e, assets);
   else if (e.kind === 'etoile') drawEtoile(ctx, e);
   else if (e.kind === 'oiseaux') drawOiseaux(ctx, e);
   else if (e.kind === 'torchere') drawTorchere(ctx, e, world.layers[0].offset);

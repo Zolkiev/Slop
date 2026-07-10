@@ -36,6 +36,18 @@ describe('bgevents planificateur (cadence par décor — retour gate Jael)', () 
     }
   });
 
+  it('foudre : tire la forme et la position de l éclair au déclenchement', () => {
+    const ev = createBgEvents();
+    resetBgEvents(ev, 3);
+    updateBgEvents(ev, 2, 3, zero);
+    expect(ev.event).toMatchObject({ kind: 'foudre', bolt: 0, boltX: 30 });
+    const ev2 = createBgEvents();
+    resetBgEvents(ev2, 3);
+    updateBgEvents(ev2, 2, 3, half);
+    expect(ev2.event.bolt).toBe(1);       // floor(0.5*3)
+    expect(ev2.event.boltX).toBe(130);    // 30 + 0.5*200
+  });
+
   it('un seul événement actif : pas de re-déclenchement pendant', () => {
     const ev = createBgEvents();
     resetBgEvents(ev, 3);
