@@ -5,6 +5,7 @@ import { rafaleAlpha } from '../game/bgevents.js';
 import { gateGoalForLevel } from '../game/level.js';
 import { CONFIG } from '../config.js';
 import { renderMenu } from './menu.js';
+import { renderBgAnim } from './bganim.js';
 import { renderBgEvents } from './bgevents.js';
 import { renderPause } from './pause.js';
 import { renderConfirm } from './confirm.js';
@@ -34,9 +35,13 @@ export function renderWorld(ctx, world, assets) {
   ctx.drawImage(assets['bg-far-' + world.bgSet], -farOff, -3, CONFIG.WIDTH, CONFIG.HEIGHT + 3);
   ctx.drawImage(assets['bg-far-' + world.bgSet], -farOff + CONFIG.WIDTH, -3, CONFIG.WIDTH, CONFIG.HEIGHT + 3);
 
+  // 1a. Éléments de fond animés (fumées, enseigne, soleil, atmosphère) —
+  // par-dessus le fond lointain, sous les événements et le premier plan.
+  renderBgAnim(ctx, world, assets);
+
   // 1b. Événement de fond (foudre, étoile filante, oiseaux, torchère) —
   // derrière le premier plan : les silhouettes restent en contre-jour.
-  renderBgEvents(ctx, world);
+  renderBgEvents(ctx, world, assets);
 
   // 2. Near foreground (horizontal parallax, tiled twice)
   const drawHeight = Math.round(180 * CONFIG.WIDTH / 320);

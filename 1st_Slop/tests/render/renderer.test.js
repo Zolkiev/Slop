@@ -31,6 +31,11 @@ function fakeAssets() {
     'robot', 'robot-thrust-0', 'robot-thrust-1',
     'robot-s2', 'robot-s2-thrust-0', 'robot-s2-thrust-1',
     'btn-plate', 'btn-plate-focus'];
+  // Frames d'anim du décor 0 (BG_ANIM[0]) : le renderer les dessine sur le fond
+  // lointain et suppose leur présence (comme bg-far/bg-near).
+  for (const el of ['bg0-enseigne-rose', 'bg0-enseigne-cyan']) {
+    for (let i = 0; i < 16; i += 1) keys.push(`${el}-${i}`);
+  }
   return Object.fromEntries(keys.map((k) => [k, { key: k, width: 64, height: 64 }]));
 }
 

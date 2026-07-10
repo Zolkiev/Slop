@@ -26,7 +26,7 @@ const EVENTS = [
   (rand) => ({ kind: 'rafale', dur: 1.2 }),
   (rand) => ({ kind: 'torchere', dur: 2.5, spot: TORCH_SPOTS[Math.floor(rand() * TORCH_SPOTS.length)] }),
   (rand) => ({ kind: 'oiseaux', dur: 9, baseY: 150 + rand() * 110, dir: rand() < 0.5 ? 1 : -1 }),
-  (rand) => ({ kind: 'foudre', dur: 0.5 }),
+  (rand) => ({ kind: 'foudre', dur: 0.5, bolt: Math.floor(rand() * 3), boltX: 30 + rand() * 200 }),
   (rand) => ({
     kind: 'etoile', dur: 0.7,
     x0: 40 + rand() * 200, y0: 30 + rand() * 150,
@@ -62,11 +62,15 @@ export function updateBgEvents(ev, dt, bgSet, rand) {
 }
 
 // Flash foudre : double pulse (attaque instantanée, retombée rapide,
-// second coup plus faible), plafonné à 0.35 — les portes restent lisibles.
+// second coup plus faible), plafonné à FOUDRE_PEAK — les portes restent
+// lisibles. Exporté pour que le renderer normalise le sprite d'éclair sur
+// le même pic sans dupliquer la constante.
+export const FOUDRE_PEAK = 0.35;
+
 export function foudreAlpha(event) {
   const p1 = Math.max(0, 1 - event.t / 0.18);
   const p2 = event.t < 0.24 ? 0 : Math.max(0, 1 - (event.t - 0.24) / 0.2);
-  return 0.35 * p1 + 0.22 * p2;
+  return FOUDRE_PEAK * p1 + 0.22 * p2;
 }
 
 // Rafale néon : un front balaie l'écran de gauche à droite, les fenêtres
