@@ -116,12 +116,18 @@ audio.setMusicVolume(volumeToGain(world.settings.music));
 
 const codeInput = createCodeInput(document);
 
+// Déblocage audio : les callbacks de createInput sont invoqués de façon
+// SYNCHRONE dans la pile des listeners pointerdown/keydown (voir input.js),
+// donc appeler audio.unlock() en tête de chaque geste compte comme geste
+// utilisateur et fait passer l'AudioContext de « suspended » à « running ».
+// Idempotent : ctx.resume() best-effort à chaque geste, sans coût une fois
+// débloqué. La musique démarre seule à la frame suivante (retry de setMusic).
 createInput(
   { target: canvas, win: window },
-  (pointer) => { if (!codeInput.isOpen()) press(world, pointer); },
-  (dir) => { if (!codeInput.isOpen()) navMenu(world, dir); },
-  () => { if (!codeInput.isOpen()) escapeAction(world); },
-  (dir) => { if (!codeInput.isOpen()) adjustAction(world, dir); },
+  (pointer) => { audio.unlock(); if (!codeInput.isOpen()) press(world, pointer); },
+  (dir) => { audio.unlock(); if (!codeInput.isOpen()) navMenu(world, dir); },
+  () => { audio.unlock(); if (!codeInput.isOpen()) escapeAction(world); },
+  (dir) => { audio.unlock(); if (!codeInput.isOpen()) adjustAction(world, dir); },
 );
 
 function copyText(text) {
