@@ -5,6 +5,10 @@
 // Usage:
 //   node scripts/pixellab.mjs generate --description "..." --size 64x64 \
 //        --no-bg true --out-dir assets/preview --name robot [--seed 42]
+//   node scripts/pixellab.mjs animate --input assets/bg-far/bg1-fumee.png \
+//        --action "smoke drifting upward" --frames 16 --out-dir assets/bg-anim \
+//        --name bg1-fumee-g [--seed 42]
+//   node scripts/pixellab.mjs balance
 //
 // Saves every returned candidate image as <out-dir>/<name>-<i>.png and verifies
 // each is a real PNG. generate-image-v2 returns multiple variations for small

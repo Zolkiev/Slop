@@ -1,5 +1,5 @@
 import { CONFIG } from '../config.js';
-import { foudreAlpha } from '../game/bgevents.js';
+import { foudreAlpha, FOUDRE_PEAK } from '../game/bgevents.js';
 
 function drawFoudre(ctx, e, assets) {
   // L'éclair (sprite tiré au déclenchement) déchire le ciel, le voile
@@ -8,7 +8,7 @@ function drawFoudre(ctx, e, assets) {
   const a = foudreAlpha(e);
   const bolt = assets && assets['bg3-eclair-' + e.bolt];
   if (bolt) {
-    ctx.globalAlpha = Math.min(1, a / 0.35);
+    ctx.globalAlpha = Math.min(1, a / FOUDRE_PEAK);
     ctx.drawImage(bolt, Math.round(e.boltX), 0);
     ctx.globalAlpha = 1;
   }

@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { readdirSync } from 'node:fs';
+import path from 'node:path';
 import { renderBgAnim, frameIndex, BG_ANIM } from '../../src/render/bganim.js';
 import { CONFIG } from '../../src/config.js';
 
@@ -68,8 +70,28 @@ describe('renderBgAnim', () => {
         expect(keys.has(e.key)).toBe(false);
         keys.add(e.key);
         expect(e.n).toBeGreaterThanOrEqual(4);
+        expect(e.n % 2).toBe(0);
         expect(e.period).toBeGreaterThan(0);
       }
     }
+  });
+});
+
+describe('BG_ANIM ↔ assets sur disque', () => {
+  it('chaque frame déclarée dans BG_ANIM existe sous assets/bg-anim', () => {
+    const dir = path.join(process.cwd(), 'assets/bg-anim');
+    const files = new Set(readdirSync(dir));
+    for (const list of BG_ANIM) {
+      for (const e of list) {
+        for (let i = 0; i < e.n; i += 1) {
+          expect(files.has(`${e.key}-${i}.png`)).toBe(true);
+        }
+      }
+    }
+    // Éclairs de l'événement foudre (décor 3) : pas dans BG_ANIM (pas de
+    // boucle décorative), mais tirés au hasard par bgevents — mêmes dossier.
+    expect(files.has('bg3-eclair-0.png')).toBe(true);
+    expect(files.has('bg3-eclair-1.png')).toBe(true);
+    expect(files.has('bg3-eclair-2.png')).toBe(true);
   });
 });
