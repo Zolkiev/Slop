@@ -1,0 +1,57 @@
+# Déploiement du jeu Jetpack Bot (1st_Slop) sur GitHub Pages.
+# Chaque push sur main qui touche le jeu reconstruit et redéploie
+# https://zolkiev.github.io/Slop/
+name: Déploiement GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '1st_Slop/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: 1st_Slop/package-lock.json
+      - name: Installer les dépendances
+        run: npm ci
+        working-directory: 1st_Slop
+      - name: Vérifier les tests
+        run: npx vitest run
+        working-directory: 1st_Slop
+      - name: Construire le jeu
+        run: npx vite build
+        working-directory: 1st_Slop
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: 1st_Slop/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

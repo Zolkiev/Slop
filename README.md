@@ -16,6 +16,10 @@ Slop/
 
 ## 🤖 1er jeu — Jetpack Bot
 
+<p align="center">
+  <a href="https://zolkiev.github.io/Slop/"><b>▶️&nbsp;JOUER DANS LE NAVIGATEUR</b></a>
+</p>
+
 Un Flappy-like vertical : un robot à jetpack s'élève depuis une mégapole cyberpunk
 jusqu'à l'orbite. Tape pour activer la poussée, slalome entre les tours néon, et
 gravis des niveaux infinis à travers **5 mondes** — chacun avec son décor, sa

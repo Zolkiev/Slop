@@ -1,5 +1,9 @@
 # Jetpack Bot
 
+<p align="center">
+  <a href="https://zolkiev.github.io/Slop/"><b>▶️&nbsp;JOUER DANS LE NAVIGATEUR</b></a>
+</p>
+
 Flappy-like vertical : un **robot à jetpack** s'élève depuis une mégapole cyberpunk
 jusqu'à l'orbite terrestre. Tape pour activer la poussée (le robot monte), relâche et
 la gravité le fait redescendre. Slalome entre les tours néon, franchis les portes, et
