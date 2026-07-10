@@ -1,6 +1,6 @@
 # Déploiement du jeu Jetpack Bot (1st_Slop) sur GitHub Pages.
 # Chaque push sur main qui touche le jeu (ou ce fichier) reconstruit
-# et redéploie  https://zolkiev.github.io/Slop/
+# et redéploie https://zolkiev.github.io/Slop/
 name: Déploiement GitHub Pages
 
 on:
