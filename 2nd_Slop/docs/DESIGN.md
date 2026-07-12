@@ -166,6 +166,29 @@ src/
   pour les cartes** — original, loin des Reigns-like habituels ; plomb sombre,
   verre coloré, figures hiératiques. Tests visuels à faire (cadre de carte,
   et portraits « stained glass » à comparer au lot pixel-art bust).
+  **Image de référence pour TOUTES les cartes** :
+  `assets/gen/portraits/carte_complete_référence.png` (carte Magic « Skwi,
+  monarque douteux », variante showcase vitrail de Daniel Lieske, DMU 2022) —
+  à imiter comme *style* (réseau de plombs noirs, verre saturé rouge/or/violet,
+  halo rayonnant derrière la figure, cadre et bandeaux sombres intégrés au
+  vitrail), pas à copier tel quel (illustration sous copyright WotC).
+  **Mise en œuvre (2026-07-12, validée par Jael)** : portraits « stained
+  glass » PixelLab dans une arche gothique + **plaque pleine carte générée**
+  (`assets/ui/card-plate.png`, candidate retenue : verrière de cathédrale,
+  alternatives dans `assets/gen/card-frame/`) ; voiles de plomb semi-opaques
+  sous le texte et le nom pour la lisibilité (`render/card.js`). **Nom de
+  l'orateur en bas de la carte** (demande Jael). Portraits : style
+  **minimaliste façon Reigns** (grands pans plats, visage géométrique, yeux
+  en fente — validé sur référence Reigns GoT) avec **fond de verre identitaire
+  par personnage**, aligné sur les couleurs des jauges (Foi=ambre/or,
+  Magie=violet/vert, Chevalerie=bleu/acier, Couronne=rouge/pourpre,
+  peuple=tons terre) ; **halo réservé au sacré/surnaturel** (évêque, moine,
+  galaad, dame du lac — soleil héraldique pour gauvain). Mapping complet dans
+  `scripts/gen-assets-vitrail.sh`. Évêque : peau chaude explicite (« warm tan
+  skin »), sinon le modèle le sort blafard.
+- **À venir (idée Jael 2026-07-12)** : décliner la plaque de carte en
+  variantes par type/famille de carte (codes couleur ou motifs différents —
+  ex. quêtes, ères, personnages récurrents), même pipeline que la verrière.
 - ~~Ton d'écriture~~ → décidé : épique avec pointe d'ironie.
 - Faut-il un système d'« années » visible (âge du roi) ou juste un compteur de règne ?
 - Extraire un `_starter-template` commun après ce jeu (mutualiser loop/état/audio/save) ?

@@ -17,6 +17,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "puppeteer-core": "^25.3.0",
     "vite": "^8.1.0",
     "vitest": "^4.1.9"
   }

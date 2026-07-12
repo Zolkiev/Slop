@@ -3,7 +3,7 @@ import { ERAS } from '../config.js';
 import { KINGS, isUnlocked } from '../game/dynasty.js';
 import { heldRelics } from '../game/relics.js';
 import { encodeSave } from '../game/save.js';
-import { portraitFor, backgroundFor } from '../engine/assets.js';
+import { portraitFor, backgroundFor, cardPlate } from '../engine/assets.js';
 import { drawGauges } from './gauges.js';
 import { drawCard } from './card.js';
 import { previewSide } from '../game/swipe.js';
@@ -137,6 +137,7 @@ function drawPlay(ctx, app) {
     drawCard(ctx, {
       card,
       portrait: portraitFor(card.speaker),
+      plate: cardPlate(),
       dx,
       previewSide: side,
       centerX: VIEW_W / 2,

@@ -20,6 +20,7 @@ export function preload() {
   for (const era of ERAS) {
     load(`bg:${era.id}`, `assets/bg/${era.id}.png`);
   }
+  load('ui:card-plate', 'assets/ui/card-plate.png');
 }
 
 /** Renvoie l'image si elle est chargée et exploitable, sinon null. */
@@ -30,3 +31,4 @@ export function get(key) {
 
 export const portraitFor = (speaker) => get(`portrait:${PORTRAITS[speaker] ?? 'chevalier'}`);
 export const backgroundFor = (eraId) => get(`bg:${eraId}`);
+export const cardPlate = () => get('ui:card-plate');
