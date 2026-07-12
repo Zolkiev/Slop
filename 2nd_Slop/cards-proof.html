@@ -3,7 +3,12 @@
      passer par la pioche aléatoire. Servie par Vite : /cards-proof.html -->
 <html lang="fr">
 <head><meta charset="utf-8"><title>Logres — preuve cartes</title>
-<style>body{background:#14111c;margin:0;display:flex;gap:12px;justify-content:center}</style>
+<style>
+@font-face{font-family:'Cinzel';src:url('assets/fonts/cinzel-700.woff2') format('woff2');font-weight:700}
+@font-face{font-family:'EB Garamond';src:url('assets/fonts/ebgaramond.woff2') format('woff2');font-weight:400 700;font-style:normal}
+@font-face{font-family:'EB Garamond';src:url('assets/fonts/ebgaramond-italic.woff2') format('woff2');font-weight:400;font-style:italic}
+body{background:#14111c;margin:0;display:flex;gap:12px;justify-content:center}
+</style>
 </head>
 <body>
 <script type="module">
@@ -23,6 +28,12 @@ const load = (url) => new Promise((res) => {
   img.src = url;
 });
 
+// page à dessin unique : les polices doivent être prêtes avant drawCard
+await Promise.all([
+  document.fonts.load('700 19px Cinzel'),
+  document.fonts.load('400 18px "EB Garamond"'),
+  document.fonts.load('700 17px "EB Garamond"'),
+]);
 const plate = await load('assets/ui/card-plate.png');
 for (const card of CARDS) {
   const canvas = document.createElement('canvas');

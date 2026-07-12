@@ -3,6 +3,7 @@
 // inclinaison pendant le drag et envol à la validation.
 // Référence de style : docs/DESIGN.md §10 (carte showcase vitrail).
 import { wrapText, drawLines } from './text.js';
+import { TITLE, TEXT } from './fonts.js';
 
 export const CARD_W = 340;
 export const CARD_H = 460;
@@ -131,7 +132,7 @@ export function drawCard(ctx, { card, portrait = null, plate = null, dx = 0, pre
     ctx.fillStyle = halo;
     ctx.fillRect(-PORTRAIT_W / 2, pTop, PORTRAIT_W, PORTRAIT_H);
     ctx.fillStyle = GOLD;
-    ctx.font = 'bold 56px serif';
+    ctx.font = `700 52px ${TITLE}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     // initiale du dernier mot (« Une fée » -> F, pas l'article)
@@ -150,7 +151,7 @@ export function drawCard(ctx, { card, portrait = null, plate = null, dx = 0, pre
 
   // texte du dilemme (sur voile de plomb si verrière), centré verticalement
   // entre le bas de l'arche et le bandeau du nom
-  ctx.font = '17px serif';
+  ctx.font = `400 18px ${TEXT}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   const lines = wrapText(ctx, card.text, CARD_W - 48);
@@ -177,7 +178,7 @@ export function drawCard(ctx, { card, portrait = null, plate = null, dx = 0, pre
   ctx.lineTo(CARD_W / 2 - 30, CARD_H / 2 - 50);
   ctx.stroke();
   ctx.fillStyle = GOLD;
-  ctx.font = 'bold 20px serif';
+  ctx.font = `700 19px ${TITLE}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(card.speaker.toUpperCase(), 0, CARD_H / 2 - 27);
@@ -194,7 +195,7 @@ export function drawCard(ctx, { card, portrait = null, plate = null, dx = 0, pre
     ctx.lineWidth = 3;
     ctx.stroke();
     ctx.fillStyle = IVORY;
-    ctx.font = 'bold 16px serif';
+    ctx.font = `700 17px ${TEXT}`;
     ctx.fillText(choice.label, 0, CARD_H / 2 - 104);
     ctx.globalAlpha = 1;
   }
@@ -204,7 +205,7 @@ export function drawCard(ctx, { card, portrait = null, plate = null, dx = 0, pre
   // indications ← → au repos
   if (!previewSide && dx === 0) {
     ctx.fillStyle = 'rgba(201,162,39,0.4)';
-    ctx.font = '26px serif';
+    ctx.font = `400 26px ${TEXT}`;
     ctx.textAlign = 'center';
     ctx.fillText('‹', centerX - CARD_W / 2 - 24, centerY);
     ctx.fillText('›', centerX + CARD_W / 2 + 24, centerY);
