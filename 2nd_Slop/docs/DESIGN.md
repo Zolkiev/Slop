@@ -162,8 +162,11 @@ src/
 ## 10. Questions ouvertes / à trancher plus tard
 
 - Titre définitif (Logres ? Pendragon ? Le Trône de Logres ?).
-- Palette et style pixel-art (enluminure médiévale ? vitrail ? plus sombre ?).
-- Ton d'écriture : sérieux épique vs pointe d'humour à la Reigns.
+- ~~Palette et style~~ → **décidé (2026-07-12) : design vitrail stylisé et sobre
+  pour les cartes** — original, loin des Reigns-like habituels ; plomb sombre,
+  verre coloré, figures hiératiques. Tests visuels à faire (cadre de carte,
+  et portraits « stained glass » à comparer au lot pixel-art bust).
+- ~~Ton d'écriture~~ → décidé : épique avec pointe d'ironie.
 - Faut-il un système d'« années » visible (âge du roi) ou juste un compteur de règne ?
 - Extraire un `_starter-template` commun après ce jeu (mutualiser loop/état/audio/save) ?
 ```
