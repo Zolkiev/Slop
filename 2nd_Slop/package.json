@@ -1,0 +1,23 @@
+{
+  "type": "module",
+  "name": "2nd_slop",
+  "version": "0.1.0",
+  "description": "Logres — Reigns-like arthurien (Slop game 2)",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^8.1.0",
+    "vitest": "^4.1.9"
+  }
+}
