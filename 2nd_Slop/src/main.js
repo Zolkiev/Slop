@@ -1,7 +1,7 @@
 // Bootstrap : canvas, entrées, boucle. Seul module autorisé à toucher le DOM.
 import { CARDS } from './game/cards/index.js';
 import { createReign, draw as drawNext, choose } from './game/reign.js';
-import { createSwipe, dragStart, dragMove, dragEnd } from './game/swipe.js';
+import { createSwipe, dragStart, dragMove, dragEnd, previewSide } from './game/swipe.js';
 import { KINGS, isUnlocked } from './game/dynasty.js';
 import { loadProgress, saveProgress } from './game/score.js';
 import { decodeSave, codeFromHash } from './game/save.js';
@@ -10,9 +10,29 @@ import { preload, portraitFor, cardPlate } from './engine/assets.js';
 import { render, VIEW_W, VIEW_H } from './render/renderer.js';
 import { loadFonts } from './render/fonts.js';
 import { createShatter, updateShatter } from './render/shatter.js';
+import { createAudio } from './engine/audio.js';
 
 preload(); // portraits + décors, non bloquant (fallbacks dessinés en attendant)
 loadFonts(); // Cinzel + EB Garamond, non bloquant (serif système en attendant)
+
+// Audio best-effort : sons prêts quand ils sont prêts, jamais d'exception.
+const audio = createAudio({
+  verre: 'assets/sfx/verre.wav',
+  tick: 'assets/sfx/tick.wav',
+  glas: 'assets/sfx/glas.wav',
+  sacre: 'assets/sfx/sacre.wav',
+  miracle: 'assets/sfx/miracle.wav',
+  m_menu: 'assets/music/menu.wav',
+  m_roche: 'assets/music/roche.wav',
+  m_camelot: 'assets/music/camelot.wav',
+  m_mystique: 'assets/music/mystique.wav',
+  m_sombre: 'assets/music/sombre.wav',
+  m_fin: 'assets/music/fin.wav',
+});
+audio.setSfxVolume(0.6);
+audio.setMusicVolume(0.35);
+// une même ambiance couvre plusieurs ères (graal et avalon partagent le mystique)
+const ERA_MUSIC = { roche: 'm_roche', camelot: 'm_camelot', graal: 'm_mystique', chute: 'm_sombre', avalon: 'm_mystique' };
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -65,6 +85,7 @@ function startReign() {
   app.newRecord = false;
   drawNext(app.reign, CARDS);
   app.mode = 'play';
+  audio.play('sacre');
 }
 
 function endReign() {
@@ -74,6 +95,7 @@ function endReign() {
     saveProgress(progress);
   }
   app.mode = 'dead';
+  audio.play('glas');
 }
 
 // `releaseDx` : position de la carte au moment du lâcher (0 au clavier),
@@ -98,6 +120,7 @@ function commitChoice(side, releaseDx = 0) {
     }),
   };
   choose(app.reign, side);
+  audio.play('verre');
 }
 
 // --- Entrées pointeur ---
@@ -107,6 +130,7 @@ function logicalX(e) {
 
 let dragOriginX = null;
 canvas.addEventListener('pointerdown', (e) => {
+  audio.unlock(); // Web Audio exige un geste utilisateur ; idempotent
   if (app.mode === 'play' && app.reign.current && !app.anim) {
     dragOriginX = e.clientX;
     dragStart(app.swipe);
@@ -140,6 +164,7 @@ canvas.addEventListener('pointerup', (e) => {
 
 // --- Entrées clavier (desktop) ---
 window.addEventListener('keydown', (e) => {
+  audio.unlock();
   if (app.mode === 'menu') {
     if (e.code === 'ArrowLeft') selectKing(-1);
     if (e.code === 'ArrowRight') selectKing(+1);
@@ -156,6 +181,9 @@ window.addEventListener('keydown', (e) => {
 });
 
 // --- Boucle ---
+let lastPreview = null; // pour le tick au franchissement du seuil d'aperçu
+let lastMiracle = null; // pour ne sonner qu'à l'apparition du message
+
 function step(dt) {
   if (app.anim) {
     // désintégration : poussière de carrés, puis la suivante est piochée
@@ -165,6 +193,23 @@ function step(dt) {
       else drawNext(app.reign, CARDS);
     }
   }
+
+  // tick discret quand le drag révèle un choix
+  const preview = app.mode === 'play' && !app.anim ? previewSide(app.swipe) : null;
+  if (preview && preview !== lastPreview) audio.play('tick');
+  lastPreview = preview;
+
+  // scintillement quand une relique vient de sauver le règne
+  const miracle = app.mode === 'play' ? app.reign?.miracle : null;
+  if (miracle && miracle !== lastMiracle) audio.play('miracle');
+  lastMiracle = miracle ?? null;
+
+  // musique d'ambiance : menu, une couleur par ère, lamento à la mort
+  // (setMusic déduplique et réessaie tant que le contexte n'est pas débloqué)
+  if (app.mode === 'menu') audio.setMusic('m_menu');
+  else if (app.mode === 'play') audio.setMusic(ERA_MUSIC[app.reign.era] ?? 'm_roche');
+  else if (app.mode === 'dead') audio.setMusic('m_fin', false);
+
   render(ctx, app);
 }
 
