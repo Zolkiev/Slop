@@ -42,6 +42,8 @@ export function eligibleCards(cards, ctx) {
  * Choisit la prochaine carte.
  * - Si `ctx.forcedNext` pointe une carte existante et éligible, elle est jouée
  *   (chaînes de quêtes via `next`).
+ * - Les cartes de `ctx.recent` (jouées récemment) sont écartées, sauf si le
+ *   pool serait vide — le non-blocage prime sur l'anti-répétition.
  * - Sinon, tirage pondéré par `weight` parmi les cartes éligibles.
  * @param {Function} rng - fonction () => [0,1). Défaut: Math.random.
  * @returns la carte choisie, ou null si aucune n'est éligible.
@@ -51,7 +53,11 @@ export function pickCard(cards, ctx, rng = Math.random) {
     const forced = cards.find((c) => c.id === ctx.forcedNext);
     if (forced && isEligible(forced, { ...ctx, forcedNext: null })) return forced;
   }
-  const pool = eligibleCards(cards, ctx);
+  let pool = eligibleCards(cards, ctx);
+  if (ctx.recent?.length) {
+    const fresh = pool.filter((c) => !ctx.recent.includes(c.id));
+    if (fresh.length > 0) pool = fresh;
+  }
   if (pool.length === 0) return null;
 
   const total = pool.reduce((s, c) => s + (c.weight ?? 1), 0);

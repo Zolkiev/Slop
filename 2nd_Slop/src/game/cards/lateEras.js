@@ -38,6 +38,88 @@ export const graal = [
     right: { label: 'Les laisser tomber', effects: { foi: +5, magie: -6 } },
     weight: 1,
   },
+  {
+    id: 'graal.galaad.siege',
+    era: 'graal',
+    speaker: 'Galaad',
+    text: "Le Siège Périlleux m'attend, dit-on — la place qui foudroie les indignes. Me laisseras-tu m'y asseoir, Sire ?",
+    unique: true,
+    requires: { allFlags: ['graal.quete'] },
+    left: {
+      label: "Qu'il s'asseye",
+      effects: { foi: +8, chevalerie: +4, magie: -6 },
+    },
+    right: {
+      label: 'Trop de risque',
+      effects: { magie: +4, foi: -6 },
+    },
+    weight: 2,
+  },
+  {
+    id: 'graal.table.vide',
+    era: 'graal',
+    speaker: 'Keu',
+    text: "La Table sonne creux, Sire : tes chevaliers courent après une coupe. Rappelleras-tu ceux qui restent en vie ?",
+    requires: { allFlags: ['graal.quete'] },
+    left: {
+      label: 'Rappeler les survivants',
+      effects: { chevalerie: +6, foi: -7 },
+    },
+    right: {
+      label: 'La quête est sacrée',
+      effects: { foi: +7, chevalerie: -6 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'graal.fausse.relique',
+    era: 'graal',
+    speaker: 'Un marchand',
+    text: "Le Graal, Sire, le vrai ! Trouvé à Jérusalem, ou pas loin. Pour toi : prix d'ami. Les pèlerins paieraient cher pour le voir.",
+    unique: true,
+    left: {
+      label: "L'acheter et l'exposer",
+      effects: { couronne: +6, foi: -7 },
+    },
+    right: {
+      label: 'Chasser ce filou',
+      effects: { foi: +5, couronne: -3 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'graal.sans.merlin',
+    era: 'graal',
+    speaker: 'Un conseiller',
+    text: "Depuis que Merlin a suivi sa dame au fond des bois, nul ne lit plus les présages. La cour marche à l'aveugle, Sire.",
+    requires: { allFlags: ['merlin.parti'] },
+    left: {
+      label: 'Chercher un autre mage',
+      effects: { magie: +6, foi: -6 },
+    },
+    right: {
+      label: 'Dieu nous guidera',
+      effects: { foi: +6, magie: -5 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'graal.morgane.convoitise',
+    era: 'graal',
+    speaker: 'Morgane',
+    text: "Cette coupe que cherchent tes chevaliers n'est pas chrétienne, frère. Elle est d'Avalon — et Avalon la réclame.",
+    unique: true,
+    requires: { allFlags: ['morgane.cour'] },
+    left: {
+      label: 'Le Graal ira à Avalon',
+      effects: { magie: +8, foi: -8 },
+    },
+    right: {
+      label: 'Il ira à Dieu',
+      effects: { foi: +7, magie: -8 },
+    },
+    weight: 2,
+  },
 ];
 
 export const chute = [
@@ -98,6 +180,71 @@ export const chute = [
     right: { label: 'Prier Dieu', effects: { foi: +6, magie: -6 } },
     weight: 1,
   },
+  {
+    id: 'chute.lancelot.retour',
+    era: 'chute',
+    speaker: 'Lancelot',
+    text: "Tu m'as banni, et tu avais raison. Mais Logres brûle, et mon épée est toujours tienne. Me rendras-tu ma place ?",
+    unique: true,
+    requires: { allFlags: ['lancelot.banni'] },
+    left: {
+      label: 'Reviens, mon frère',
+      effects: { chevalerie: +9, couronne: -4 },
+    },
+    right: {
+      label: 'Le ban est le ban',
+      effects: { couronne: +4, chevalerie: -8 },
+    },
+    weight: 3,
+  },
+  {
+    id: 'chute.guenievre.couvent',
+    era: 'chute',
+    speaker: 'Guenièvre',
+    text: "Je pars pour le couvent d'Amesbury, mon roi. Prier pour Logres — et pour nous. Me retiendras-tu, cette fois ?",
+    unique: true,
+    left: {
+      label: 'La laisser partir',
+      effects: { foi: +6, couronne: -4 },
+    },
+    right: {
+      label: 'Reste, ma reine',
+      effects: { couronne: +4, foi: -5 },
+    },
+    weight: 2,
+  },
+  {
+    id: 'chute.fourreau.vole',
+    era: 'chute',
+    speaker: 'Un écuyer',
+    text: "Sire… le Fourreau a disparu de tes appartements. On a vu une silhouette de femme quitter le château à l'aube.",
+    unique: true,
+    requires: { allFlags: ['relique.fourreau'] },
+    left: {
+      label: 'Traquer la voleuse',
+      effects: { chevalerie: +4, magie: -8 },
+    },
+    right: {
+      label: 'Mon bras me protègera',
+      effects: { couronne: +3, chevalerie: -4 },
+    },
+    weight: 2,
+  },
+  {
+    id: 'chute.famine.guerre',
+    era: 'chute',
+    speaker: 'Un paysan',
+    text: "La guerre a mangé les récoltes, Sire. L'hiver mangera les enfants. Ouvriras-tu les greniers de l'armée ?",
+    left: {
+      label: 'Ouvrir les greniers',
+      effects: { couronne: +6, chevalerie: -6 },
+    },
+    right: {
+      label: "L'armée d'abord",
+      effects: { chevalerie: +5, couronne: -7 },
+    },
+    weight: 1,
+  },
 ];
 
 export const avalon = [
@@ -136,5 +283,54 @@ export const avalon = [
     left: { label: 'Sincère', effects: { foi: +5, couronne: -3 } },
     right: { label: 'Flatteuse', effects: { couronne: +6, foi: -4 } },
     weight: 1,
+  },
+  {
+    id: 'avalon.bedivere',
+    era: 'avalon',
+    speaker: 'Bédivère',
+    text: "Deux fois tu m'as ordonné de jeter Excalibur au lac, deux fois j'ai menti. Elle est trop belle, Sire. Ordonne encore ?",
+    unique: true,
+    requires: { allFlags: ['relique.excalibur'] },
+    left: {
+      label: 'Jette-la, Bédivère',
+      effects: { magie: +8, chevalerie: -4 },
+    },
+    right: {
+      label: "Garde-la pour Logres",
+      effects: { chevalerie: +5, magie: -6 },
+    },
+    weight: 3,
+  },
+  {
+    id: 'avalon.moines',
+    era: 'avalon',
+    speaker: 'Un moine',
+    text: "Glastonbury réclame ta dépouille, Sire — un tombeau chrétien, des pèlerins, des siècles de prières. Avalon peut attendre.",
+    unique: true,
+    left: {
+      label: 'Un tombeau chrétien',
+      effects: { foi: +7, magie: -6 },
+    },
+    right: {
+      label: "J'appartiens à Avalon",
+      effects: { magie: +6, foi: -6 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'avalon.roi.futur',
+    era: 'avalon',
+    speaker: 'Merlin',
+    text: "On écrira : « le roi de jadis et de demain ». Veux-tu que Logres t'attende — ou qu'elle apprenne à vivre sans toi ?",
+    unique: true,
+    left: {
+      label: "Je reviendrai",
+      effects: { magie: +6, couronne: +3, foi: -5 },
+    },
+    right: {
+      label: "Qu'elle vive sans moi",
+      effects: { foi: +5, couronne: -4 },
+    },
+    weight: 2,
   },
 ];

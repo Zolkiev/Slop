@@ -40,6 +40,10 @@ export const GAUGES = [
 
 export const GAUGE_KEYS = GAUGES.map((g) => g.key);
 
+// Anti-répétition : les N dernières cartes jouées sont écartées du tirage
+// (sauf si le deck ne propose rien d'autre — le non-blocage prime).
+export const RECENT_LIMIT = 6;
+
 // Les 5 ères — l'arc de la légende. `until` = nombre d'années de règne avant de
 // passer à l'ère suivante (null = dernière ère, dure jusqu'à la mort).
 export const ERAS = [

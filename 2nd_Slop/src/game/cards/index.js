@@ -2,8 +2,9 @@
 import { roche } from './roche.js';
 import { camelot } from './camelot.js';
 import { graal, chute, avalon } from './lateEras.js';
+import { common } from './common.js';
 
-export const CARDS = [...roche, ...camelot, ...graal, ...chute, ...avalon];
+export const CARDS = [...roche, ...camelot, ...graal, ...chute, ...avalon, ...common];
 
 /** Ensemble des flags posés par au moins un choix du deck. */
 export function flagsSetBy(cards = CARDS) {

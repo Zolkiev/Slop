@@ -59,3 +59,23 @@ describe('deck — tirage', () => {
     expect(forced.id).toBe('y');
   });
 });
+
+describe('deck — anti-répétition', () => {
+  const cards = [
+    { id: 'a', left: {}, right: {} },
+    { id: 'b', left: {}, right: {} },
+  ];
+
+  it('écarte les cartes jouées récemment', () => {
+    // rng à 0 choisirait 'a' ; 'a' en recent doit forcer 'b'
+    expect(pickCard(cards, ctx({ recent: ['a'] }), () => 0).id).toBe('b');
+  });
+
+  it('re-sert une carte récente plutôt que de bloquer', () => {
+    expect(pickCard(cards, ctx({ recent: ['a', 'b'] }), () => 0)).not.toBeNull();
+  });
+
+  it('forcedNext ignore le cooldown (les chaînes priment)', () => {
+    expect(pickCard(cards, ctx({ recent: ['b'], forcedNext: 'b' }), () => 0).id).toBe('b');
+  });
+});

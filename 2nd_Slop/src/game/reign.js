@@ -1,6 +1,6 @@
 // Orchestration d'un règne : relie jauges, flags, deck et ères.
 // Boucle logique : draw() présente une carte, choose() applique un côté.
-import { ERAS } from '../config.js';
+import { ERAS, RECENT_LIMIT } from '../config.js';
 import { createGauges, applyEffects, checkDeath } from './gauges.js';
 import { createFlags, applyFlags } from './flags.js';
 import { pickCard } from './deck.js';
@@ -21,6 +21,7 @@ export function createReign(initial = {}) {
     years: 0,
     era: eraForYears(0),
     seen: new Set(),
+    recent: [], // dernières cartes jouées (anti-répétition)
     next: null, // id de carte forcée (chaîne de quête)
     dead: null, // {key, side, cause} une fois mort
     current: null, // carte présentée en attente de choix
@@ -37,10 +38,15 @@ export function draw(reign, cards, rng = Math.random) {
     flags: reign.flags,
     era: reign.era,
     seen: reign.seen,
+    recent: reign.recent,
     forcedNext: reign.next,
   }, rng);
   reign.current = card;
-  if (card) reign.seen.add(card.id);
+  if (card) {
+    reign.seen.add(card.id);
+    reign.recent.push(card.id);
+    if (reign.recent.length > RECENT_LIMIT) reign.recent.shift();
+  }
   return card;
 }
 

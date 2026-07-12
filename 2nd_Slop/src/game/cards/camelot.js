@@ -94,4 +94,140 @@ export const camelot = [
     right: { label: 'Rester sobre', effects: { foi: +4, couronne: -3 } },
     weight: 1,
   },
+  // ---- Suite de la chaîne Lancelot/Guenièvre ----
+  {
+    id: 'camelot.affaire.eclat',
+    era: 'camelot',
+    speaker: 'Gauvain',
+    text: "Ton enquête a parlé, Sire : la reine et Lancelot, surpris ensemble. La cour retient son souffle. Ta sentence ?",
+    unique: true,
+    requires: { allFlags: ['affaire.exposee'] },
+    left: {
+      label: 'Bannir Lancelot',
+      effects: { couronne: +6, chevalerie: -10 },
+      flags: ['lancelot.banni'],
+    },
+    right: {
+      label: 'Pardonner en secret',
+      effects: { chevalerie: +5, couronne: -8, foi: -3 },
+    },
+    weight: 3,
+  },
+  {
+    id: 'camelot.guenievre.silence',
+    era: 'camelot',
+    speaker: 'Guenièvre',
+    text: "Tu sais, et tu te tais. C'est une bonté — ou un calcul. Que veux-tu de moi, mon époux ?",
+    unique: true,
+    requires: { allFlags: ['affaire.tue'] },
+    left: {
+      label: 'Ta loyauté à la couronne',
+      effects: { couronne: +5, foi: -4 },
+    },
+    right: {
+      label: 'Que cela cesse, sans bruit',
+      effects: { foi: +4, chevalerie: -4 },
+    },
+    weight: 2,
+  },
+  {
+    id: 'camelot.lancelot.gloire',
+    era: 'camelot',
+    speaker: 'Keu',
+    text: "Lancelot a encore renversé tous tes chevaliers au tournoi. Le peuple scande son nom plus fort que le tien, Sire.",
+    requires: { allFlags: ['lancelot.cour'] },
+    left: {
+      label: 'Célébrer mon champion',
+      effects: { chevalerie: +6, couronne: -4 },
+    },
+    right: {
+      label: "L'écarter des tournois",
+      effects: { couronne: +4, chevalerie: -5 },
+    },
+    weight: 1,
+  },
+  // ---- Merlin & Viviane ----
+  {
+    id: 'camelot.merlin.viviane',
+    era: 'camelot',
+    speaker: 'Merlin',
+    text: "Elle s'appelle Viviane. Elle veut tout mon savoir, et je le lui donnerai — je pars. À moins que mon roi ne me retienne.",
+    unique: true,
+    left: {
+      label: 'Reste, vieil ami',
+      effects: { magie: +6, couronne: -3 },
+    },
+    right: {
+      label: 'Va vers elle',
+      effects: { magie: -10, foi: +5 },
+      flags: ['merlin.parti'],
+    },
+    weight: 2,
+  },
+  // ---- Morgane à la cour ----
+  {
+    id: 'camelot.morgane.place',
+    era: 'camelot',
+    speaker: 'Morgane',
+    text: "Ta sœur mérite mieux qu'un manoir lointain, frère. Une place au conseil, par exemple. Les familles doivent rester… proches.",
+    unique: true,
+    left: {
+      label: 'Une place au conseil',
+      effects: { magie: +7, foi: -6 },
+      flags: ['morgane.cour'],
+    },
+    right: {
+      label: 'Loin de Camelot',
+      effects: { foi: +5, magie: -7 },
+    },
+    weight: 2,
+  },
+  {
+    id: 'camelot.cathedrale',
+    era: 'camelot',
+    speaker: "L'Évêque",
+    text: "Camelot resplendit — mais pour la gloire de qui ? Une cathédrale rappellerait au royaume que tout vient de Dieu.",
+    unique: true,
+    left: {
+      label: 'Bâtir la cathédrale',
+      effects: { foi: +10, couronne: -7 },
+    },
+    right: {
+      label: 'Les routes d’abord',
+      effects: { couronne: +6, foi: -8 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.perceval.arrivee',
+    era: 'camelot',
+    speaker: 'Perceval',
+    text: "Sire ! Ma mère m'a caché la chevalerie toute ma vie, alors me voilà. On dit qu'il faut des épreuves ? J'aime les épreuves.",
+    unique: true,
+    left: {
+      label: "L'adouber",
+      effects: { chevalerie: +6, magie: +2, couronne: -3 },
+    },
+    right: {
+      label: "Qu'il fasse ses preuves",
+      effects: { couronne: +2, chevalerie: -3 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.saxons.emissaire',
+    era: 'camelot',
+    speaker: 'Un émissaire saxon',
+    text: "Mon roi Cerdic propose la paix : les terres de l'est contre la fin des raids. Une paix de marchands, mais une paix.",
+    unique: true,
+    left: {
+      label: 'Céder les terres',
+      effects: { couronne: +5, chevalerie: -7 },
+    },
+    right: {
+      label: 'Pas un arpent',
+      effects: { chevalerie: +6, couronne: -4 },
+    },
+    weight: 1,
+  },
 ];
