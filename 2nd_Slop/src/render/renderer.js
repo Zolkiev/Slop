@@ -3,6 +3,7 @@ import { ERAS } from '../config.js';
 import { KINGS, isUnlocked } from '../game/dynasty.js';
 import { heldRelics } from '../game/relics.js';
 import { encodeSave } from '../game/save.js';
+import { portraitFor, backgroundFor } from '../engine/assets.js';
 import { drawGauges } from './gauges.js';
 import { drawCard } from './card.js';
 import { previewSide } from '../game/swipe.js';
@@ -24,7 +25,18 @@ function eraName(eraId) {
   return ERAS.find((e) => e.id === eraId)?.name ?? '';
 }
 
-function drawBackground(ctx, eraId) {
+function drawBackground(ctx, eraId, dim = 0.35) {
+  const img = backgroundFor(eraId);
+  if (img) {
+    // pixel-art plein cadre, sans lissage, assombri pour la lisibilité
+    const smoothing = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, 0, 0, VIEW_W, VIEW_H);
+    ctx.imageSmoothingEnabled = smoothing;
+    ctx.fillStyle = `rgba(10, 8, 16, ${dim})`;
+    ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+    return;
+  }
   const [top, bottom] = ERA_BG[eraId] ?? ERA_BG.roche;
   const grad = ctx.createLinearGradient(0, 0, 0, VIEW_H);
   grad.addColorStop(0, top);
@@ -124,6 +136,7 @@ function drawPlay(ctx, app) {
     const dx = anim ? anim.dx : swipe.dx;
     drawCard(ctx, {
       card,
+      portrait: portraitFor(card.speaker),
       dx,
       previewSide: side,
       centerX: VIEW_W / 2,

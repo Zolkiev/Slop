@@ -6,7 +6,10 @@ import { KINGS, isUnlocked } from './game/dynasty.js';
 import { loadProgress, saveProgress } from './game/score.js';
 import { decodeSave, codeFromHash } from './game/save.js';
 import { createLoop } from './engine/loop.js';
+import { preload } from './engine/assets.js';
 import { render, VIEW_W, VIEW_H } from './render/renderer.js';
+
+preload(); // portraits + décors, non bloquant (fallbacks dessinés en attendant)
 
 const ANIM_SPEED = 2600; // px/s d'envol de la carte validée
 

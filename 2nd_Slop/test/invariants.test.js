@@ -8,6 +8,7 @@ import {
 } from '../src/game/cards/index.js';
 import { GAUGE_KEYS, ERAS, GAUGE_MIN, GAUGE_MAX } from '../src/config.js';
 import { createReign, draw, choose } from '../src/game/reign.js';
+import { PORTRAITS } from '../src/game/portraits.js';
 
 // RNG déterministe (mulberry32) pour un fuzz reproductible.
 function mulberry32(seed) {
@@ -56,6 +57,12 @@ describe('intégrité du deck', () => {
     const ids = new Set(CARDS.map((c) => c.id));
     for (const ref of nextIdsReferenced()) {
       expect(ids.has(ref), `next inexistant: ${ref}`).toBe(true);
+    }
+  });
+
+  it('chaque orateur du deck a un portrait mappé', () => {
+    for (const c of CARDS) {
+      expect(PORTRAITS[c.speaker], `orateur sans portrait: ${c.speaker}`).toBeTruthy();
     }
   });
 
