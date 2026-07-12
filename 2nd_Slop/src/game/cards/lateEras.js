@@ -219,14 +219,16 @@ export const chute = [
     speaker: 'Un écuyer',
     text: "Sire… le Fourreau a disparu de tes appartements. On a vu une silhouette de femme quitter le château à l'aube.",
     unique: true,
-    requires: { allFlags: ['relique.fourreau'] },
+    requires: { allFlags: ['relique.fourreau'], noneFlags: ['fourreau.perdu'] },
     left: {
       label: 'Traquer la voleuse',
       effects: { chevalerie: +4, magie: -8 },
+      flags: ['fourreau.perdu'],
     },
     right: {
       label: 'Mon bras me protègera',
       effects: { couronne: +3, chevalerie: -4 },
+      flags: ['fourreau.perdu'],
     },
     weight: 2,
   },
@@ -294,6 +296,7 @@ export const avalon = [
     left: {
       label: 'Jette-la, Bédivère',
       effects: { magie: +8, chevalerie: -4 },
+      flags: ['excalibur.rendue'],
     },
     right: {
       label: "Garde-la pour Logres",

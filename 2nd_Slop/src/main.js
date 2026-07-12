@@ -2,6 +2,9 @@
 import { CARDS } from './game/cards/index.js';
 import { createReign, draw as drawNext, choose } from './game/reign.js';
 import { createSwipe, dragStart, dragMove, dragEnd } from './game/swipe.js';
+import { KINGS, isUnlocked } from './game/dynasty.js';
+import { loadProgress, saveProgress } from './game/score.js';
+import { decodeSave, codeFromHash } from './game/save.js';
 import { createLoop } from './engine/loop.js';
 import { render, VIEW_W, VIEW_H } from './render/renderer.js';
 
@@ -24,19 +27,49 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+// --- Progression : localStorage + restauration par lien #save= ---
+const progress = loadProgress();
+{
+  const restored = decodeSave(codeFromHash(window.location.hash));
+  if (restored && restored.best >= progress.best) {
+    progress.best = restored.best;
+    progress.king = restored.king;
+    saveProgress(progress);
+  }
+}
+
 // --- État de l'application ---
 const app = {
   mode: 'menu', // 'menu' | 'play' | 'dead'
   reign: null,
   swipe: createSwipe(),
   anim: null, // {card, side, dx} — carte validée en cours d'envol
+  progress,
+  newRecord: false, // le dernier règne a-t-il battu le record ?
 };
 
+function selectKing(delta) {
+  progress.king = (progress.king + delta + KINGS.length) % KINGS.length;
+  saveProgress(progress);
+}
+
 function startReign() {
-  app.reign = createReign();
+  const king = KINGS[progress.king];
+  if (!isUnlocked(king, progress.best)) return; // lignée encore scellée
+  app.reign = createReign({ gauges: king.gauges });
   app.anim = null;
+  app.newRecord = false;
   drawNext(app.reign, CARDS);
   app.mode = 'play';
+}
+
+function endReign() {
+  app.newRecord = app.reign.years > progress.best;
+  if (app.newRecord) {
+    progress.best = app.reign.years;
+    saveProgress(progress);
+  }
+  app.mode = 'dead';
 }
 
 function commitChoice(side) {
@@ -48,9 +81,12 @@ function commitChoice(side) {
 }
 
 // --- Entrées pointeur ---
+function logicalX(e) {
+  return (e.clientX - canvas.getBoundingClientRect().left) / scale;
+}
+
 let dragOriginX = null;
 canvas.addEventListener('pointerdown', (e) => {
-  if (app.mode === 'menu' || app.mode === 'dead') return; // géré au pointerup
   if (app.mode === 'play' && app.reign.current && !app.anim) {
     dragOriginX = e.clientX;
     dragStart(app.swipe);
@@ -62,9 +98,16 @@ canvas.addEventListener('pointermove', (e) => {
     dragMove(app.swipe, (e.clientX - dragOriginX) / scale);
   }
 });
-canvas.addEventListener('pointerup', () => {
-  if (app.mode === 'menu' || app.mode === 'dead') {
-    startReign();
+canvas.addEventListener('pointerup', (e) => {
+  if (app.mode === 'menu') {
+    const x = logicalX(e);
+    if (x < VIEW_W * 0.3) selectKing(-1);
+    else if (x > VIEW_W * 0.7) selectKing(+1);
+    else startReign();
+    return;
+  }
+  if (app.mode === 'dead') {
+    app.mode = 'menu';
     return;
   }
   if (dragOriginX !== null) {
@@ -76,8 +119,14 @@ canvas.addEventListener('pointerup', () => {
 
 // --- Entrées clavier (desktop) ---
 window.addEventListener('keydown', (e) => {
-  if (app.mode === 'menu' || app.mode === 'dead') {
+  if (app.mode === 'menu') {
+    if (e.code === 'ArrowLeft') selectKing(-1);
+    if (e.code === 'ArrowRight') selectKing(+1);
     if (e.code === 'Space' || e.code === 'Enter') startReign();
+    return;
+  }
+  if (app.mode === 'dead') {
+    if (e.code === 'Space' || e.code === 'Enter') app.mode = 'menu';
     return;
   }
   if (app.mode !== 'play' || !app.reign.current || app.anim) return;
@@ -94,7 +143,7 @@ function step(dt) {
     app.anim.dx += dir * ANIM_SPEED * dt;
     if (Math.abs(app.anim.dx) > VIEW_W) {
       app.anim = null;
-      if (app.reign.dead) app.mode = 'dead';
+      if (app.reign.dead) endReign();
       else drawNext(app.reign, CARDS);
     }
   }

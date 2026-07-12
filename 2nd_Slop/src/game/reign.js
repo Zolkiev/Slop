@@ -4,6 +4,7 @@ import { ERAS, RECENT_LIMIT } from '../config.js';
 import { createGauges, applyEffects, checkDeath } from './gauges.js';
 import { createFlags, applyFlags } from './flags.js';
 import { pickCard } from './deck.js';
+import { empowerEffects, tryCancelDeath } from './relics.js';
 
 /** Ère correspondant à un nombre d'années de règne. */
 export function eraForYears(years) {
@@ -24,6 +25,7 @@ export function createReign(initial = {}) {
     recent: [], // dernières cartes jouées (anti-répétition)
     next: null, // id de carte forcée (chaîne de quête)
     dead: null, // {key, side, cause} une fois mort
+    miracle: null, // message quand une relique vient d'annuler une mort
     current: null, // carte présentée en attente de choix
   };
 }
@@ -61,12 +63,24 @@ export function choose(reign, side) {
   const choice = card[side];
   if (!choice) throw new Error(`côté invalide: ${side}`);
 
-  reign.gauges = applyEffects(reign.gauges, choice.effects);
+  reign.miracle = null;
+  reign.gauges = applyEffects(reign.gauges, empowerEffects(choice.effects, reign.flags));
   applyFlags(reign.flags, choice.flags);
   reign.years += 1;
   reign.era = eraForYears(reign.years);
   reign.next = choice.next ?? null;
   reign.current = null;
   reign.dead = checkDeath(reign.gauges);
+
+  // Le Fourreau peut boire le coup mortel (une seule fois).
+  if (reign.dead) {
+    const saved = tryCancelDeath(reign.gauges, reign.dead, reign.flags);
+    if (saved) {
+      reign.gauges = saved.gauges;
+      // une AUTRE jauge peut avoir lâché au même tour — le miracle n'y peut rien
+      reign.dead = checkDeath(reign.gauges);
+      reign.miracle = reign.dead ? null : saved.message;
+    }
+  }
   return reign;
 }
