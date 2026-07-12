@@ -76,7 +76,9 @@ function endReign() {
   app.mode = 'dead';
 }
 
-function commitChoice(side) {
+// `releaseDx` : position de la carte au moment du lâcher (0 au clavier),
+// pour que la désintégration démarre là où la carte se trouve vraiment.
+function commitChoice(side, releaseDx = 0) {
   const card = app.reign.current;
   if (!card) return;
   // La logique avance tout de suite ; la désintégration n'est que visuelle.
@@ -87,7 +89,7 @@ function commitChoice(side) {
       card,
       portrait: portraitFor(card.speaker),
       plate: cardPlate(),
-      dx: app.swipe.dx,
+      dx: releaseDx || (side === 'left' ? -40 : 40),
       side,
       centerX: VIEW_W / 2,
       centerY: VIEW_H / 2 + 10,
@@ -130,8 +132,9 @@ canvas.addEventListener('pointerup', (e) => {
   }
   if (dragOriginX !== null) {
     dragOriginX = null;
+    const releaseDx = app.swipe.dx; // avant dragEnd, qui remet dx à zéro
     const side = dragEnd(app.swipe);
-    if (side) commitChoice(side);
+    if (side) commitChoice(side, releaseDx);
   }
 });
 
