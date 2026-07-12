@@ -5,6 +5,7 @@ import { heldRelics } from '../game/relics.js';
 import { encodeSave } from '../game/save.js';
 import { portraitFor, backgroundFor, cardPlate } from '../engine/assets.js';
 import { TITLE, TEXT } from './fonts.js';
+import { drawShatter } from './shatter.js';
 import { drawGauges } from './gauges.js';
 import { drawCard } from './card.js';
 import { previewSide } from '../game/swipe.js';
@@ -133,13 +134,14 @@ function drawPlay(ctx, app) {
   drawRelics(ctx, reign.flags);
   if (reign.miracle) drawMiracle(ctx, reign.miracle);
 
-  if (card) {
-    const dx = anim ? anim.dx : swipe.dx;
+  if (anim) {
+    drawShatter(ctx, anim.shatter);
+  } else if (card) {
     drawCard(ctx, {
       card,
       portrait: portraitFor(card.speaker),
       plate: cardPlate(),
-      dx,
+      dx: swipe.dx,
       previewSide: side,
       centerX: VIEW_W / 2,
       centerY: VIEW_H / 2 + 10,

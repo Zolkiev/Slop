@@ -6,14 +6,13 @@ import { KINGS, isUnlocked } from './game/dynasty.js';
 import { loadProgress, saveProgress } from './game/score.js';
 import { decodeSave, codeFromHash } from './game/save.js';
 import { createLoop } from './engine/loop.js';
-import { preload } from './engine/assets.js';
+import { preload, portraitFor, cardPlate } from './engine/assets.js';
 import { render, VIEW_W, VIEW_H } from './render/renderer.js';
 import { loadFonts } from './render/fonts.js';
+import { createShatter, updateShatter } from './render/shatter.js';
 
 preload(); // portraits + décors, non bloquant (fallbacks dessinés en attendant)
 loadFonts(); // Cinzel + EB Garamond, non bloquant (serif système en attendant)
-
-const ANIM_SPEED = 2600; // px/s d'envol de la carte validée
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -80,8 +79,22 @@ function endReign() {
 function commitChoice(side) {
   const card = app.reign.current;
   if (!card) return;
-  // La logique avance tout de suite ; l'envol n'est que visuel.
-  app.anim = { card, side, dx: app.swipe.dx };
+  // La logique avance tout de suite ; la désintégration n'est que visuelle.
+  app.anim = {
+    card,
+    side,
+    shatter: createShatter({
+      card,
+      portrait: portraitFor(card.speaker),
+      plate: cardPlate(),
+      dx: app.swipe.dx,
+      side,
+      centerX: VIEW_W / 2,
+      centerY: VIEW_H / 2 + 10,
+      viewW: VIEW_W,
+      viewH: VIEW_H,
+    }),
+  };
   choose(app.reign, side);
 }
 
@@ -142,11 +155,8 @@ window.addEventListener('keydown', (e) => {
 // --- Boucle ---
 function step(dt) {
   if (app.anim) {
-    // envol : la carte file du côté choisi, puis la suivante est piochée
-    const dir = app.anim.side === 'left' ? -1 : 1;
-    if (app.anim.dx === 0) app.anim.dx = dir * 40;
-    app.anim.dx += dir * ANIM_SPEED * dt;
-    if (Math.abs(app.anim.dx) > VIEW_W) {
+    // désintégration : poussière de carrés, puis la suivante est piochée
+    if (updateShatter(app.anim.shatter, dt)) {
       app.anim = null;
       if (app.reign.dead) endReign();
       else drawNext(app.reign, CARDS);
