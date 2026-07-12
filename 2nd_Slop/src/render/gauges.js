@@ -1,5 +1,8 @@
 // Rendu des 4 jauges du royaume + aperçu des impacts pendant le drag.
 import { GAUGES, GAUGE_MAX } from '../config.js';
+import { gaugeIcon } from '../engine/assets.js';
+
+const ICON_SIZE = 26;
 
 const COLORS = {
   foi: '#e8c96a',
@@ -25,11 +28,19 @@ export function drawGauges(ctx, gauges, W, previewEffects = null) {
     const cx = slot * i + slot / 2;
     const value = gauges[g.key] / GAUGE_MAX;
 
-    // icône
-    ctx.font = '20px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(g.icon, cx, top - 14);
+    // icône vitrail (fallback : emoji tant que l'image n'est pas chargée)
+    const icon = gaugeIcon(g.key);
+    if (icon) {
+      const smoothing = ctx.imageSmoothingEnabled;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(icon, cx - ICON_SIZE / 2, top - 14 - ICON_SIZE / 2, ICON_SIZE, ICON_SIZE);
+      ctx.imageSmoothingEnabled = smoothing;
+    } else {
+      ctx.font = '20px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(g.icon, cx, top - 14);
+    }
 
     // fond de barre
     ctx.fillStyle = '#221d30';

@@ -1,7 +1,7 @@
 // Préchargement des images (portraits + décors). Chargement paresseux et
 // tolérant : le jeu reste jouable si une image manque (fallback dessiné).
 import { PORTRAITS } from '../game/portraits.js';
-import { ERAS } from '../config.js';
+import { ERAS, GAUGES } from '../config.js';
 
 const images = new Map();
 
@@ -21,6 +21,9 @@ export function preload() {
     load(`bg:${era.id}`, `assets/bg/${era.id}.png`);
   }
   load('ui:card-plate', 'assets/ui/card-plate.png');
+  for (const g of GAUGES) {
+    load(`icon:${g.key}`, `assets/ui/icon-${g.key}.png`);
+  }
 }
 
 /** Renvoie l'image si elle est chargée et exploitable, sinon null. */
@@ -32,3 +35,4 @@ export function get(key) {
 export const portraitFor = (speaker) => get(`portrait:${PORTRAITS[speaker] ?? 'chevalier'}`);
 export const backgroundFor = (eraId) => get(`bg:${eraId}`);
 export const cardPlate = () => get('ui:card-plate');
+export const gaugeIcon = (key) => get(`icon:${key}`);

@@ -26,7 +26,7 @@ writeFileSync('gallery-proof.html', `<!doctype html><html><head><meta charset="u
 body{background:#14111c;color:#e8dcc4;font:14px serif;margin:8px}
 section{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 h2{width:110px;margin:0;font-size:15px;color:#c9a227;text-align:right}
-div{display:flex;gap:8px}
+div{display:flex;gap:8px;flex-wrap:wrap;max-width:850px}
 figure{margin:0;text-align:center}
 img{width:96px;height:96px;image-rendering:pixelated;display:block}
 figcaption{font-size:11px;color:#888}
@@ -34,7 +34,7 @@ figcaption{font-size:11px;color:#888}
 
 const browser = await puppeteer.launch({ executablePath: CHROME, headless: 'new' });
 const page = await browser.newPage();
-await page.setViewport({ width: 620, height: 800 });
+await page.setViewport({ width: 1020, height: 800 });
 await page.goto('http://localhost:5173/gallery-proof.html', { waitUntil: 'networkidle0' });
 await page.waitForFunction("document.title === 'ready'");
 const total = await page.evaluate(() => document.body.scrollHeight);
