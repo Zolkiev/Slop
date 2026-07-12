@@ -148,18 +148,21 @@ export function drawCard(ctx, { card, portrait = null, plate = null, dx = 0, pre
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // texte du dilemme (sur voile de plomb si verrière)
+  // texte du dilemme (sur voile de plomb si verrière), centré verticalement
+  // entre le bas de l'arche et le bandeau du nom
   ctx.font = '17px serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   const lines = wrapText(ctx, card.text, CARD_W - 48);
+  const zoneMid = (pTop + PORTRAIT_H + (CARD_H / 2 - 50)) / 2;
+  const firstLineY = zoneMid - ((lines.length - 1) * 23) / 2;
   if (plate) {
-    roundRect(ctx, -CARD_W / 2 + 14, pTop + PORTRAIT_H + 10, CARD_W - 28, lines.length * 23 + 22, 8);
+    roundRect(ctx, -CARD_W / 2 + 14, firstLineY - 22, CARD_W - 28, lines.length * 23 + 22, 8);
     ctx.fillStyle = 'rgba(14,11,20,0.72)';
     ctx.fill();
   }
   ctx.fillStyle = IVORY;
-  drawLines(ctx, lines, 0, pTop + PORTRAIT_H + 32, 23);
+  drawLines(ctx, lines, 0, firstLineY, 23);
 
   // bandeau orateur en bas : voile de plomb, texte d'or surligné d'un trait de plomb
   if (plate) {

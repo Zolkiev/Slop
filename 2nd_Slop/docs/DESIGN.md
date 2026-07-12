@@ -186,9 +186,14 @@ src/
   galaad, dame du lac — soleil héraldique pour gauvain). Mapping complet dans
   `scripts/gen-assets-vitrail.sh`. Évêque : peau chaude explicite (« warm tan
   skin »), sinon le modèle le sort blafard.
-- **À venir (idée Jael 2026-07-12)** : décliner la plaque de carte en
-  variantes par type/famille de carte (codes couleur ou motifs différents —
-  ex. quêtes, ères, personnages récurrents), même pipeline que la verrière.
+- **À venir (idées Jael 2026-07-12)** :
+  - décliner la plaque de carte en variantes par type/famille de carte
+    (codes couleur ou motifs différents — ex. quêtes, ères, personnages
+    récurrents), même pipeline que la verrière ;
+  - générer des **props pour les jauges** (icônes Foi/Magie/Chevalerie/
+    Couronne dans la DA vitrail, remplacer les emojis actuels) ;
+  - **revoir la police** des cartes (le serif système fait générique —
+    explorer une fonte médiévale lisible, à embarquer localement).
 - ~~Ton d'écriture~~ → décidé : épique avec pointe d'ironie.
 - Faut-il un système d'« années » visible (âge du roi) ou juste un compteur de règne ?
 - Extraire un `_starter-template` commun après ce jeu (mutualiser loop/état/audio/save) ?
