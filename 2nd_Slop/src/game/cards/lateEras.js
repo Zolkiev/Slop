@@ -138,6 +138,22 @@ export const graal = [
     },
     weight: 2,
   },
+  {
+    id: 'graal.lancelot.tension',
+    era: 'graal',
+    speaker: 'Keu',
+    text: "Lancelot est rentré de la quête plus glorieux que jamais, et la reine sourit plus qu'il ne sied, Sire. La cour a des yeux.",
+    requires: { allFlags: ['lancelot.cour'], noneFlags: ['lancelot.banni'] },
+    left: {
+      label: 'Les faire surveiller',
+      effects: { couronne: +4, chevalerie: -4 },
+    },
+    right: {
+      label: 'Leur faire confiance',
+      effects: { chevalerie: +4, foi: -4 },
+    },
+    weight: 1,
+  },
 ];
 
 export const chute = [
@@ -180,6 +196,27 @@ export const chute = [
     weight: 3,
   },
   {
+    id: 'chute.affaire.mordred',
+    era: 'chute',
+    speaker: 'Mordred',
+    text: "J'ai des lettres, père. De la reine, à Lancelot. Faut-il que toute la cour les lise — ou préfères-tu, encore une fois, ne rien voir ?",
+    unique: true,
+    requires: {
+      allFlags: ['affaire.tue'],
+      anyFlags: ['mordred.eleve', 'mordred.ecarte', 'mordred.ambitieux'],
+    },
+    left: {
+      label: 'Que tout éclate',
+      effects: { couronne: -6, chevalerie: -8 },
+      flags: ['affaire.exposee', 'lancelot.banni'],
+    },
+    right: {
+      label: 'Étouffer encore',
+      effects: { couronne: +5, foi: -8, magie: -4 },
+    },
+    weight: 3,
+  },
+  {
     id: 'chute.filler.desertion',
     era: 'chute',
     filler: true,
@@ -215,6 +252,25 @@ export const chute = [
       effects: { couronne: +4, chevalerie: -8 },
     },
     weight: 3,
+  },
+  {
+    id: 'chute.guenievre.bucher',
+    era: 'chute',
+    speaker: "L'Évêque",
+    text: "La reine adultère doit brûler — la loi de Dieu est claire, Sire. À moins que ton cœur, ou l'épée d'un banni, n'en décide autrement.",
+    unique: true,
+    requires: { allFlags: ['lancelot.banni'], gauge: { foi: [55, 100] } },
+    left: {
+      label: 'Le bûcher',
+      effects: { foi: +10, chevalerie: -12, couronne: +2 },
+      flags: ['guenievre.brulee'],
+    },
+    right: {
+      label: "Qu'on la sauve",
+      effects: { chevalerie: +6, couronne: -4, foi: -10 },
+      flags: ['guenievre.sauvee'],
+    },
+    weight: 2,
   },
   {
     id: 'chute.guenievre.couvent',
