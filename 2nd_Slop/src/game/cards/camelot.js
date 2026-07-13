@@ -230,4 +230,24 @@ export const camelot = [
     },
     weight: 1,
   },
+  // ---- Chaîne Mordred : l'enfant grandit (posé à la Roche, éclate à la Chute) ----
+  {
+    id: 'camelot.mordred.enfant',
+    era: 'camelot',
+    speaker: 'Morgane',
+    text: "L'enfant a tes yeux, frère — et mon sang. L'élèveras-tu à Camelot, sous ton aile, ou l'enverras-tu loin d'ici, où l'on oubliera d'où il vient ?",
+    unique: true,
+    requires: { allFlags: ['mordred.concu'] },
+    left: {
+      label: "L'élever à la cour",
+      effects: { magie: +4, couronne: +2, foi: -6 },
+      flags: ['mordred.eleve'],
+    },
+    right: {
+      label: 'Loin de Camelot',
+      effects: { foi: +5, chevalerie: -2, magie: -4 },
+      flags: ['mordred.ecarte'],
+    },
+    weight: 2,
+  },
 ];

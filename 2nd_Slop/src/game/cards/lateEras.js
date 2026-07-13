@@ -120,6 +120,24 @@ export const graal = [
     },
     weight: 2,
   },
+  {
+    id: 'graal.mordred.chevalier',
+    era: 'graal',
+    speaker: 'Mordred',
+    text: "Père — ou « mon roi », si tu préfères. J'ai grandi, et je manie l'épée mieux que tes vieux barons. Donne-moi une place à ta Table… que je serve, ou que je m'ennuie.",
+    unique: true,
+    requires: { anyFlags: ['mordred.eleve', 'mordred.ecarte'] },
+    left: {
+      label: 'Le distinguer',
+      effects: { chevalerie: +6, couronne: -4 },
+      flags: ['mordred.ambitieux'],
+    },
+    right: {
+      label: 'Le tenir en lisière',
+      effects: { couronne: +5, chevalerie: -5, magie: -3 },
+    },
+    weight: 2,
+  },
 ];
 
 export const chute = [
@@ -128,7 +146,7 @@ export const chute = [
     id: 'chute.mordred.revele',
     era: 'chute',
     speaker: 'Mordred',
-    text: "Père. Oui — père. Le fils que Morgane t'a caché réclame sa part de Logres. Me nommeras-tu héritier ?",
+    text: "Père. Oui — père. Le fils que Morgane t'a donné, celui que tu as élevé ou banni, réclame aujourd'hui sa part de Logres. Me nommeras-tu héritier ?",
     unique: true,
     requires: { allFlags: ['mordred.concu'] },
     left: {
@@ -153,6 +171,7 @@ export const chute = [
     left: {
       label: 'Marcher sur Camlann',
       effects: { chevalerie: -14, couronne: +6 },
+      flags: ['camlann'],
     },
     right: {
       label: 'Négocier',
@@ -246,6 +265,23 @@ export const chute = [
       effects: { chevalerie: +5, couronne: -7 },
     },
     weight: 1,
+  },
+  {
+    id: 'chute.camlann.duel',
+    era: ['chute', 'avalon'],
+    speaker: 'Bédivère',
+    text: "Face à face, enfin : toi et Mordred, au milieu des morts de Camlann. Une dernière charge, Sire. Lève Excalibur.",
+    unique: true,
+    requires: { allFlags: ['camlann'] },
+    left: {
+      label: 'Charger Mordred',
+      effects: { chevalerie: -30, couronne: +4 },
+    },
+    right: {
+      label: 'Tenter de le raisonner',
+      effects: { couronne: -12, foi: +4, magie: -6 },
+    },
+    weight: 4,
   },
 ];
 
