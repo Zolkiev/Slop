@@ -154,6 +154,60 @@ export const graal = [
     },
     weight: 1,
   },
+  {
+    id: 'graal.exode',
+    era: 'graal',
+    speaker: 'Un héraut',
+    text: "La moitié de la Table a sellé ses chevaux pour la coupe, Sire. Béniras-tu ce grand départ — ou rappelleras-tu tes chevaliers avant que Camelot ne sonne creux ?",
+    unique: true,
+    requires: { allFlags: ['graal.quete'] },
+    left: {
+      label: 'Bénir le départ',
+      effects: { foi: +10, chevalerie: -12 },
+      flags: ['graal.exode'],
+    },
+    right: {
+      label: 'Retenir la Table',
+      effects: { chevalerie: +8, foi: -8 },
+    },
+    weight: 3,
+  },
+  {
+    id: 'graal.roi.pecheur',
+    era: 'graal',
+    speaker: 'Un ermite',
+    text: "Au château du Graal règne un roi blessé qui ne meurt ni ne guérit, et sa terre pourrit avec lui. Ton chevalier doit poser LA question, Sire — mais laquelle ?",
+    unique: true,
+    requires: { allFlags: ['graal.quete'] },
+    left: {
+      label: '« Qui sert-on avec le Graal ? »',
+      effects: { foi: +8, magie: +2, couronne: -4 },
+    },
+    right: {
+      label: '« Où est caché le trésor ? »',
+      effects: { couronne: +5, foi: -7 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'graal.galaad.atteint',
+    era: ['graal', 'chute'],
+    speaker: 'Galaad',
+    text: "Sire, je l'ai vu — le Graal, à visage découvert. Ma quête s'achève, et moi avec elle : je monte vers la lumière. Que dira Camelot de ce jour ?",
+    unique: true,
+    requires: { allFlags: ['graal.quete', 'graal.exode'] },
+    left: {
+      label: 'Pleurer un saint',
+      effects: { foi: +12, chevalerie: -6 },
+      flags: ['graal.atteint'],
+    },
+    right: {
+      label: 'Maudire cette quête',
+      effects: { chevalerie: +6, foi: -10 },
+      flags: ['graal.echoue'],
+    },
+    weight: 2,
+  },
 ];
 
 export const chute = [
