@@ -278,6 +278,7 @@ export const chute = [
     speaker: 'Guenièvre',
     text: "Je pars pour le couvent d'Amesbury, mon roi. Prier pour Logres — et pour nous. Me retiendras-tu, cette fois ?",
     unique: true,
+    requires: { noneFlags: ['guenievre.brulee'] },
     left: {
       label: 'La laisser partir',
       effects: { foi: +6, couronne: -4 },
