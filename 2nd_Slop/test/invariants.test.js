@@ -74,6 +74,51 @@ describe('intégrité du deck', () => {
       expect(fillers.length, `ère sans filler: ${era.id}`).toBeGreaterThan(0);
     }
   });
+
+  // Rang d'une ère (roche=0 … avalon=4).
+  const ERA_RANK = Object.fromEntries(ERAS.map((e, i) => [e.id, i]));
+  const eraRanks = (c) =>
+    c.era == null
+      ? ERAS.map((_, i) => i)
+      : (Array.isArray(c.era) ? c.era : [c.era]).map((id) => ERA_RANK[id]).filter((r) => r != null);
+  const minEraRank = (c) => {
+    const r = eraRanks(c);
+    return r.length ? Math.min(...r) : 0;
+  };
+  const posersOf = (flag) =>
+    CARDS.filter((p) =>
+      ['left', 'right'].some((s) =>
+        (p[s]?.flags ?? []).some((e) => (Array.isArray(e) ? e[0] : e) === flag)));
+
+  it('tout flag requis est posable à une ère ≤ celle où il est requis', () => {
+    for (const c of CARDS) {
+      const r = c.requires;
+      if (!r) continue;
+      const consumerRank = minEraRank(c);
+      for (const f of [...(r.allFlags ?? []), ...(r.anyFlags ?? [])]) {
+        const posers = posersOf(f);
+        expect(posers.length, `flag jamais posé: ${f} (requis par ${c.id})`).toBeGreaterThan(0);
+        const earliest = Math.min(...posers.map(minEraRank));
+        expect(earliest, `flag ${f} posé trop tard (rang ${earliest}) pour ${c.id} (rang ${consumerRank})`)
+          .toBeLessThanOrEqual(consumerRank);
+      }
+    }
+  });
+
+  it('chaque ère vivante peut monter ET baisser chaque jauge', () => {
+    const LIVING = ['roche', 'camelot', 'graal', 'chute'];
+    const inEra = (c, eraId) =>
+      c.era == null || (Array.isArray(c.era) ? c.era.includes(eraId) : c.era === eraId);
+    for (const eraId of LIVING) {
+      const pool = CARDS.filter((c) => inEra(c, eraId));
+      for (const key of GAUGE_KEYS) {
+        const up = pool.some((c) => ['left', 'right'].some((s) => (c[s]?.effects?.[key] ?? 0) > 0));
+        const down = pool.some((c) => ['left', 'right'].some((s) => (c[s]?.effects?.[key] ?? 0) < 0));
+        expect(up, `${eraId}: aucune carte ne monte ${key}`).toBe(true);
+        expect(down, `${eraId}: aucune carte ne baisse ${key}`).toBe(true);
+      }
+    }
+  });
 });
 
 describe('invariant de jouabilité (fuzz)', () => {
