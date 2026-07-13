@@ -250,4 +250,21 @@ export const camelot = [
     },
     weight: 2,
   },
+  {
+    id: 'camelot.morgane.fourreau',
+    era: 'camelot',
+    speaker: 'Morgane',
+    text: "Ce fourreau qui garde ton sang… un si beau travail de fée, frère. Prête-le-moi une nuit, que j'en admire les runes. Que crains-tu donc ?",
+    unique: true,
+    requires: { allFlags: ['relique.fourreau', 'morgane.cour'], noneFlags: ['fourreau.perdu'] },
+    left: {
+      label: 'Le lui prêter une nuit',
+      effects: { magie: +6, chevalerie: -6 },
+    },
+    right: {
+      label: 'Jamais',
+      effects: { foi: +4, magie: -6 },
+    },
+    weight: 2,
+  },
 ];

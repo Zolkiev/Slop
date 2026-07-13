@@ -208,6 +208,24 @@ export const graal = [
     },
     weight: 2,
   },
+  {
+    id: 'graal.excalibur.doute',
+    era: 'graal',
+    speaker: "L'Évêque",
+    text: "Cette épée sort d'un lac païen, Sire, non de l'autel de Dieu. Un roi chrétien devrait-il la ceindre encore, en ces temps de sainte quête ?",
+    unique: true,
+    requires: { allFlags: ['relique.excalibur'], noneFlags: ['excalibur.rendue'] },
+    left: {
+      label: 'La rendre au lac',
+      effects: { foi: +8, chevalerie: -6 },
+      flags: ['excalibur.rendue'],
+    },
+    right: {
+      label: 'Elle est à Logres',
+      effects: { chevalerie: +6, foi: -6 },
+    },
+    weight: 1,
+  },
 ];
 
 export const chute = [
@@ -394,6 +412,23 @@ export const chute = [
     },
     weight: 4,
   },
+  {
+    id: 'chute.sans.fourreau',
+    era: 'chute',
+    speaker: 'Bédivère',
+    text: "Depuis que le Fourreau t'a quitté, tu portes la main à ton flanc à chaque ombre, Sire. Un roi sans protection doit-il mener la charge — ou la commander de loin ?",
+    unique: true,
+    requires: { allFlags: ['fourreau.perdu'] },
+    left: {
+      label: 'Mener la charge',
+      effects: { chevalerie: +6, couronne: +2 },
+    },
+    right: {
+      label: 'Commander de loin',
+      effects: { couronne: +4, chevalerie: -5 },
+    },
+    weight: 1,
+  },
 ];
 
 export const avalon = [
@@ -439,7 +474,7 @@ export const avalon = [
     speaker: 'Bédivère',
     text: "Deux fois tu m'as ordonné de jeter Excalibur au lac, deux fois j'ai menti. Elle est trop belle, Sire. Ordonne encore ?",
     unique: true,
-    requires: { allFlags: ['relique.excalibur'] },
+    requires: { allFlags: ['relique.excalibur'], noneFlags: ['excalibur.rendue'] },
     left: {
       label: 'Jette-la, Bédivère',
       effects: { magie: +8, chevalerie: -4 },
