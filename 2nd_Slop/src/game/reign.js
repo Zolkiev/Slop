@@ -1,10 +1,14 @@
-// Orchestration d'un règne : relie jauges, flags, deck et ères.
+// Orchestration d'un règne : relie jauges, flags, deck, ères et duels.
 // Boucle logique : draw() présente une carte, choose() applique un côté.
+// Pendant un combat (reign.combat), les deux délèguent au module combat —
+// la boucle de jeu ne voit pas la différence.
 import { ERAS, RECENT_LIMIT } from '../config.js';
 import { createGauges, applyEffects, checkDeath } from './gauges.js';
 import { createFlags, applyFlags } from './flags.js';
 import { pickCard } from './deck.js';
 import { empowerEffects, tryCancelDeath } from './relics.js';
+import { startCombat, nextManoeuvre, resolveManoeuvre } from './combat.js';
+import { COMBATS } from './combats/index.js';
 
 /** Ère correspondant à un nombre d'années de règne. */
 export function eraForYears(years) {
@@ -27,6 +31,7 @@ export function createReign(initial = {}) {
     dead: null, // {key, side, cause} une fois mort
     miracle: null, // message quand une relique vient d'annuler une mort
     current: null, // carte présentée en attente de choix
+    combat: null, // duel en cours (voir combat.js), null hors combat
   };
 }
 
@@ -35,6 +40,7 @@ export function createReign(initial = {}) {
  * @returns la carte, ou null si le deck est vide (ne devrait pas arriver — voir invariants).
  */
 export function draw(reign, cards, rng = Math.random) {
+  if (reign.combat) return nextManoeuvre(reign); // hors deck : ni seen ni recent
   const card = pickCard(cards, {
     gauges: reign.gauges,
     flags: reign.flags,
@@ -55,13 +61,26 @@ export function draw(reign, cards, rng = Math.random) {
 /**
  * Applique un choix (`side` = 'left' | 'right') sur la carte présentée.
  * Fait avancer les jauges, les flags, l'année et l'ère, puis teste la mort.
+ * Un côté `combat: '<id>'` ouvre un duel à la place : ses flags sont posés
+ * (dont `epreuve.<id>`), ses effets ignorés — l'issue du combat décidera, et
+ * l'année n'avancera qu'à la fin du duel. `rng` mélange la pioche de manœuvres.
  * Renvoie le règne muté (même objet, pour un usage simple côté boucle).
  */
-export function choose(reign, side) {
+export function choose(reign, side, rng = Math.random) {
+  if (reign.combat) return resolveManoeuvre(reign, side);
   const card = reign.current;
   if (!card) throw new Error('choose() sans carte présentée');
   const choice = card[side];
   if (!choice) throw new Error(`côté invalide: ${side}`);
+
+  if (choice.combat) {
+    const def = COMBATS[choice.combat];
+    if (!def) throw new Error(`combat inconnu: ${choice.combat}`);
+    reign.miracle = null;
+    applyFlags(reign.flags, choice.flags);
+    startCombat(reign, def, rng);
+    return reign;
+  }
 
   reign.miracle = null;
   reign.gauges = applyEffects(reign.gauges, empowerEffects(choice.effects, reign.flags));
