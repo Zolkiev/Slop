@@ -12,6 +12,7 @@ import { PORTRAITS } from '../src/game/portraits.js';
 import { COMBATS, combatFlagsSetBy } from '../src/game/combats/index.js';
 import { KINGS, lineageFlag } from '../src/game/dynasty.js';
 import { setFlag } from '../src/game/flags.js';
+import { SCENES } from '../src/game/scenes.js';
 
 // RNG déterministe (mulberry32) pour un fuzz reproductible.
 function mulberry32(seed) {
@@ -72,6 +73,12 @@ describe('intégrité du deck', () => {
   it('chaque orateur du deck a un portrait mappé', () => {
     for (const c of CARDS) {
       expect(PORTRAITS[c.speaker], `orateur sans portrait: ${c.speaker}`).toBeTruthy();
+    }
+  });
+
+  it('chaque art de carte pointe une scène connue', () => {
+    for (const c of CARDS) {
+      if (c.art) expect(SCENES, `scène inconnue: ${c.art} (${c.id})`).toContain(c.art);
     }
   });
 

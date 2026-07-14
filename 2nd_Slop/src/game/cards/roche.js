@@ -329,6 +329,7 @@ export const roche = [
     id: 'roche.chasse.blanche',
     era: 'roche',
     speaker: 'Un héraut',
+    art: 'cerf-blanc',
     text: "Un cerf d'un blanc immaculé a traversé la lande sous les yeux de toute la cour — présage féerique, murmure-t-on déjà. Ordonnes-tu la chasse, ou proclames-tu une fête en son honneur ?",
     unique: true,
     left: { label: 'Ordonner la chasse', effects: { magie: -6, couronne: +4 } },

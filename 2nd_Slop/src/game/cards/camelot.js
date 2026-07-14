@@ -59,6 +59,7 @@ export const camelot = [
   // ---- Amorce de la quête du Graal (mène à l'ère graal) ----
   {
     id: 'camelot.graal.vision',
+    art: 'graal-vision',
     era: 'camelot',
     speaker: 'Perceval',
     text: "Une coupe de lumière m'est apparue en songe : le Saint Graal. Enverras-tu la Table à sa quête ?",
