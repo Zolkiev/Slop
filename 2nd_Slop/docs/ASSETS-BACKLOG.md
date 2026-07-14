@@ -80,6 +80,21 @@ détourées, même pipeline que les icônes de jauges :
 | `assets/ui/relic-excalibur.png` | `legendary sword Excalibur icon, upright silver blade, golden cross guard, small radiant glow, minimalist stained glass style, bold black lead outlines, flat muted jewel tones, centered on plain background` |
 | `assets/ui/relic-fourreau.png` | `ornate magical scabbard icon, dark blue leather with silver runes, minimalist stained glass style, bold black lead outlines, flat muted jewel tones, centered on plain background` |
 
+## Scènes d'événements (idée Jael 2026-07-14) ✅ 5 FAITES
+
+> Tirées le 2026-07-14 (coût 100, solde 170 → 70) : cerf-blanc, graal-vision,
+> fourreau-vole, camlann, barque-avalon — champ `art:` sur les cartes,
+> suffixe SCÈNE validé du premier coup. **D'autres candidates au prochain
+> quota** (~20 chacune) : l'exode du Graal, le bûcher de la reine, la nuit de
+> Tintagel (lignée Uther), le sacre, la Table Ronde fondée.
+
+## Fonds de carte variés (idée Jael 2026-07-14) — prochain quota
+
+Décliner la plaque 352×480 par **famille** d'abord (voir P4, meilleur ratio),
+puis par **ère** si le rendu convainc (~40-60/tir, 1 seul candidat par job en
+grand format — budgéter 2-3 tirs par variante pour avoir du choix). Les fonds
+par événement/perso : réservés aux moments qui n'ont pas déjà leur scène.
+
 ## P3 — Morts illustrées (9 vignettes, ~180 gén.)
 
 Une vignette 128×128 sur l'écran « FIN DU RÈGNE » (à insérer dans une arche,

@@ -15,6 +15,7 @@ body{background:#14111c;margin:0;display:flex;gap:12px;justify-content:center}
 import { drawCard, CARD_W, CARD_H } from '/src/render/card.js';
 
 // ?chars=morgane,lancelot,eveque — clés de fichiers dans assets/portraits/
+// préfixe scene: pour une scène (assets/scenes/), ex. ?chars=scene:camlann
 const DEFAULTS = ['morgane', 'lancelot', 'eveque'];
 const keys = (new URLSearchParams(location.search).get('chars') ?? '').split(',').filter(Boolean);
 const TEXT = 'Sous les anciens rois, le petit peuple recevait lait et miel à chaque lune. Le nouveau roi honorera-t-il l’usage ?';
@@ -41,9 +42,12 @@ for (const card of CARDS) {
   canvas.height = CARD_H + 40;
   document.body.appendChild(canvas);
   const ctx = canvas.getContext('2d');
-  const portrait = await load(`assets/portraits/${FILES[card.speaker]}.png`);
-  drawCard(ctx, { card: { ...card, left: {}, right: {} }, portrait, plate,
-    centerX: canvas.width / 2, centerY: canvas.height / 2 });
+  const key = FILES[card.speaker];
+  const portrait = key.startsWith('scene:')
+    ? await load(`assets/scenes/${key.slice(6)}.png`)
+    : await load(`assets/portraits/${key}.png`);
+  drawCard(ctx, { card: { ...card, speaker: key.replace('scene:', ''), left: {}, right: {} },
+    portrait, plate, centerX: canvas.width / 2, centerY: canvas.height / 2 });
 }
 document.title = 'ready';
 </script>
