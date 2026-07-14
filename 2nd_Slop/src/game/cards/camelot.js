@@ -230,4 +230,252 @@ export const camelot = [
     },
     weight: 1,
   },
+  // ---- Chaîne Mordred : l'enfant grandit (posé à la Roche, éclate à la Chute) ----
+  {
+    id: 'camelot.mordred.enfant',
+    era: 'camelot',
+    speaker: 'Morgane',
+    text: "L'enfant a tes yeux, frère — et mon sang. L'élèveras-tu à Camelot, sous ton aile, ou l'enverras-tu loin d'ici, où l'on oubliera d'où il vient ?",
+    unique: true,
+    requires: { allFlags: ['mordred.concu'] },
+    left: {
+      label: "L'élever à la cour",
+      effects: { magie: +4, couronne: +2, foi: -6 },
+      flags: ['mordred.eleve'],
+    },
+    right: {
+      label: 'Loin de Camelot',
+      effects: { foi: +5, chevalerie: -2, magie: -4 },
+      flags: ['mordred.ecarte'],
+    },
+    weight: 2,
+  },
+  {
+    id: 'camelot.morgane.fourreau',
+    era: 'camelot',
+    speaker: 'Morgane',
+    text: "Ce fourreau qui garde ton sang… un si beau travail de fée, frère. Prête-le-moi une nuit, que j'en admire les runes. Que crains-tu donc ?",
+    unique: true,
+    requires: { allFlags: ['relique.fourreau', 'morgane.cour'], noneFlags: ['fourreau.perdu'] },
+    left: {
+      label: 'Le lui prêter une nuit',
+      effects: { magie: +6, chevalerie: -6 },
+    },
+    right: {
+      label: 'Jamais',
+      effects: { foi: +4, magie: -6 },
+    },
+    weight: 2,
+  },
+  // ---- Matière de cour : dilemmes standalone ----
+  {
+    id: 'camelot.tournoi.grand',
+    era: 'camelot',
+    speaker: 'Un héraut',
+    text: "Sire, tous les royaumes d'Europe veulent voir tes chevaliers jouter. Un grand tournoi coûterait cher — mais quelle vitrine pour la Table Ronde !",
+    left: {
+      label: 'Le grand tournoi',
+      effects: { chevalerie: +7, couronne: -5 },
+    },
+    right: {
+      label: 'Trop cher, trop vain',
+      effects: { couronne: +4, chevalerie: -4 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.pont.taxe',
+    era: 'camelot',
+    speaker: 'Un conseiller',
+    text: "Les marchands passent le pont de la Severn par centaines, Sire, et ne paient rien. Un péage remplirait ton trésor — au prix de leur bonne humeur, et peut-être de leurs prières pour toi.",
+    left: {
+      label: 'Lever le péage',
+      effects: { couronne: +6, foi: -4 },
+    },
+    right: {
+      label: 'Un pont libre pour tous',
+      effects: { foi: +4, couronne: -3 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.barde.satire',
+    era: 'camelot',
+    speaker: 'Un barde',
+    text: "J'ai composé une chanson, Sire, où les barons dansent comme des ours en laisse. Toute la taverne la chante déjà. Dois-je la faire taire, ou la laisser courir ?",
+    left: {
+      label: 'La laisser courir',
+      effects: { couronne: -5, chevalerie: +4 },
+    },
+    right: {
+      label: 'La faire taire',
+      effects: { chevalerie: -4, couronne: +5 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.saxons.mariage',
+    era: 'camelot',
+    speaker: 'Un émissaire saxon',
+    text: "Cerdic t'offre sa nièce en mariage à l'un de tes chevaliers, Sire — du sang saxon mêlé au tien, pour sceller une paix que les épées seules ne tiendront pas.",
+    left: {
+      label: 'Sceller l’union',
+      effects: { couronne: +6, chevalerie: -5 },
+    },
+    right: {
+      label: 'Refuser ce sang mêlé',
+      effects: { chevalerie: +5, couronne: -4 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.eveque.heresie',
+    era: 'camelot',
+    speaker: "L'Évêque",
+    text: "Un prêtre de ta cour prêche que les astres gouvernent nos âmes plus que Dieu, Sire. Le peuple l'écoute avec des yeux ronds. Faut-il le juger pour hérésie ?",
+    left: {
+      label: 'Le juger',
+      effects: { foi: +7, magie: -5 },
+    },
+    right: {
+      label: 'Le laisser prêcher',
+      effects: { magie: +5, foi: -6 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.gauvain.serment',
+    era: 'camelot',
+    speaker: 'Gauvain',
+    text: "Devant tout le banquet, Sire, je viens de jurer d'affronter le Chevalier Vert dans un an et un jour. C'était le vin qui parlait — mais un serment est un serment. Le tiendras-tu avec moi ?",
+    left: {
+      label: 'Honorer le serment',
+      effects: { chevalerie: +8, couronne: -5 },
+    },
+    right: {
+      label: 'Le délier de sa parole',
+      effects: { couronne: +4, chevalerie: -6 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.guenievre.hopital',
+    era: 'camelot',
+    speaker: 'Guenièvre',
+    text: "Les lépreux dorment sous les ponts de Camelot, mon roi. Laisse-moi fonder une maison-Dieu en ton nom — le trésor en pâtira, mais nos âmes s'en porteront mieux.",
+    left: {
+      label: 'Fonder la maison-Dieu',
+      effects: { foi: +7, couronne: -5 },
+    },
+    right: {
+      label: 'Le trésor avant tout',
+      effects: { couronne: +5, foi: -5 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.baron.frontiere',
+    era: 'camelot',
+    speaker: 'Un baron',
+    text: "J'ai levé l'impôt sur mes terres des marches sans attendre ton sceau, Sire. Le grain était mûr, les brigands rôdaient — fallait-il t'écrire une lettre pendant qu'on nous pillait ?",
+    left: {
+      label: 'Le rappeler à l’ordre',
+      effects: { couronne: +6, chevalerie: -4 },
+    },
+    right: {
+      label: 'Fermer les yeux',
+      effects: { chevalerie: +4, couronne: -5 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.conseiller.espions',
+    era: 'camelot',
+    speaker: 'Un conseiller',
+    text: "Des oreilles discrètes dans les cours voisines, Sire, et plus jamais de surprise à tes frontières. Cela coûte de l'or et, disons-le, un peu d'honneur à jouer les marchands d'ombre.",
+    left: {
+      label: 'Financer les espions',
+      effects: { couronne: +5, foi: -5 },
+    },
+    right: {
+      label: 'Régner à visage découvert',
+      effects: { foi: +5, couronne: -4 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.marchand.route',
+    era: 'camelot',
+    speaker: 'Un marchand',
+    text: "Ouvre Camelot aux caravanes de Byzance et d'ailleurs, Sire, et l'or coulera comme la Severn. Mais avec la soie viendront leurs dieux, leurs contes, leurs façons de voir le ciel.",
+    left: {
+      label: 'Ouvrir les routes',
+      effects: { couronne: +6, magie: -4 },
+    },
+    right: {
+      label: 'Garder nos frontières closes',
+      effects: { magie: +4, couronne: -5 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.perceval.epreuve',
+    era: 'camelot',
+    speaker: 'Perceval',
+    text: "Sire, je veux affronter le Chevalier Noir de la Forêt Perdue, seul, sans armure de rechange ni écuyer. On dit que nul n'en revient — c'est bien pour cela qu'il me faut y aller.",
+    left: {
+      label: 'Le laisser partir',
+      effects: { chevalerie: +7, couronne: -5 },
+    },
+    right: {
+      label: 'Lui interdire',
+      effects: { couronne: +4, chevalerie: -6 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.relique.epine',
+    era: 'camelot',
+    speaker: 'Un pèlerin',
+    text: "Une épine de la Sainte Couronne, Sire — rapportée de Terre Sainte, garantie par un moine qui jure ne jamais mentir. Le comte qui la vend n'en demande qu'un comté en échange.",
+    left: {
+      label: 'Acheter la relique',
+      effects: { foi: +7, couronne: -6 },
+    },
+    right: {
+      label: 'Une relique, un comté : non',
+      effects: { couronne: +5, foi: -4 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.champ.clos',
+    era: 'camelot',
+    speaker: 'Keu',
+    text: "Deux de tes chevaliers, Sire, en sont venus aux mots, puis aux gants jetés au sol. Ils veulent laver l'affront en champ clos, devant toute la cour. Permets-tu le duel ?",
+    left: {
+      label: 'Le champ clos',
+      effects: { chevalerie: +6, couronne: -4 },
+    },
+    right: {
+      label: 'Les réconcilier de force',
+      effects: { couronne: +5, chevalerie: -5 },
+    },
+    weight: 1,
+  },
+  {
+    id: 'camelot.fete.paiens',
+    era: 'camelot',
+    speaker: 'Le peuple',
+    text: "Les feux de la Saint-Jean brûleront ce soir comme du temps de nos grands-pères, Sire — bien avant que les moines ne comptent nos péchés. Les laisseras-tu danser autour des flammes ?",
+    left: {
+      label: 'Laisser danser',
+      effects: { magie: +6, foi: -5 },
+    },
+    right: {
+      label: 'Interdire les feux païens',
+      effects: { foi: +5, magie: -5 },
+    },
+    weight: 1,
+  },
 ];
