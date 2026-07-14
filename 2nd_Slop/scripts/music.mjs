@@ -141,7 +141,8 @@ const P_ROCHE = [
 const roche = {
   bpm: 72, bars: 8, seed: 11,
   voices: [
-    { wave: 'square', vol: 0.055, decay: 0.6, sustain: 16, note: droneNote(P_ROCHE, 0) },
+    // bourdon remonté d'une octave et adouci — les graves < 60 Hz fatiguent (QA Jael)
+    { wave: 'square', vol: 0.042, decay: 0.6, sustain: 16, note: droneNote(P_ROCHE, 12) },
     { wave: 'triangle', vol: 0.15, decay: 4, sustain: 3,
       note: (bar, step) => {
         if (step !== 0 && step !== 6 && step !== 12) return null;
@@ -172,7 +173,7 @@ const LEAD_CAMELOT = [
 const camelot = {
   bpm: 84, bars: 8, seed: 21,
   voices: [
-    { wave: 'square', vol: 0.05, decay: 0.7, sustain: 16, note: droneNote(P_CAMELOT, 0) },
+    { wave: 'square', vol: 0.04, decay: 0.7, sustain: 16, note: droneNote(P_CAMELOT, 12) },
     { wave: 'triangle', vol: 0.16, decay: 6, sustain: 2, note: arpNote(P_CAMELOT, [0, 1, 2, 3, 1, 2, 3, 2]) },
     { wave: 'pulse25', vol: 0.06, decay: 4, sustain: 2.5, vibrato: { rate: 5, depth: 0.25 },
       note: (bar, step) => (bar >= 4 ? LEAD_CAMELOT[bar % 4][step] ?? null : null) },
@@ -193,7 +194,7 @@ const P_MYST = [
 const mystique = {
   bpm: 60, bars: 8, seed: 33,
   voices: [
-    { wave: 'square', vol: 0.04, decay: 0.5, sustain: 16, note: droneNote(P_MYST, 0) },
+    { wave: 'square', vol: 0.032, decay: 0.5, sustain: 16, note: droneNote(P_MYST, 12) },
     // scintillement haut, clairsemé
     { wave: 'triangle', vol: 0.12, decay: 3, sustain: 4,
       note: (bar, step) => {
@@ -216,20 +217,58 @@ const P_SOMBRE = [
 const sombre = {
   bpm: 78, bars: 8, seed: 44,
   voices: [
-    // bourdon pulsé en croches, grave
-    { wave: 'triangle', vol: 0.19, decay: 7, sustain: 1.6,
+    // bourdon pulsé en croches — remonté d'une octave et adouci (QA Jael)
+    { wave: 'triangle', vol: 0.13, decay: 7, sustain: 1.6,
       note: (bar, step) => (step % 2 === 0
-        ? { m: P_SOMBRE[bar % 4].root - 12, v: step % 8 === 0 ? 1 : 0.7 }
+        ? { m: P_SOMBRE[bar % 4].root, v: step % 8 === 0 ? 1 : 0.7 }
         : null) },
     // seconde phrygienne qui plane
     { wave: 'square', vol: 0.045, decay: 0.8, sustain: 16,
       note: (bar, step) => (step === 0 ? { m: P_SOMBRE[bar % 4].root + 1, v: 0.8 } : null) },
-    // glas sourd au début de mesure
-    { wave: 'triangle', vol: 0.14, decay: 2.5, sustain: 8, slide: -0.5,
-      note: (bar, step) => (step === 0 && bar % 2 === 1 ? { m: 38, v: 0.9 } : null) },
+    // glas sourd au début de mesure — moins grave, moins fort (QA Jael)
+    { wave: 'triangle', vol: 0.1, decay: 2.5, sustain: 8, slide: -0.5,
+      note: (bar, step) => (step === 0 && bar % 2 === 1 ? { m: 43, v: 0.9 } : null) },
   ],
   noise: [
     { vol: 0.05, decay: 18, sustain: 1.2, hit: (bar, step) => step === 8 }, // souffle sourd
+  ],
+};
+
+// --- bataille : tambours de guerre, La phrygien martial, 92 BPM, 8 mesures ---
+// Bourdon à l'octave du chant et percussions médiums : pas de graves (QA Jael).
+const P_BATAILLE = [
+  { root: 45, iv: [0, 1, 7] }, // La + seconde phrygienne
+  { root: 45, iv: [0, 1, 7] },
+  { root: 48, iv: [0, 3, 7] }, // Do mineur
+  { root: 43, iv: [0, 4, 7] }, // Sol
+];
+const bataille = {
+  bpm: 92, bars: 8, seed: 66,
+  voices: [
+    // bourdon pulsé en croches — la marche de l'ost
+    { wave: 'triangle', vol: 0.12, decay: 7, sustain: 1.4,
+      note: (bar, step) => (step % 2 === 0
+        ? { m: P_BATAILLE[bar % 4].root, v: step % 4 === 0 ? 1 : 0.6 }
+        : null) },
+    // sonnerie tenue : quinte et seconde phrygienne en alternance
+    { wave: 'square', vol: 0.035, decay: 0.8, sustain: 16,
+      note: (bar, step) =>
+        (step === 0 ? { m: P_BATAILLE[bar % 4].root + 12 + (bar % 2 ? 1 : 7), v: 0.8 } : null) },
+    // appel de trompe une mesure sur deux
+    { wave: 'pulse25', vol: 0.05, decay: 3, sustain: 3, vibrato: { rate: 5, depth: 0.2 },
+      note: (bar, step) => {
+        if (bar % 2 !== 1) return null;
+        const c = P_BATAILLE[bar % 4];
+        if (step === 0) return { m: c.root + 24, v: 0.9 };
+        if (step === 6) return { m: c.root + 24 + 1, v: 0.6 };
+        return null;
+      } },
+  ],
+  noise: [
+    // tambours de guerre : marche lourde + contretemps
+    { vol: 0.07, decay: 22, sustain: 0.8, hit: (bar, step) => step === 0 || step === 8 },
+    { vol: 0.04, decay: 35, sustain: 0.5,
+      hit: (bar, step) => step === 4 || step === 12 || (step === 14 && bar % 2 === 1) },
   ],
 };
 
@@ -243,15 +282,16 @@ const FIN_NOTES = [
 const fin = {
   bpm: 60, bars: 4, seed: 55,
   voices: [
-    { wave: 'square', vol: 0.05, decay: 0.5, sustain: 16,
-      note: (bar, step) => (step === 0 ? { m: 38, v: 1 } : null) },
+    // glas remonté d'une octave et adouci (QA Jael)
+    { wave: 'square', vol: 0.038, decay: 0.5, sustain: 16,
+      note: (bar, step) => (step === 0 ? { m: 50, v: 1 } : null) },
     { wave: 'triangle', vol: 0.2, decay: 2, sustain: 8,
       note: (bar, step) => FIN_NOTES[bar]?.[step] ?? null },
   ],
 };
 
 mkdirSync(OUT, { recursive: true });
-const tracks = { menu, roche, camelot, mystique, sombre, fin };
+const tracks = { menu, roche, camelot, mystique, sombre, bataille, fin };
 for (const [name, track] of Object.entries(tracks)) {
   const file = join(OUT, `${name}.wav`);
   writeFileSync(file, toWav(render(track)));
