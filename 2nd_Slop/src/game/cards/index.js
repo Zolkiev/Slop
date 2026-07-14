@@ -19,7 +19,7 @@ export function flagsSetBy(cards = CARDS) {
   return set;
 }
 
-/** Ensemble des flags lus par une condition `requires`. */
+/** Ensemble des flags lus par une condition `requires` (compteurs inclus). */
 export function flagsRequiredBy(cards = CARDS) {
   const set = new Set();
   for (const c of cards) {
@@ -28,6 +28,7 @@ export function flagsRequiredBy(cards = CARDS) {
     for (const key of ['allFlags', 'anyFlags', 'noneFlags']) {
       for (const f of r[key] ?? []) set.add(f);
     }
+    for (const name of Object.keys(r.counts ?? {})) set.add(name);
   }
   return set;
 }

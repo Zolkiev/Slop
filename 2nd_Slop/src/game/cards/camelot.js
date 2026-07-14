@@ -192,6 +192,7 @@ export const camelot = [
     left: {
       label: 'Bâtir la cathédrale',
       effects: { foi: +10, couronne: -7 },
+      flags: [['piete', 1]],
     },
     right: {
       label: 'Les routes d’abord',

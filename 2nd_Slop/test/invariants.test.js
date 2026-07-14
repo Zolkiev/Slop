@@ -100,12 +100,14 @@ describe('intégrité du deck', () => {
         (p[s]?.flags ?? []).some((e) => (Array.isArray(e) ? e[0] : e) === flag)));
 
   it('tout flag requis est posable à une ère ≤ celle où il est requis', () => {
+    const combatFlags = combatFlagsSetBy(); // posés par les issues de duel
     for (const c of CARDS) {
       const r = c.requires;
       if (!r) continue;
       const consumerRank = minEraRank(c);
       for (const f of [...(r.allFlags ?? []), ...(r.anyFlags ?? [])]) {
         if (f.startsWith('lignee.')) continue; // posé au premier jour (rang 0)
+        if (combatFlags.has(f)) continue; // l'ère vient du déclencheur du duel
         const posers = posersOf(f);
         expect(posers.length, `flag jamais posé: ${f} (requis par ${c.id})`).toBeGreaterThan(0);
         const earliest = Math.min(...posers.map(minEraRank));

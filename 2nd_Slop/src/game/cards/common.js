@@ -30,6 +30,7 @@ export const common = [
     left: {
       label: 'Doubler la dîme',
       effects: { foi: +8, couronne: -6 },
+      flags: [['piete', 1]],
     },
     right: {
       label: 'Refuser',
@@ -76,6 +77,7 @@ export const common = [
     left: {
       label: 'Le bûcher',
       effects: { foi: +9, magie: -9 },
+      flags: [['cruaute', 1]],
     },
     right: {
       label: 'La gracier',
@@ -277,6 +279,69 @@ export const common = [
     left: { label: "Jeter l'or au lac", effects: { magie: +6, couronne: -5 } },
     right: { label: "L'or reste au trésor", effects: { couronne: +5, magie: -6 } },
     weight: 1,
+  },
+  // ---- Échos des épreuves perdues : les défaites s'installent ----
+  {
+    id: 'common.saxons.hivernage',
+    era: ERAS_VIVANTES,
+    speaker: 'Un émissaire saxon',
+    text: "Nos maisons sur ta côte ont passé l'hiver, Sire. Nous voilà presque voisins — le tribut de printemps, maintenant. Entre voisins.",
+    requires: { allFlags: ['saxons.installes'] },
+    left: { label: 'Payer, encore', effects: { couronne: +4, chevalerie: -6 } },
+    right: { label: 'Brûler leurs maisons', effects: { chevalerie: +6, couronne: -5 } },
+    weight: 2,
+  },
+  {
+    id: 'common.barde.noir',
+    era: ERAS_VIVANTES,
+    speaker: 'Un barde',
+    text: "La chanson du Chevalier Noir fait un triomphe, Sire — surtout le couplet où ton champion mord la poussière. On me la réclame jusque dans ta salle.",
+    unique: true,
+    requires: { allFlags: ['tournoi.perdu'] },
+    left: { label: 'Rire avec la salle', effects: { couronne: +4, chevalerie: -4 } },
+    right: { label: 'Bannir la chanson', effects: { chevalerie: +3, couronne: -4 } },
+    weight: 2,
+  },
+  {
+    id: 'common.outre.humber.revanche',
+    era: ERAS_VIVANTES,
+    speaker: 'Un héraut',
+    text: "Le roi d'Outre-Humber fait broder ta défaite sur ses bannières, Sire. Il accepterait une revanche — par pure bonté, précise-t-il.",
+    unique: true,
+    requires: { allFlags: ['champ.clos.perdu'] },
+    left: {
+      label: 'La revanche',
+      combat: 'champ.clos',
+      flags: ['epreuve.champ.clos.revanche'],
+    },
+    right: {
+      label: 'Laisser broder',
+      effects: { couronne: +3, chevalerie: -5 },
+    },
+    weight: 2,
+  },
+  // ---- Réputation : les choix répétés finissent par avoir un nom ----
+  {
+    id: 'common.roi.craint',
+    era: ERAS_VIVANTES,
+    speaker: 'Un conseiller',
+    text: "Le peuple ne t'appelle plus « le jeune roi », Sire. Le nouveau nom est moins flatteur — mais il fait baisser les yeux, et les impôts rentrent.",
+    unique: true,
+    requires: { counts: { cruaute: 3 } },
+    left: { label: 'La peur est un outil', effects: { couronne: +6, foi: -5 } },
+    right: { label: 'Adoucir le règne', effects: { foi: +5, couronne: -4 } },
+    weight: 3,
+  },
+  {
+    id: 'common.roi.beni',
+    era: ERAS_VIVANTES,
+    speaker: 'Un pèlerin',
+    text: "On vient de trois royaumes pour toucher ton ombre, Sire — on te dit béni. J'ai fait la route moi-même, au cas où.",
+    unique: true,
+    requires: { counts: { piete: 3 } },
+    left: { label: 'Bénir les pèlerins', effects: { foi: +6, couronne: -4 } },
+    right: { label: "Je ne suis qu'un roi", effects: { couronne: +4, foi: -4 } },
+    weight: 3,
   },
   {
     id: 'common.conseiller.reforme',

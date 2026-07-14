@@ -1,7 +1,7 @@
 // Moteur de deck : sélectionne la prochaine carte selon l'état du règne.
 // Une carte est éligible si son ère correspond, ses conditions (flags/jauges)
 // sont remplies, et — si `unique` — qu'elle n'a pas déjà été vue.
-import { hasFlag } from './flags.js';
+import { hasFlag, flagCount } from './flags.js';
 
 /** L'ère de la carte correspond-elle à l'ère courante ? (absente = toutes ères) */
 function eraMatches(card, era) {
@@ -17,6 +17,12 @@ function requiresMet(card, gauges, flags) {
   if (r.allFlags && !r.allFlags.every((f) => hasFlag(flags, f))) return false;
   if (r.anyFlags && !r.anyFlags.some((f) => hasFlag(flags, f))) return false;
   if (r.noneFlags && r.noneFlags.some((f) => hasFlag(flags, f))) return false;
+  if (r.counts) {
+    // seuils de réputation : le compteur doit avoir atteint le minimum
+    for (const [name, min] of Object.entries(r.counts)) {
+      if (flagCount(flags, name) < min) return false;
+    }
+  }
   if (r.gauge) {
     for (const [key, [min, max]] of Object.entries(r.gauge)) {
       if (gauges[key] < min || gauges[key] > max) return false;

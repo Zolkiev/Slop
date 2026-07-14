@@ -36,6 +36,16 @@ describe('deck — éligibilité', () => {
     const card = { id: 'a', unique: true, left: {}, right: {} };
     expect(isEligible(card, ctx({ seen: new Set(['a']) }))).toBe(false);
   });
+
+  it('respecte les seuils de compteurs (requires.counts)', () => {
+    const card = { id: 'a', requires: { counts: { cruaute: 3 } }, left: {}, right: {} };
+    const flags = createFlags();
+    expect(isEligible(card, ctx({ flags }))).toBe(false);
+    setFlag(flags, 'cruaute', 2);
+    expect(isEligible(card, ctx({ flags }))).toBe(false); // 2 < 3
+    setFlag(flags, 'cruaute', 1);
+    expect(isEligible(card, ctx({ flags }))).toBe(true); // cumul 3
+  });
 });
 
 describe('deck — tirage', () => {

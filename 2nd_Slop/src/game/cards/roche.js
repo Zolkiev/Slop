@@ -292,7 +292,7 @@ export const roche = [
     era: 'roche',
     speaker: 'Un paysan',
     text: "Le puits du village s'est tari net, et le peuple jure qu'une vieille recluse y a jeté un sort. Ils veulent la noyer pour en être sûrs. La leur laisses-tu ?",
-    left: { label: 'La laisser au peuple', effects: { foi: +6, magie: -5 } },
+    left: { label: 'La laisser au peuple', effects: { foi: +6, magie: -5 }, flags: [['cruaute', 1]] },
     right: { label: 'La protéger', effects: { magie: +5, foi: -6 } },
     weight: 1,
   },
