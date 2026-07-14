@@ -3,7 +3,7 @@ import { ERAS } from '../config.js';
 import { KINGS, isUnlocked } from '../game/dynasty.js';
 import { heldRelics } from '../game/relics.js';
 import { encodeSave } from '../game/save.js';
-import { portraitFor, cardArt, backgroundFor, cardPlate } from '../engine/assets.js';
+import { portraitFor, cardArt, backgroundFor, cardPlate, relicIcon } from '../engine/assets.js';
 import { TITLE, TEXT } from './fonts.js';
 import { hasFlag } from '../game/flags.js';
 import { drawShatter } from './shatter.js';
@@ -108,10 +108,18 @@ function drawMenu(ctx, app) {
 function drawRelics(ctx, flags) {
   const relics = heldRelics(flags);
   relics.forEach((r, i) => {
-    ctx.font = '18px serif';
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(r.icon, VIEW_W - 14, 110 + i * 26);
+    const icon = relicIcon(r.key);
+    if (icon) {
+      const smoothing = ctx.imageSmoothingEnabled;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(icon, VIEW_W - 38, 98 + i * 30, 24, 24);
+      ctx.imageSmoothingEnabled = smoothing;
+    } else {
+      ctx.font = '18px serif';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(r.icon, VIEW_W - 14, 110 + i * 26);
+    }
   });
 }
 

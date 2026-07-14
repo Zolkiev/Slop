@@ -9,4 +9,5 @@ export const SCENES = [
   'fourreau-vole', // chute.fourreau.vole — la silhouette qui fuit à l'aube
   'camlann', // chute.camlann.duel — le champ des morts
   'barque-avalon', // avalon.barque / avalon.morgane.retour — la traversée
+  'bucher-reine', // chute.guenievre.bucher — la reine face aux flammes
 ];

@@ -541,6 +541,7 @@ export const chute = [
     id: 'chute.guenievre.bucher',
     era: 'chute',
     speaker: "L'Évêque",
+    art: 'bucher-reine',
     text: "La reine adultère doit brûler — la loi de Dieu est claire, Sire. À moins que ton cœur, ou l'épée d'un banni, n'en décide autrement.",
     unique: true,
     requires: { allFlags: ['lancelot.banni'], gauge: { foi: [55, 100] } },

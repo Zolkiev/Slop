@@ -28,6 +28,9 @@ export function preload() {
   for (const g of GAUGES) {
     load(`icon:${g.key}`, `assets/ui/icon-${g.key}.png`);
   }
+  for (const key of ['excalibur', 'fourreau']) {
+    load(`relic:${key}`, `assets/ui/relic-${key}.png`);
+  }
 }
 
 /** Renvoie l'image si elle est chargée et exploitable, sinon null. */
@@ -43,3 +46,4 @@ export const cardArt = (card) =>
 export const backgroundFor = (eraId) => get(`bg:${eraId}`);
 export const cardPlate = () => get('ui:card-plate');
 export const gaugeIcon = (key) => get(`icon:${key}`);
+export const relicIcon = (key) => get(`relic:${key}`);
