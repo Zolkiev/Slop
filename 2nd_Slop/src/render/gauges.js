@@ -34,22 +34,30 @@ function lancetPath(ctx, x, y, w, h) {
   ctx.closePath();
 }
 
-// Petit losange (aperçu d'impact pendant le drag).
-function diamond(ctx, x, y, s) {
+// Chevron directionnel (aperçu d'impact pendant le drag).
+function chevron(ctx, x, y, s, up) {
   ctx.beginPath();
-  ctx.moveTo(x, y - s);
-  ctx.lineTo(x + s, y);
-  ctx.lineTo(x, y + s);
-  ctx.lineTo(x - s, y);
+  if (up) {
+    ctx.moveTo(x, y - s);
+    ctx.lineTo(x + s, y + s * 0.7);
+    ctx.lineTo(x - s, y + s * 0.7);
+  } else {
+    ctx.moveTo(x, y + s);
+    ctx.lineTo(x + s, y - s * 0.7);
+    ctx.lineTo(x - s, y - s * 0.7);
+  }
   ctx.closePath();
 }
 
 /**
  * Dessine la rangée de jauges en haut de l'écran.
- * `previewEffects` (optionnel) : effets du choix prévisualisé — un losange
- * s'affiche au-dessus des jauges impactées (gros losange si |effet| > 8).
+ * `previewEffects` (optionnel) : effets du choix prévisualisé — la lancette
+ * impactée s'illumine (or = hausse, rouge = baisse, même code que le flash
+ * post-choix) et un chevron directionnel s'affiche au-dessus de l'icône
+ * (grand si |effet| > 8). `previewStrength` (0..1) dose l'illumination selon
+ * la progression du geste vers le seuil de validation.
  */
-export function drawGauges(ctx, gauges, W, previewEffects = null) {
+export function drawGauges(ctx, gauges, W, previewEffects = null, previewStrength = 1) {
   const now = performance.now();
   const n = GAUGES.length;
   const slot = W / n;
@@ -144,16 +152,45 @@ export function drawGauges(ctx, gauges, W, previewEffects = null) {
       ctx.globalAlpha = 1;
     }
 
-    // aperçu d'impact : losange au-dessus de l'icône
+    // aperçu d'impact : verre rétroéclairé + chevron directionnel
     const impact = previewEffects?.[g.key];
     if (impact) {
-      const s = Math.abs(impact) > 8 ? 6 : 4;
-      diamond(ctx, cx, top - 38, s);
-      ctx.fillStyle = '#f5f0e6';
+      const up = impact > 0;
+      const color = up ? '#ffe9a0' : '#ff4444';
+      const big = Math.abs(impact) > 8;
+      const glow = previewStrength * (0.75 + 0.25 * Math.sin(now / 160));
+
+      // halo autour de la lancette, comme un vitrail éclairé par derrière
+      ctx.save();
+      ctx.globalAlpha = glow * 0.85;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = big ? 18 : 12;
+      lancetPath(ctx, x - 1, top - 1, barW + 2, barH + 2);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+
+      // voile coloré sur le verre
+      ctx.save();
+      lancetPath(ctx, x, top, barW, barH);
+      ctx.clip();
+      ctx.globalAlpha = glow * 0.2;
+      ctx.fillStyle = color;
+      ctx.fillRect(x, top, barW, barH);
+      ctx.restore();
+
+      // chevron sous la lancette (▲ hausse / ▼ baisse) — au-dessus de
+      // l'icône il sortirait du canvas (top - 40 < 0)
+      ctx.save();
+      ctx.globalAlpha = 0.35 + 0.65 * glow;
+      chevron(ctx, cx, top + barH + 12, big ? 7 : 5, up);
+      ctx.fillStyle = color;
       ctx.fill();
       ctx.strokeStyle = LEAD;
       ctx.lineWidth = 1.5;
       ctx.stroke();
+      ctx.restore();
     }
   }
 }

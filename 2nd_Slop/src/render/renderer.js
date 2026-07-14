@@ -8,7 +8,7 @@ import { TITLE, TEXT } from './fonts.js';
 import { drawShatter } from './shatter.js';
 import { drawGauges } from './gauges.js';
 import { drawCard } from './card.js';
-import { previewSide } from '../game/swipe.js';
+import { previewSide, SWIPE_PREVIEW, SWIPE_COMMIT } from '../game/swipe.js';
 import { wrapText, drawLines } from './text.js';
 
 export const VIEW_W = 480;
@@ -125,12 +125,15 @@ function drawPlay(ctx, app) {
   const { reign, swipe, anim } = app;
   drawBackground(ctx, reign.era);
 
-  // aperçu du choix pendant le drag
+  // aperçu du choix pendant le drag — l'illumination des jauges suit le geste
   const side = anim ? anim.side : previewSide(swipe);
   const card = anim ? anim.card : reign.current;
   const effects = side && card ? card[side].effects : null;
+  const strength = anim
+    ? 1
+    : Math.min(1, (Math.abs(swipe.dx) - SWIPE_PREVIEW) / (SWIPE_COMMIT - SWIPE_PREVIEW));
 
-  drawGauges(ctx, reign.gauges, VIEW_W, effects);
+  drawGauges(ctx, reign.gauges, VIEW_W, effects, Math.max(0, strength));
   drawRelics(ctx, reign.flags);
   if (reign.miracle) drawMiracle(ctx, reign.miracle);
 
