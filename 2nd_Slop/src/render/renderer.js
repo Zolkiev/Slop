@@ -5,9 +5,10 @@ import { heldRelics } from '../game/relics.js';
 import { encodeSave } from '../game/save.js';
 import { portraitFor, backgroundFor, cardPlate } from '../engine/assets.js';
 import { TITLE, TEXT } from './fonts.js';
+import { hasFlag } from '../game/flags.js';
 import { drawShatter } from './shatter.js';
 import { drawGauges } from './gauges.js';
-import { drawCard } from './card.js';
+import { drawCard, feminizeCard } from './card.js';
 import { drawPause, drawPauseButton, drawSoundButton } from './pause.js';
 import { drawCombatScene, COMBAT_CARD_SHIFT } from './combat.js';
 import { previewSide, SWIPE_PREVIEW, SWIPE_COMMIT } from '../game/swipe.js';
@@ -147,7 +148,7 @@ function drawPlay(ctx, app) {
     drawShatter(ctx, anim.shatter);
   } else if (card) {
     drawCard(ctx, {
-      card,
+      card: hasFlag(reign.flags, 'lignee.morgane') ? feminizeCard(card) : card,
       portrait: portraitFor(card.speaker),
       plate: cardPlate(),
       dx: swipe.dx,

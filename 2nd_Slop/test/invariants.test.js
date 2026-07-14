@@ -10,6 +10,8 @@ import { GAUGE_KEYS, ERAS, GAUGE_MIN, GAUGE_MAX } from '../src/config.js';
 import { createReign, draw, choose } from '../src/game/reign.js';
 import { PORTRAITS } from '../src/game/portraits.js';
 import { COMBATS, combatFlagsSetBy } from '../src/game/combats/index.js';
+import { KINGS, lineageFlag } from '../src/game/dynasty.js';
+import { setFlag } from '../src/game/flags.js';
 
 // RNG déterministe (mulberry32) pour un fuzz reproductible.
 function mulberry32(seed) {
@@ -47,10 +49,16 @@ describe('intégrité du deck', () => {
     }
   });
 
-  it('tout flag requis est posé quelque part dans le deck', () => {
-    const set = flagsSetBy();
+  it('tout flag requis est posé quelque part (deck, combats, lignées)', () => {
+    // Trois sources légitimes : les choix de cartes, les issues de combat,
+    // et les flags lignee.* posés par le moteur au premier jour du règne.
+    const univers = new Set([
+      ...flagsSetBy(),
+      ...combatFlagsSetBy(),
+      ...KINGS.map(lineageFlag),
+    ]);
     for (const f of flagsRequiredBy()) {
-      expect(set.has(f), `flag requis jamais posé: ${f}`).toBe(true);
+      expect(univers.has(f), `flag requis jamais posé: ${f}`).toBe(true);
     }
   });
 
@@ -97,6 +105,7 @@ describe('intégrité du deck', () => {
       if (!r) continue;
       const consumerRank = minEraRank(c);
       for (const f of [...(r.allFlags ?? []), ...(r.anyFlags ?? [])]) {
+        if (f.startsWith('lignee.')) continue; // posé au premier jour (rang 0)
         const posers = posersOf(f);
         expect(posers.length, `flag jamais posé: ${f} (requis par ${c.id})`).toBeGreaterThan(0);
         const earliest = Math.min(...posers.map(minEraRank));
@@ -184,21 +193,15 @@ describe('intégrité des épreuves d\'armes', () => {
     }
   });
 
-  it('les flags d\'issue de combat complètent l\'univers des flags posés', () => {
-    // Si une carte future gate sur camlann.vaincu etc., l'invariant « tout
-    // flag requis est posé » doit chercher aussi dans les issues de combat.
-    const univers = new Set([...flagsSetBy(), ...combatFlagsSetBy()]);
-    for (const f of flagsRequiredBy()) {
-      expect(univers.has(f), `flag requis jamais posé (deck + combats): ${f}`).toBe(true);
-    }
-  });
 });
 
 describe('invariant de jouabilité (fuzz)', () => {
-  it('1000 règnes aléatoires : jamais de blocage, jauges toujours bornées', () => {
-    for (let seed = 1; seed <= 1000; seed++) {
+  it('1000 règnes aléatoires (250 par lignée) : jamais de blocage, jauges bornées', () => {
+    for (const king of KINGS)
+    for (let seed = 1; seed <= 250; seed++) {
       const rng = mulberry32(seed);
-      const reign = createReign();
+      const reign = createReign({ gauges: king.gauges });
+      setFlag(reign.flags, lineageFlag(king)); // même départ que startReign
       let guard = 0;
       while (!reign.dead) {
         const card = draw(reign, CARDS, rng);

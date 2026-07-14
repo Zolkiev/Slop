@@ -32,6 +32,15 @@ export const KINGS = [
   },
 ];
 
+/**
+ * Flag posé au premier jour d'un règne : `lignee.<key>`. Les cartes d'identité
+ * de lignée se gatent dessus (requires/noneFlags) — c'est ce qui fait de
+ * chaque roi le héros de SA légende.
+ */
+export function lineageFlag(king) {
+  return `lignee.${king.key}`;
+}
+
 export function isUnlocked(king, best) {
   return best >= king.unlock;
 }

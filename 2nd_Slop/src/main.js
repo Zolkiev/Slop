@@ -2,7 +2,8 @@
 import { CARDS } from './game/cards/index.js';
 import { createReign, draw as drawNext, choose } from './game/reign.js';
 import { createSwipe, dragStart, dragMove, dragEnd, previewSide } from './game/swipe.js';
-import { KINGS, isUnlocked } from './game/dynasty.js';
+import { KINGS, isUnlocked, lineageFlag } from './game/dynasty.js';
+import { setFlag } from './game/flags.js';
 import { loadProgress, saveProgress } from './game/score.js';
 import { decodeSave, codeFromHash } from './game/save.js';
 import { startCombat } from './game/combat.js';
@@ -12,6 +13,8 @@ import { preload, portraitFor, cardPlate } from './engine/assets.js';
 import { render, VIEW_W, VIEW_H } from './render/renderer.js';
 import { PAUSE_UI, inZone } from './render/pause.js';
 import { COMBAT_CARD_SHIFT } from './render/combat.js';
+import { feminizeCard } from './render/card.js';
+import { hasFlag } from './game/flags.js';
 import { loadFonts } from './render/fonts.js';
 import { createShatter, updateShatter } from './render/shatter.js';
 import { createAudio } from './engine/audio.js';
@@ -88,6 +91,7 @@ function startReign() {
   const king = KINGS[progress.king];
   if (!isUnlocked(king, progress.best)) return; // lignée encore scellée
   app.reign = createReign({ gauges: king.gauges });
+  setFlag(app.reign.flags, lineageFlag(king)); // les cartes d'identité se gatent dessus
   app.anim = null;
   app.newRecord = false;
   drawNext(app.reign, CARDS);
@@ -118,11 +122,12 @@ function commitChoice(side, releaseDx = 0) {
   if (!card) return;
   // La logique avance tout de suite ; la désintégration n'est que visuelle.
   // En duel, la manœuvre est dessinée plus bas : la poussière part de là.
+  const shown = hasFlag(app.reign.flags, 'lignee.morgane') ? feminizeCard(card) : card;
   app.anim = {
     card,
     side,
     shatter: createShatter({
-      card,
+      card: shown, // la capture doit montrer le même texte que l'affichage
       portrait: portraitFor(card.speaker),
       plate: cardPlate(),
       dx: releaseDx || (side === 'left' ? -40 : 40),

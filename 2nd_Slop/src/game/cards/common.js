@@ -55,6 +55,7 @@ export const common = [
   {
     id: 'common.morgane.philtre',
     era: ERAS_VIVANTES,
+    requires: { noneFlags: ['lignee.morgane'] },
     speaker: 'Morgane',
     text: "Un philtre pour lier tes chevaliers à toi par serment enchanté. Un cadeau de ta chère sœur… sans arrière-pensée, bien sûr.",
     left: {
@@ -188,6 +189,7 @@ export const common = [
   {
     id: 'common.morgane.conseil',
     era: ERAS_VIVANTES,
+    requires: { noneFlags: ['lignee.morgane'] },
     speaker: 'Morgane',
     text: "Un conseil, frère, gratuit : méfie-toi de ton nouvel ami qui prie si fort. Ce conseil est trop juste pour être honnête — c'est bien pour ça qu'il est bon.",
     left: { label: 'Suivre le conseil', effects: { magie: +6, foi: -6 } },

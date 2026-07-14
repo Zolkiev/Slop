@@ -19,6 +19,23 @@ const GLASS_RED = '#7e2230';
 const GLASS_BLUE = '#2b4a7a';
 const GLASS_VIOLET = '#4d3370';
 
+/**
+ * Adresse au féminin pour la Reine-Fée : le contenu écrit « Sire » partout,
+ * on adapte à l'affichage sans toucher aux données (copie superficielle).
+ */
+export function feminizeCard(card) {
+  const f = (s) =>
+    (s ?? '')
+      .replaceAll('Sire', 'Majesté')
+      .replaceAll('mon roi', 'ma reine')
+      .replaceAll('roi de Logres', 'reine de Logres')
+      .replaceAll('nouveau roi', 'nouvelle reine')
+      .replaceAll('Un roi', 'Une reine')
+      .replaceAll('un roi chrétien', 'une reine chrétienne');
+  const side = (c) => (c ? { ...c, label: f(c.label) } : c);
+  return { ...card, text: f(card.text), left: side(card.left), right: side(card.right) };
+}
+
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
