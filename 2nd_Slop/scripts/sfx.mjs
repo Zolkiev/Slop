@@ -145,8 +145,62 @@ function miracle() {
   return out;
 }
 
+// choc : fer contre fer pendant un duel — impact métallique bref, partiels
+// inharmoniques serrés, volontairement sans basses (QA Jael sur les graves).
+function choc() {
+  const len = dur(0.35);
+  const out = new Float32Array(len);
+  const rand = mulberry32(41);
+  const partials = [
+    [420, 0.5, 18],
+    [637, 0.4, 22],
+    [890, 0.3, 26],
+    [1310, 0.22, 30],
+    [2050, 0.12, 34],
+  ];
+  for (let i = 0; i < len; i += 1) {
+    const t = i / RATE;
+    let s = 0;
+    for (const [f, v, d] of partials) s += Math.sin(2 * Math.PI * f * t) * v * Math.exp(-t * d);
+    s += (rand() * 2 - 1) * 0.3 * Math.exp(-t * 60); // grain d'impact
+    out[i] = s * 0.5;
+  }
+  return out;
+}
+
+// ovation : victoire d'épreuve — carillon triomphal montant + rumeur de
+// liesse brève (bruit passe-haut, pas de graves).
+function ovation() {
+  const len = dur(1.1);
+  const out = new Float32Array(len);
+  const rand = mulberry32(93);
+  const notes = [
+    [587.33, 0.0], // D5
+    [739.99, 0.12], // F#5
+    [880.0, 0.24], // A5
+    [1174.66, 0.36], // D6
+  ];
+  for (const [freq, at] of notes) {
+    const start = dur(at);
+    for (let i = 0; start + i < len; i += 1) {
+      const t = i / RATE;
+      out[start + i] +=
+        (Math.sin(2 * Math.PI * freq * t) * 0.22 + Math.sin(2 * Math.PI * freq * 2 * t) * 0.08) *
+        Math.exp(-t * 4);
+    }
+  }
+  let prev = 0;
+  for (let i = 0; i < len; i += 1) {
+    const t = i / RATE;
+    const n = rand() * 2 - 1;
+    out[i] += (n - prev) * 0.1 * Math.exp(-t * 3); // différentiateur = passe-haut
+    prev = n;
+  }
+  return out;
+}
+
 mkdirSync(OUT, { recursive: true });
-const sounds = { verre, tick, glas, sacre, miracle };
+const sounds = { verre, tick, glas, sacre, miracle, choc, ovation };
 for (const [name, fn] of Object.entries(sounds)) {
   const file = join(OUT, `${name}.wav`);
   writeFileSync(file, toWav(fn()));

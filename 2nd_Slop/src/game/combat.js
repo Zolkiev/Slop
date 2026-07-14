@@ -33,6 +33,7 @@ function shuffle(list, rng) {
 export function startCombat(reign, def, rng = Math.random) {
   const eligible = def.manoeuvres.filter((m) =>
     isEligible(m, { gauges: reign.gauges, flags: reign.flags, era: reign.era }));
+  reign.combatResult = null;
   reign.combat = {
     def,
     champion: resolveChampion(def, reign.flags, reign.gauges),
@@ -113,6 +114,7 @@ export function resolveManoeuvre(reign, side) {
 function endCombat(reign, result) {
   const { def, champion } = reign.combat;
   reign.combat = null;
+  reign.combatResult = result;
 
   if (result === 'lose' && def.fatal && champion.isKing) {
     if (holds(reign.flags, FOURREAU)) {
@@ -121,6 +123,7 @@ function endCombat(reign, result) {
       reign.years += 1;
       reign.era = eraForYears(reign.years);
       reign.dead = { key: 'combat', side: 'duel', cause: def.deathCause };
+      reign.combatResult = 'death';
       return reign;
     }
   }

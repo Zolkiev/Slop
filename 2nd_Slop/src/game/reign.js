@@ -32,6 +32,7 @@ export function createReign(initial = {}) {
     miracle: null, // message quand une relique vient d'annuler une mort
     current: null, // carte présentée en attente de choix
     combat: null, // duel en cours (voir combat.js), null hors combat
+    combatResult: null, // issue du dernier duel ('win'|'lose'|'draw'|'death')
   };
 }
 

@@ -26,11 +26,14 @@ const audio = createAudio({
   glas: 'assets/sfx/glas.wav',
   sacre: 'assets/sfx/sacre.wav',
   miracle: 'assets/sfx/miracle.wav',
+  choc: 'assets/sfx/choc.wav',
+  ovation: 'assets/sfx/ovation.wav',
   m_menu: 'assets/music/menu.wav',
   m_roche: 'assets/music/roche.wav',
   m_camelot: 'assets/music/camelot.wav',
   m_mystique: 'assets/music/mystique.wav',
   m_sombre: 'assets/music/sombre.wav',
+  m_bataille: 'assets/music/bataille.wav',
   m_fin: 'assets/music/fin.wav',
 });
 // une même ambiance couvre plusieurs ères (graal et avalon partagent le mystique)
@@ -130,8 +133,13 @@ function commitChoice(side, releaseDx = 0) {
       viewH: VIEW_H,
     }),
   };
+  const wasCombat = !!app.reign.combat;
   choose(app.reign, side);
   audio.play('verre');
+  if (wasCombat) audio.play('choc'); // le fer sonne sous le verre
+  if (wasCombat && !app.reign.combat && app.reign.combatResult === 'win') {
+    audio.play('ovation');
+  }
 }
 
 // --- Pause : bascule, curseurs de volume, abandon ---
@@ -361,7 +369,7 @@ function step(dt) {
   // (setMusic déduplique et réessaie tant que le contexte n'est pas débloqué)
   if (app.mode === 'menu' || app.mode === 'options') audio.setMusic('m_menu');
   else if (app.mode === 'play' || app.mode === 'pause')
-    audio.setMusic(ERA_MUSIC[app.reign.era] ?? 'm_roche');
+    audio.setMusic(app.reign.combat ? 'm_bataille' : ERA_MUSIC[app.reign.era] ?? 'm_roche');
   else if (app.mode === 'dead') audio.setMusic('m_fin', false);
 
   render(ctx, app);
