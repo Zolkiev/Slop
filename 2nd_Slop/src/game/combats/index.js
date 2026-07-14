@@ -127,6 +127,26 @@ const MAN_CLOS_HONNEUR = {
   right: { label: 'Frapper loyal', strike: { dmg: 1, gauge: 'foi', min: 55, bonus: 1 } },
 };
 
+const MAN_GAUVAIN_RAGE = {
+  id: 'man.gauvain.rage',
+  speaker: 'Gauvain',
+  text: "Mes frères, Lancelot ! Chaque coup portera leurs noms — tant pis pour ma garde.",
+  left: {
+    label: 'Frapper pour les morts',
+    strike: { dmg: 2, gauge: 'chevalerie', min: 55, bonus: 1 },
+    expose: 2,
+  },
+  right: { label: 'Garder la tête froide', strike: { dmg: 1 } },
+};
+
+const MAN_LANCELOT_PITIE = {
+  id: 'man.lancelot.pitie',
+  speaker: 'Lancelot',
+  text: "Cède, Gauvain. Je ne veux pas te tuer — ne m'oblige pas à être encore le meilleur.",
+  left: { label: 'Reprendre son souffle', guard: 1, heal: { gauge: 'chevalerie', min: 55, hp: 1 } },
+  right: { label: "Répondre par l'assaut", strike: { dmg: 1, gauge: 'couronne', min: 60, bonus: 1 } },
+};
+
 const MAN_TOURNOI_PANACHE = {
   id: 'man.tournoi.panache',
   speaker: 'Un barde',
@@ -232,6 +252,35 @@ export const COMBATS = {
       draw: {
         text: "L'ost a tenu, la côte a saigné. Chacun garde sa rive.",
         effects: { couronne: -4 },
+        flags: [],
+      },
+    },
+  },
+
+  'joyeuse.garde': {
+    id: 'joyeuse.garde',
+    title: 'La Joyeuse Garde',
+    foe: { name: 'Lancelot', speaker: 'Lancelot', atk: 2, hp: 3 },
+    selfHp: 3,
+    maxRounds: 5,
+    fatal: false,
+    deathCause: '',
+    champions: [{ name: 'Gauvain', speaker: 'Gauvain' }], // c'est SA vengeance
+    manoeuvres: [...COMMUNES, MAN_GAUVAIN_RAGE, MAN_LANCELOT_PITIE],
+    outcome: {
+      win: {
+        text: 'Lancelot a plié le genou devant Gauvain — sans avoir voulu tuer.',
+        effects: { chevalerie: +8, couronne: +5 },
+        flags: ['lancelot.soumis'],
+      },
+      lose: {
+        text: 'Gauvain gît dans le sable ; Lancelot a pleuré en le frappant.',
+        effects: { chevalerie: -8, couronne: -4 },
+        flags: ['gauvain.blesse'],
+      },
+      draw: {
+        text: 'Trois jours de duel, nul vainqueur — que des larmes sous les heaumes.',
+        effects: { chevalerie: -3 },
         flags: [],
       },
     },
