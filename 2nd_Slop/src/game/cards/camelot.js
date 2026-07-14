@@ -511,6 +511,43 @@ export const camelot = [
     right: { label: 'Les gagner un à un', effects: { chevalerie: +5, couronne: -4 } },
     weight: 2,
   },
+  // ---- Arcs de lignée : le Prix de Tintagel (Uther), Avalon (Morgane) ----
+  {
+    id: 'camelot.uther.heritier',
+    era: 'camelot',
+    speaker: 'Merlin',
+    text: "Un fils t'est né cette nuit, Uther Pendragon. Belle nuit pour solder les comptes : je suis venu chercher mon dû. Tu savais que ce serait lui.",
+    unique: true,
+    requires: { allFlags: ['lignee.uther'], anyFlags: ['dette.assumee', 'dette.reniee'] },
+    left: {
+      label: "Donner l'enfant au mage",
+      effects: { magie: +8, couronne: -6 },
+      flags: ['enfant.donne'],
+    },
+    right: {
+      label: 'Chasser Merlin à jamais',
+      effects: { couronne: +5, magie: -8 },
+      flags: ['dette.brisee'],
+    },
+    weight: 3,
+  },
+  {
+    id: 'camelot.morgane.faveur',
+    era: 'camelot',
+    speaker: 'Une fée',
+    text: "Tu as gardé un pied chez nous, ma sœur — nous venons marcher dessus. Un homme du petit peuple attend ton jugement demain. Tu sauras quoi décider.",
+    unique: true,
+    requires: { allFlags: ['lignee.morgane', 'avalon.lien'] },
+    left: {
+      label: 'Tordre la loi des hommes',
+      effects: { magie: +6, couronne: -5 },
+    },
+    right: {
+      label: "La loi d'abord, même pour eux",
+      effects: { couronne: +5, magie: -6 },
+    },
+    weight: 2,
+  },
   {
     id: 'camelot.fete.paiens',
     era: 'camelot',

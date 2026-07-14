@@ -377,8 +377,16 @@ export const roche = [
     text: "Tintagel, la tempête, le visage d'un autre… Tu te souviens du prix, Uther Pendragon. Je ne l'ai pas encore réclamé. Dors bien.",
     unique: true,
     requires: { allFlags: ['lignee.uther'] },
-    left: { label: "Honorer la dette, quelle qu'elle soit", effects: { magie: +6, couronne: -5 } },
-    right: { label: 'Les dettes meurent avec les mages', effects: { couronne: +4, magie: -6 } },
+    left: {
+      label: "Honorer la dette, quelle qu'elle soit",
+      effects: { magie: +6, couronne: -5 },
+      flags: ['dette.assumee'],
+    },
+    right: {
+      label: 'Les dettes meurent avec les mages',
+      effects: { couronne: +4, magie: -6 },
+      flags: ['dette.reniee'],
+    },
     weight: 2,
   },
   {
@@ -421,8 +429,16 @@ export const roche = [
     text: "Une sœur d'Avalon sur un trône d'hommes, quelle idée. Reviens quand tu veux, ma sœur — les pommiers, eux, ne complotent pas.",
     unique: true,
     requires: { allFlags: ['lignee.morgane'] },
-    left: { label: 'Ma place est ici', effects: { couronne: +5, magie: -4 } },
-    right: { label: 'Un pied dans chaque monde', effects: { magie: +6, couronne: -4 } },
+    left: {
+      label: 'Ma place est ici',
+      effects: { couronne: +5, magie: -4 },
+      flags: ['avalon.refuse'],
+    },
+    right: {
+      label: 'Un pied dans chaque monde',
+      effects: { magie: +6, couronne: -4 },
+      flags: ['avalon.lien'],
+    },
     weight: 2,
   },
 ];
