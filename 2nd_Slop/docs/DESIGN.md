@@ -193,10 +193,12 @@ src/
   - générer des **props pour les jauges** (icônes Foi/Magie/Chevalerie/
     Couronne dans la DA vitrail, remplacer les emojis actuels) ;
   - ~~revoir la police~~ → fait (Cinzel + EB Garamond embarquées) ;
-  - **système de combat lié aux choix** (idée Jael 2026-07-12) : à concevoir
-    UNE FOIS les scénarios et quêtes prêts — combats simples mais avec du
-    style, inspiration « Magic » (cartes qui s'affrontent, pas un moteur
-    tactique) ; garder la boucle swipe au cœur.
+  - ~~système de combat lié aux choix~~ → **fait (2026-07-14) : « L'Épreuve
+    d'armes »** — duels de cartes rares et dramatiques, pur swipe, blasons de
+    vitrail, mort aux seuls climax (Camlann). Spec :
+    `docs/superpowers/specs/2026-07-14-combat-design.md`, moteur
+    `src/game/combat.js`, contenu `src/game/combats/index.js`,
+    fonctionnement joueur : `GAMEPLAY.md §8`.
 - ~~Ton d'écriture~~ → décidé : épique avec pointe d'ironie.
 - Faut-il un système d'« années » visible (âge du roi) ou juste un compteur de règne ?
 - Extraire un `_starter-template` commun après ce jeu (mutualiser loop/état/audio/save) ?

@@ -235,7 +235,31 @@ grand saut. C'est un vrai enjeu narratif, pas juste un bonus.
 
 ---
 
-## 8. Le méta : ères, dynastie, sauvegarde
+## 8. L'Épreuve d'armes : quand un choix devient un duel
+
+Certaines cartes (2 à 4 par règne : Camlann, le champ clos, la bataille de la
+côte, le grand tournoi) portent un côté `combat: '<id>'`. Le choisir n'applique
+pas d'effets : il ouvre un **duel de cartes** (spec :
+`docs/superpowers/specs/2026-07-14-combat-design.md`).
+
+- **La boucle reste un swipe** : chaque manche pioche une carte de **manœuvre**
+  (charge, garde, feinte, prière… + les dédiées que l'histoire autorise : le
+  sort de Morgane si elle est à la cour, Excalibur si tu la portes encore).
+- **Résolution déterministe** : l'adversaire frappe un montant fixe et annoncé ;
+  tes manœuvres infligent, parent, soignent — avec des bonus si tes **jauges**
+  passent des seuils. Pas de dé : le duel encaisse tes choix passés.
+- **Blasons** : les points de vie, des écus de vitrail sur chaque carte.
+- **Champion selon le contexte** : le roi à Camlann et à la tête de l'ost ;
+  Lancelot ou Gauvain au champ clos, Perceval au tournoi — s'ils sont
+  disponibles (flags), sinon repli sur le suivant, puis sur le roi.
+- **Issues** : victoire, défaite ou retraite après 5 manches max — chacune
+  applique effets et flags comme un choix normal, et l'année avance d'un an.
+  Seul un combat **fatal** (Camlann) peut tuer le roi ; le **Fourreau** y boit
+  le coup mortel, une fois, fidèle à sa promesse.
+- Le moteur : `src/game/combat.js` (le duel est un « sous-deck » de `draw`/
+  `choose`), le contenu : `src/game/combats/index.js`.
+
+## 9. Le méta : ères, dynastie, sauvegarde
 
 - **Ères** (`config.js:ERAS`) — l'ère avance avec l'âge du règne, pas avec tes
   choix : Roche (0–8 ans), Camelot (8–20), Graal (20–32), Chute (32–44),
@@ -252,7 +276,7 @@ grand saut. C'est un vrai enjeu narratif, pas juste un bonus.
 
 ---
 
-## 9. Donc, « gagner » à Logres, c'est quoi ?
+## 10. Donc, « gagner » à Logres, c'est quoi ?
 
 Il n'y a pas d'écran de victoire. « Bien jouer », c'est :
 
