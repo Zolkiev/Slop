@@ -9,6 +9,7 @@ import {
 import { GAUGE_KEYS, ERAS, GAUGE_MIN, GAUGE_MAX } from '../src/config.js';
 import { createReign, draw, choose } from '../src/game/reign.js';
 import { PORTRAITS } from '../src/game/portraits.js';
+import { COMBATS, combatFlagsSetBy } from '../src/game/combats/index.js';
 
 // RNG déterministe (mulberry32) pour un fuzz reproductible.
 function mulberry32(seed) {
@@ -121,6 +122,78 @@ describe('intégrité du deck', () => {
   });
 });
 
+describe('intégrité des épreuves d\'armes', () => {
+  it('tout combat référencé par une carte existe au registre', () => {
+    for (const c of CARDS) {
+      for (const side of ['left', 'right']) {
+        const ref = c[side]?.combat;
+        if (ref) expect(COMBATS[ref], `combat inconnu: ${ref} (${c.id}.${side})`).toBeTruthy();
+      }
+    }
+  });
+
+  it('les ids de manœuvres sont uniques au sein de chaque combat', () => {
+    for (const def of Object.values(COMBATS)) {
+      const ids = def.manoeuvres.map((m) => m.id);
+      expect(new Set(ids).size, def.id).toBe(ids.length);
+    }
+  });
+
+  it('chaque combat garde au moins maxRounds manœuvres sans condition', () => {
+    for (const def of Object.values(COMBATS)) {
+      const libres = def.manoeuvres.filter((m) => !m.requires);
+      expect(libres.length, `${def.id}: pioche trop conditionnelle`)
+        .toBeGreaterThanOrEqual(def.maxRounds);
+    }
+  });
+
+  it('les effets de manœuvre et d\'issue ciblent des jauges valides', () => {
+    for (const def of Object.values(COMBATS)) {
+      for (const m of def.manoeuvres) {
+        for (const side of ['left', 'right']) {
+          const ch = m[side];
+          expect(ch?.label, `${def.id}/${m.id}.${side}`).toBeTruthy();
+          for (const g of [ch.strike?.gauge, ch.heal?.gauge]) {
+            if (g) expect(GAUGE_KEYS, `${def.id}/${m.id}.${side}`).toContain(g);
+          }
+        }
+      }
+      for (const key of ['win', 'lose', 'draw']) {
+        for (const g of Object.keys(def.outcome[key]?.effects ?? {})) {
+          expect(GAUGE_KEYS, `${def.id}.outcome.${key}`).toContain(g);
+        }
+      }
+    }
+  });
+
+  it('un combat fatal a une cause de mort ; les autres non', () => {
+    for (const def of Object.values(COMBATS)) {
+      if (def.fatal) expect(def.deathCause, def.id).toBeTruthy();
+    }
+  });
+
+  it('chaque orateur de manœuvre et d\'adversaire a un portrait mappé', () => {
+    for (const def of Object.values(COMBATS)) {
+      expect(PORTRAITS[def.foe.speaker], `adversaire sans portrait: ${def.foe.speaker}`).toBeTruthy();
+      for (const champ of def.champions) {
+        expect(PORTRAITS[champ.speaker], `champion sans portrait: ${champ.speaker}`).toBeTruthy();
+      }
+      for (const m of def.manoeuvres) {
+        expect(PORTRAITS[m.speaker], `manœuvre sans portrait: ${m.speaker}`).toBeTruthy();
+      }
+    }
+  });
+
+  it('les flags d\'issue de combat complètent l\'univers des flags posés', () => {
+    // Si une carte future gate sur camlann.vaincu etc., l'invariant « tout
+    // flag requis est posé » doit chercher aussi dans les issues de combat.
+    const univers = new Set([...flagsSetBy(), ...combatFlagsSetBy()]);
+    for (const f of flagsRequiredBy()) {
+      expect(univers.has(f), `flag requis jamais posé (deck + combats): ${f}`).toBe(true);
+    }
+  });
+});
+
 describe('invariant de jouabilité (fuzz)', () => {
   it('1000 règnes aléatoires : jamais de blocage, jauges toujours bornées', () => {
     for (let seed = 1; seed <= 1000; seed++) {
@@ -138,7 +211,7 @@ describe('invariant de jouabilité (fuzz)', () => {
         }
 
         const side = rng() < 0.5 ? 'left' : 'right';
-        choose(reign, side);
+        choose(reign, side, rng); // rng : pioche de manœuvres reproductible
 
         if (++guard > 5000) throw new Error(`règne interminable seed=${seed}`);
       }
