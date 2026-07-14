@@ -70,7 +70,9 @@ Trois portraits changent tout :
 - Branchement : ajouter les clés dans `src/game/portraits.js` + les `speaker`
   des adversaires dans `src/game/combats/index.js`.
 
-## P2 — Reliques en vitrail (~20-40 gén., 16 candidats/job)
+## P2 — Reliques en vitrail (~20-40 gén., 16 candidats/job) ✅ FAIT
+> Tirées le 2026-07-14 avec la scène bucher-reine (coût 60, solde 70 → 10).
+> Retenus : excalibur-11 (éclat d'or), fourreau-7 (croissant féerique).
 
 Remplacer les emojis 🗡️🛡️ de `drawRelics` (renderer.js) par des icônes 64×64
 détourées, même pipeline que les icônes de jauges :
