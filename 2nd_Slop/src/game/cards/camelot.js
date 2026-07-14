@@ -272,10 +272,12 @@ export const camelot = [
     id: 'camelot.tournoi.grand',
     era: 'camelot',
     speaker: 'Un héraut',
-    text: "Sire, tous les royaumes d'Europe veulent voir tes chevaliers jouter. Un grand tournoi coûterait cher — mais quelle vitrine pour la Table Ronde !",
+    text: "Sire, tous les royaumes d'Europe veulent voir tes chevaliers jouter. Un grand tournoi coûterait cher — mais quelle vitrine pour la Table Ronde ! Un mystérieux Chevalier Noir s'est déjà inscrit.",
+    requires: { noneFlags: ['epreuve.tournoi'] },
     left: {
       label: 'Le grand tournoi',
-      effects: { chevalerie: +7, couronne: -5 },
+      combat: 'tournoi',
+      flags: ['epreuve.tournoi'],
     },
     right: {
       label: 'Trop cher, trop vain',

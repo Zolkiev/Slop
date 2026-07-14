@@ -533,7 +533,8 @@ export const chute = [
     requires: { allFlags: ['camlann'] },
     left: {
       label: 'Charger Mordred',
-      effects: { chevalerie: -30, couronne: +4 },
+      combat: 'camlann', // le duel décide — plus de -30 forfaitaire
+      flags: ['epreuve.camlann'],
     },
     right: {
       label: 'Tenter de le raisonner',

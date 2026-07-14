@@ -10,9 +10,11 @@ export const common = [
     era: ERAS_VIVANTES,
     speaker: 'Gauvain',
     text: "Des drakkars saxons pillent la côte est, Sire. Lèverons-nous l'ost, ou leur paierons-nous le prix de la paix ?",
+    requires: { noneFlags: ['epreuve.bataille.saxonne'] },
     left: {
       label: "Lever l'ost",
-      effects: { chevalerie: +7, couronne: -4 },
+      combat: 'bataille.saxonne',
+      flags: ['epreuve.bataille.saxonne'],
     },
     right: {
       label: 'Payer le tribut',
@@ -260,7 +262,8 @@ export const common = [
     era: ERAS_VIVANTES,
     speaker: 'Un héraut',
     text: "Le roi d'Outre-Humber te défie en champ clos, Sire — toi ou ton champion. Refuser se peut, mais ça se chante mal.",
-    left: { label: 'Relever le défi', effects: { chevalerie: +7, couronne: -4 } },
+    requires: { noneFlags: ['epreuve.champ.clos'] },
+    left: { label: 'Relever le défi', combat: 'champ.clos', flags: ['epreuve.champ.clos'] },
     right: { label: "L'ignorer de haut", effects: { couronne: +4, chevalerie: -6 } },
     weight: 1,
   },
