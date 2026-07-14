@@ -8,6 +8,7 @@ import { TITLE, TEXT } from './fonts.js';
 import { drawShatter } from './shatter.js';
 import { drawGauges } from './gauges.js';
 import { drawCard } from './card.js';
+import { drawPause, drawPauseButton } from './pause.js';
 import { previewSide, SWIPE_PREVIEW, SWIPE_COMMIT } from '../game/swipe.js';
 import { wrapText, drawLines } from './text.js';
 
@@ -98,7 +99,7 @@ function drawMenu(ctx, app) {
   ctx.fillStyle = '#8a8298';
   ctx.fillText(`CODE : ${encodeSave(progress)}`, VIEW_W / 2, VIEW_H - 60);
   ctx.font = `400 14px ${TEXT}`;
-  ctx.fillText('ajoute #save=CODE à l’adresse du jeu pour restaurer', VIEW_W / 2, VIEW_H - 36);
+  ctx.fillText('touche le code pour restaurer une progression', VIEW_W / 2, VIEW_H - 36);
 }
 
 function drawRelics(ctx, flags) {
@@ -151,12 +152,13 @@ function drawPlay(ctx, app) {
     });
   }
 
-  // HUD bas : année + ère
+  // HUD bas : année + ère, bouton pause
   ctx.fillStyle = '#b8b0c8';
   ctx.font = `italic 400 17px ${TEXT}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(`An ${reign.years} — ${eraName(reign.era)}`, VIEW_W / 2, VIEW_H - 36);
+  drawPauseButton(ctx);
 }
 
 function drawDead(ctx, app) {
@@ -200,5 +202,8 @@ function drawDead(ctx, app) {
 export function render(ctx, app) {
   if (app.mode === 'menu') drawMenu(ctx, app);
   else if (app.mode === 'play') drawPlay(ctx, app);
-  else if (app.mode === 'dead') drawDead(ctx, app);
+  else if (app.mode === 'pause') {
+    drawPlay(ctx, app); // la scène reste visible sous le voile
+    drawPause(ctx, app.progress, VIEW_W, VIEW_H);
+  } else if (app.mode === 'dead') drawDead(ctx, app);
 }

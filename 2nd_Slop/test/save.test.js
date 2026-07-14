@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { encodeSave, decodeSave, codeFromHash } from '../src/game/save.js';
 import { KINGS, isUnlocked, unlockedKings } from '../src/game/dynasty.js';
-import { loadProgress, saveProgress } from '../src/game/score.js';
+import {
+  loadProgress,
+  saveProgress,
+  DEFAULT_MUSIC_VOL,
+  DEFAULT_SFX_VOL,
+} from '../src/game/score.js';
 
 describe('save — codes LG1', () => {
   it('aller-retour fidèle pour toutes les combinaisons plausibles', () => {
@@ -57,18 +62,30 @@ describe('score — persistance', () => {
     };
   };
 
+  const DEFAULTS = { best: 0, king: 0, musicVol: DEFAULT_MUSIC_VOL, sfxVol: DEFAULT_SFX_VOL };
+
   it('aller-retour et valeurs par défaut', () => {
     const storage = fakeStorage();
-    expect(loadProgress(storage)).toEqual({ best: 0, king: 0 });
-    saveProgress({ best: 22, king: 1 }, storage);
-    expect(loadProgress(storage)).toEqual({ best: 22, king: 1 });
+    expect(loadProgress(storage)).toEqual(DEFAULTS);
+    saveProgress({ best: 22, king: 1, musicVol: 0.8, sfxVol: 0.1 }, storage);
+    expect(loadProgress(storage)).toEqual({ best: 22, king: 1, musicVol: 0.8, sfxVol: 0.1 });
   });
 
   it('résiste au stockage corrompu ou absent', () => {
     const storage = fakeStorage();
     storage.setItem('logres.progress', '{pas du json');
-    expect(loadProgress(storage)).toEqual({ best: 0, king: 0 });
-    expect(loadProgress(undefined)).toEqual({ best: 0, king: 0 });
+    expect(loadProgress(storage)).toEqual(DEFAULTS);
+    expect(loadProgress(undefined)).toEqual(DEFAULTS);
     expect(() => saveProgress({ best: 1, king: 0 }, undefined)).not.toThrow();
+  });
+
+  it('volumes : anciens saves sans volumes -> défauts, valeurs hors bornes ramenées', () => {
+    const storage = fakeStorage();
+    saveProgress({ best: 5, king: 0 }, storage); // save d'avant les réglages
+    expect(loadProgress(storage)).toEqual({ best: 5, king: 0, ...{ musicVol: DEFAULT_MUSIC_VOL, sfxVol: DEFAULT_SFX_VOL } });
+    saveProgress({ best: 5, king: 0, musicVol: 7, sfxVol: -2 }, storage);
+    const p = loadProgress(storage);
+    expect(p.musicVol).toBe(1);
+    expect(p.sfxVol).toBe(0);
   });
 });

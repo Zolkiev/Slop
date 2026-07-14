@@ -8,6 +8,7 @@ import { decodeSave, codeFromHash } from './game/save.js';
 import { createLoop } from './engine/loop.js';
 import { preload, portraitFor, cardPlate } from './engine/assets.js';
 import { render, VIEW_W, VIEW_H } from './render/renderer.js';
+import { PAUSE_UI, inZone } from './render/pause.js';
 import { loadFonts } from './render/fonts.js';
 import { createShatter, updateShatter } from './render/shatter.js';
 import { createAudio } from './engine/audio.js';
@@ -29,8 +30,6 @@ const audio = createAudio({
   m_sombre: 'assets/music/sombre.wav',
   m_fin: 'assets/music/fin.wav',
 });
-audio.setSfxVolume(0.6);
-audio.setMusicVolume(0.35);
 // une même ambiance couvre plusieurs ères (graal et avalon partagent le mystique)
 const ERA_MUSIC = { roche: 'm_roche', camelot: 'm_camelot', graal: 'm_mystique', chute: 'm_sombre', avalon: 'm_mystique' };
 
@@ -61,10 +60,12 @@ const progress = loadProgress();
     saveProgress(progress);
   }
 }
+audio.setSfxVolume(progress.sfxVol);
+audio.setMusicVolume(progress.musicVol);
 
 // --- État de l'application ---
 const app = {
-  mode: 'menu', // 'menu' | 'play' | 'dead'
+  mode: 'menu', // 'menu' | 'play' | 'pause' | 'dead'
   reign: null,
   swipe: createSwipe(),
   anim: null, // {card, side, dx} — carte validée en cours d'envol
@@ -123,14 +124,56 @@ function commitChoice(side, releaseDx = 0) {
   audio.play('verre');
 }
 
+// --- Pause : bascule, curseurs de volume, abandon ---
+function togglePause() {
+  if (app.mode === 'play') app.mode = 'pause';
+  else if (app.mode === 'pause') app.mode = 'play';
+}
+
+function abandonReign() {
+  app.reign = null;
+  app.anim = null;
+  app.mode = 'menu';
+}
+
+let sliderDrag = null; // 'music' | 'sfx' pendant un ajustement au doigt
+function setVolume(key, x) {
+  const zone = PAUSE_UI.sliders[key];
+  const v = Math.min(1, Math.max(0, (x - zone.x) / zone.w));
+  if (key === 'music') {
+    progress.musicVol = v;
+    audio.setMusicVolume(v);
+  } else {
+    progress.sfxVol = v;
+    audio.setSfxVolume(v);
+  }
+}
+
+// zone de curseur élargie pour le doigt (la poignée déborde de la piste)
+const sliderHit = (zone) => ({ x: zone.x - 12, y: zone.y - 16, w: zone.w + 24, h: zone.h + 32 });
+
 // --- Entrées pointeur ---
-function logicalX(e) {
-  return (e.clientX - canvas.getBoundingClientRect().left) / scale;
+function logicalPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  return { x: (e.clientX - rect.left) / scale, y: (e.clientY - rect.top) / scale };
 }
 
 let dragOriginX = null;
 canvas.addEventListener('pointerdown', (e) => {
   audio.unlock(); // Web Audio exige un geste utilisateur ; idempotent
+  const pos = logicalPos(e);
+  if (app.mode === 'pause') {
+    for (const key of ['music', 'sfx']) {
+      if (inZone(sliderHit(PAUSE_UI.sliders[key]), pos.x, pos.y)) {
+        sliderDrag = key;
+        setVolume(key, pos.x);
+        canvas.setPointerCapture(e.pointerId);
+        return;
+      }
+    }
+    return;
+  }
+  if (app.mode === 'play' && inZone(PAUSE_UI.pauseButton, pos.x, pos.y)) return; // géré au pointerup
   if (app.mode === 'play' && app.reign.current && !app.anim) {
     dragOriginX = e.clientX;
     dragStart(app.swipe);
@@ -138,20 +181,42 @@ canvas.addEventListener('pointerdown', (e) => {
   }
 });
 canvas.addEventListener('pointermove', (e) => {
+  if (sliderDrag) {
+    setVolume(sliderDrag, logicalPos(e).x);
+    return;
+  }
   if (dragOriginX !== null) {
     dragMove(app.swipe, (e.clientX - dragOriginX) / scale);
   }
 });
 canvas.addEventListener('pointerup', (e) => {
+  const pos = logicalPos(e);
+  if (sliderDrag) {
+    sliderDrag = null;
+    saveProgress(progress); // un seul write au relâcher, pas à chaque frame
+    return;
+  }
   if (app.mode === 'menu') {
-    const x = logicalX(e);
-    if (x < VIEW_W * 0.3) selectKing(-1);
-    else if (x > VIEW_W * 0.7) selectKing(+1);
+    if (pos.y > VIEW_H - 80) {
+      openCodeOverlay();
+      return;
+    }
+    if (pos.x < VIEW_W * 0.3) selectKing(-1);
+    else if (pos.x > VIEW_W * 0.7) selectKing(+1);
     else startReign();
+    return;
+  }
+  if (app.mode === 'pause') {
+    if (inZone(PAUSE_UI.resume, pos.x, pos.y)) togglePause();
+    else if (inZone(PAUSE_UI.abandon, pos.x, pos.y)) abandonReign();
     return;
   }
   if (app.mode === 'dead') {
     app.mode = 'menu';
+    return;
+  }
+  if (app.mode === 'play' && inZone(PAUSE_UI.pauseButton, pos.x, pos.y) && dragOriginX === null) {
+    togglePause();
     return;
   }
   if (dragOriginX !== null) {
@@ -164,7 +229,12 @@ canvas.addEventListener('pointerup', (e) => {
 
 // --- Entrées clavier (desktop) ---
 window.addEventListener('keydown', (e) => {
+  if (codeUi.root.style.display !== 'none') return; // la saisie de code a le clavier
   audio.unlock();
+  if (e.code === 'Escape' && (app.mode === 'play' || app.mode === 'pause')) {
+    togglePause();
+    return;
+  }
   if (app.mode === 'menu') {
     if (e.code === 'ArrowLeft') selectKing(-1);
     if (e.code === 'ArrowRight') selectKing(+1);
@@ -180,12 +250,73 @@ window.addEventListener('keydown', (e) => {
   if (e.code === 'ArrowRight') commitChoice('right');
 });
 
+// --- Saisie de code de restauration (seul recours au DOM : clavier natif) ---
+function buildCodeOverlay() {
+  const root = document.createElement('div');
+  root.style.cssText =
+    'display:none;position:fixed;inset:0;z-index:10;background:rgba(10,8,16,0.8);' +
+    'align-items:center;justify-content:center;';
+  root.innerHTML = `
+    <div style="background:#1a1524;border:1px solid rgba(201,162,39,0.85);
+                box-shadow:0 0 0 5px #0e0b14;padding:28px;width:300px;text-align:center;
+                font-family:'EB Garamond',serif;color:#f5f0e6;">
+      <div style="font-family:'Cinzel',serif;font-weight:700;font-size:20px;margin-bottom:16px;">
+        RESTAURER UN RÈGNE</div>
+      <input type="text" placeholder="LG1-XXX" autocapitalize="characters" spellcheck="false"
+             style="width:100%;box-sizing:border-box;background:#0e0b14;color:#e8c96a;
+                    border:1px solid rgba(184,176,200,0.4);padding:10px;font-size:18px;
+                    text-align:center;font-family:inherit;text-transform:uppercase;outline:none;">
+      <div data-role="error" style="color:#ff6a6a;font-size:14px;min-height:20px;margin:8px 0;"></div>
+      <button data-role="ok" style="background:rgba(201,162,39,0.18);color:#e8c96a;
+              border:1.5px solid rgba(201,162,39,0.85);padding:10px 24px;font-size:16px;
+              font-family:inherit;font-weight:700;cursor:pointer;">Restaurer</button>
+      <button data-role="cancel" style="background:none;color:#b8b0c8;margin-left:10px;
+              border:1px solid rgba(184,176,200,0.4);padding:10px 18px;font-size:15px;
+              font-family:inherit;cursor:pointer;">Annuler</button>
+    </div>`;
+  document.body.appendChild(root);
+  const input = root.querySelector('input');
+  const error = root.querySelector('[data-role=error]');
+  const close = () => {
+    root.style.display = 'none';
+  };
+  root.querySelector('[data-role=cancel]').addEventListener('click', close);
+  root.addEventListener('pointerdown', (e) => {
+    if (e.target === root) close(); // tap hors du panneau
+  });
+  const submit = () => {
+    const restored = decodeSave(input.value);
+    if (!restored) {
+      error.textContent = 'Ce code ne vient pas de Logres.';
+      return;
+    }
+    progress.best = Math.max(progress.best, restored.best);
+    progress.king = restored.king;
+    saveProgress(progress);
+    close();
+  };
+  root.querySelector('[data-role=ok]').addEventListener('click', submit);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') submit();
+    if (e.key === 'Escape') close();
+  });
+  return { root, input, error };
+}
+const codeUi = buildCodeOverlay();
+
+function openCodeOverlay() {
+  codeUi.input.value = '';
+  codeUi.error.textContent = '';
+  codeUi.root.style.display = 'flex';
+  codeUi.input.focus();
+}
+
 // --- Boucle ---
 let lastPreview = null; // pour le tick au franchissement du seuil d'aperçu
 let lastMiracle = null; // pour ne sonner qu'à l'apparition du message
 
 function step(dt) {
-  if (app.anim) {
+  if (app.anim && app.mode !== 'pause') {
     // désintégration : poussière de carrés, puis la suivante est piochée
     if (updateShatter(app.anim.shatter, dt)) {
       app.anim = null;
@@ -207,7 +338,8 @@ function step(dt) {
   // musique d'ambiance : menu, une couleur par ère, lamento à la mort
   // (setMusic déduplique et réessaie tant que le contexte n'est pas débloqué)
   if (app.mode === 'menu') audio.setMusic('m_menu');
-  else if (app.mode === 'play') audio.setMusic(ERA_MUSIC[app.reign.era] ?? 'm_roche');
+  else if (app.mode === 'play' || app.mode === 'pause')
+    audio.setMusic(ERA_MUSIC[app.reign.era] ?? 'm_roche');
   else if (app.mode === 'dead') audio.setMusic('m_fin', false);
 
   render(ctx, app);
