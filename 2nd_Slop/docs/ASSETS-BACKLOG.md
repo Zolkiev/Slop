@@ -27,7 +27,12 @@
 
 ---
 
-## P0 — QA : harmoniser les yeux de 3 portraits (~60 gén.)
+> **P0 + P1 TIRÉS le 2026-07-14** (script `scripts/gen-p0-p1.sh`, coût réel 120,
+> solde 290 → 170). Retenus : baron-0, gauvain-0, lancelot-0 (qa2) ;
+> roi-0, chevalier-noir-0, chef-saxon-1 (combat). Candidats archivés dans
+> `assets/gen/portraits-qa2/` et `assets/gen/portraits-combat/`.
+
+## P0 — QA : harmoniser les yeux de 3 portraits (~60 gén.) ✅ FAIT
 
 **Constat Jael (2026-07-14)** : `baron.png`, `gauvain.png` et `lancelot.png`
 ont des yeux différents du reste du cast — ça casse l'unité. Ce sont justement
@@ -49,7 +54,7 @@ avec `keu.png`/`merlin.png` (référence du style) via `scripts/gallery-shot.mjs
 avant de brancher. Si les 4 candidats sortent encore « sans yeux », alterner le
 seed (78 → 79) plutôt que de re-renforcer le prompt.
 
-## P1 — Combat : donner un visage aux duels (~60-80 gén.)
+## P1 — Combat : donner un visage aux duels (~60-80 gén.) ✅ FAIT
 
 Les adversaires des épreuves retombent aujourd'hui sur le chevalier anonyme.
 Trois portraits changent tout :

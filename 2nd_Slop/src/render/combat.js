@@ -80,12 +80,13 @@ export function drawCombatScene(ctx, app, W, H, previewSideName, previewStrength
   ctx.fillStyle = 'rgba(46, 8, 12, 0.4)';
   ctx.fillRect(0, 0, W, H);
 
-  // le nom de l'épreuve, comme un chapitre
+  // le nom de l'épreuve, comme un chapitre — dans la zone libre à droite de
+  // la carte adverse (centré sur l'écran, elle le recouvrirait)
   ctx.font = `italic 400 17px ${TEXT}`;
   ctx.fillStyle = '#d8b66a';
-  ctx.textAlign = 'center';
+  ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  ctx.fillText(`— ${c.def.title} —`, W / 2, 108);
+  ctx.fillText(`— ${c.def.title} —`, 216, 124);
 
   // la carte adverse te toise depuis le haut de la scène
   const s = 0.42;
@@ -106,11 +107,13 @@ export function drawCombatScene(ctx, app, W, H, previewSideName, previewStrength
   // aperçu : ce que le côté prévisualisé ferait aux blasons
   const delta = previewSideName ? previewRound(reign, previewSideName) : null;
 
-  // l'adversaire : nom + blasons à droite de sa carte
-  ctx.font = `700 19px ${TITLE}`;
+  // l'adversaire : nom + blasons à droite de sa carte (rétréci si trop long)
   ctx.fillStyle = CREAM;
   ctx.textAlign = 'left';
-  ctx.fillText(c.def.foe.name.toUpperCase(), 216, 152);
+  const foeName = c.def.foe.name.toUpperCase();
+  ctx.font = `700 19px ${TITLE}`;
+  if (ctx.measureText(foeName).width > W - 16 - 216) ctx.font = `700 15px ${TITLE}`;
+  ctx.fillText(foeName, 216, 152);
   drawShields(ctx, 216, 170, c.foeHp, c.def.foe.hp, delta ? delta.foe : 0, previewStrength, now);
 
   // ton champion, annoncé sous la manœuvre

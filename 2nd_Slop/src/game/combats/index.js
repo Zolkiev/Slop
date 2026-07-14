@@ -195,7 +195,7 @@ export const COMBATS = {
   'champ.clos': {
     id: 'champ.clos',
     title: 'Le champ clos',
-    foe: { name: "Le roi d'Outre-Humber", speaker: 'Un chevalier', atk: 1, hp: 3 },
+    foe: { name: "Le roi d'Outre-Humber", speaker: "Le roi d'Outre-Humber", atk: 1, hp: 3 },
     selfHp: 3,
     maxRounds: 5,
     fatal: false,
@@ -231,7 +231,7 @@ export const COMBATS = {
   'bataille.saxonne': {
     id: 'bataille.saxonne',
     title: 'La bataille de la côte',
-    foe: { name: 'Le chef de guerre saxon', speaker: 'Un émissaire saxon', atk: 1, hp: 3 },
+    foe: { name: 'Le chef saxon', speaker: 'Le chef saxon', atk: 1, hp: 3 },
     selfHp: 3,
     maxRounds: 5,
     fatal: false,
@@ -289,7 +289,7 @@ export const COMBATS = {
   tournoi: {
     id: 'tournoi',
     title: 'Le grand tournoi',
-    foe: { name: 'Le Chevalier Noir', speaker: 'Un chevalier', atk: 1, hp: 2 },
+    foe: { name: 'Le Chevalier Noir', speaker: 'Le Chevalier Noir', atk: 1, hp: 2 },
     selfHp: 2,
     maxRounds: 4,
     fatal: false,

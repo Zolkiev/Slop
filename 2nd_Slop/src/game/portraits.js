@@ -30,4 +30,9 @@ export const PORTRAITS = {
   'Un pèlerin': 'pelerin',
   'Un conseiller': 'conseiller',
   'Un chevalier': 'chevalier',
+  // figures des épreuves d'armes
+  'Le Roi': 'roi',
+  'Le Chevalier Noir': 'chevalier-noir',
+  'Le chef saxon': 'chef-saxon',
+  "Le roi d'Outre-Humber": 'roi-lot', // roi rival à couronne de fer : réemploi
 };
