@@ -8,7 +8,7 @@ import { TITLE, TEXT } from './fonts.js';
 import { drawShatter } from './shatter.js';
 import { drawGauges } from './gauges.js';
 import { drawCard } from './card.js';
-import { drawPause, drawPauseButton } from './pause.js';
+import { drawPause, drawPauseButton, drawSoundButton } from './pause.js';
 import { previewSide, SWIPE_PREVIEW, SWIPE_COMMIT } from '../game/swipe.js';
 import { wrapText, drawLines } from './text.js';
 
@@ -100,6 +100,7 @@ function drawMenu(ctx, app) {
   ctx.fillText(`CODE : ${encodeSave(progress)}`, VIEW_W / 2, VIEW_H - 60);
   ctx.font = `400 14px ${TEXT}`;
   ctx.fillText('touche le code pour restaurer une progression', VIEW_W / 2, VIEW_H - 36);
+  drawSoundButton(ctx);
 }
 
 function drawRelics(ctx, flags) {
@@ -201,7 +202,14 @@ function drawDead(ctx, app) {
 
 export function render(ctx, app) {
   if (app.mode === 'menu') drawMenu(ctx, app);
-  else if (app.mode === 'play') drawPlay(ctx, app);
+  else if (app.mode === 'options') {
+    drawMenu(ctx, app); // le menu reste visible sous le voile
+    drawPause(ctx, app.progress, VIEW_W, VIEW_H, {
+      title: 'SONS',
+      resumeLabel: 'Fermer',
+      showAbandon: false,
+    });
+  } else if (app.mode === 'play') drawPlay(ctx, app);
   else if (app.mode === 'pause') {
     drawPlay(ctx, app); // la scène reste visible sous le voile
     drawPause(ctx, app.progress, VIEW_W, VIEW_H);

@@ -65,7 +65,7 @@ audio.setMusicVolume(progress.musicVol);
 
 // --- État de l'application ---
 const app = {
-  mode: 'menu', // 'menu' | 'play' | 'pause' | 'dead'
+  mode: 'menu', // 'menu' | 'options' | 'play' | 'pause' | 'dead'
   reign: null,
   swipe: createSwipe(),
   anim: null, // {card, side, dx} — carte validée en cours d'envol
@@ -162,7 +162,7 @@ let dragOriginX = null;
 canvas.addEventListener('pointerdown', (e) => {
   audio.unlock(); // Web Audio exige un geste utilisateur ; idempotent
   const pos = logicalPos(e);
-  if (app.mode === 'pause') {
+  if (app.mode === 'pause' || app.mode === 'options') {
     for (const key of ['music', 'sfx']) {
       if (inZone(sliderHit(PAUSE_UI.sliders[key]), pos.x, pos.y)) {
         sliderDrag = key;
@@ -197,6 +197,10 @@ canvas.addEventListener('pointerup', (e) => {
     return;
   }
   if (app.mode === 'menu') {
+    if (inZone(PAUSE_UI.pauseButton, pos.x, pos.y)) {
+      app.mode = 'options'; // avant la zone du code, qui couvre le même coin
+      return;
+    }
     if (pos.y > VIEW_H - 80) {
       openCodeOverlay();
       return;
@@ -204,6 +208,10 @@ canvas.addEventListener('pointerup', (e) => {
     if (pos.x < VIEW_W * 0.3) selectKing(-1);
     else if (pos.x > VIEW_W * 0.7) selectKing(+1);
     else startReign();
+    return;
+  }
+  if (app.mode === 'options') {
+    if (inZone(PAUSE_UI.resume, pos.x, pos.y)) app.mode = 'menu';
     return;
   }
   if (app.mode === 'pause') {
@@ -233,6 +241,10 @@ window.addEventListener('keydown', (e) => {
   audio.unlock();
   if (e.code === 'Escape' && (app.mode === 'play' || app.mode === 'pause')) {
     togglePause();
+    return;
+  }
+  if (app.mode === 'options') {
+    if (e.code === 'Escape' || e.code === 'Enter') app.mode = 'menu';
     return;
   }
   if (app.mode === 'menu') {
@@ -337,7 +349,7 @@ function step(dt) {
 
   // musique d'ambiance : menu, une couleur par ère, lamento à la mort
   // (setMusic déduplique et réessaie tant que le contexte n'est pas débloqué)
-  if (app.mode === 'menu') audio.setMusic('m_menu');
+  if (app.mode === 'menu' || app.mode === 'options') audio.setMusic('m_menu');
   else if (app.mode === 'play' || app.mode === 'pause')
     audio.setMusic(ERA_MUSIC[app.reign.era] ?? 'm_roche');
   else if (app.mode === 'dead') audio.setMusic('m_fin', false);

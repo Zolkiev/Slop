@@ -24,6 +24,13 @@ await page.screenshot({ path: `${OUT}/logres-ux-code.png` });
 await page.keyboard.press('Escape');
 await sleep(300);
 
+// 1bis. panneau SONS depuis le menu principal (bouton ♪ en bas à droite)
+await page.mouse.click(451, 765);
+await sleep(400);
+await page.screenshot({ path: `${OUT}/logres-ux-sons.png` });
+await page.keyboard.press('Escape');
+await sleep(300);
+
 // 2. panneau pause en jeu
 await page.keyboard.press('Enter'); // menu -> règne
 await sleep(800);

@@ -22,10 +22,8 @@ export const PAUSE_UI = {
   abandon: { x: 120, y: 514, w: 240, h: 38 },
 };
 
-/** Bouton pause dessiné par-dessus le HUD de jeu (deux barres verticales). */
-export function drawPauseButton(ctx) {
+function buttonPlate(ctx) {
   const b = PAUSE_UI.pauseButton;
-  ctx.save();
   ctx.globalAlpha = 0.85;
   ctx.fillStyle = PLATE;
   ctx.strokeStyle = GOLD;
@@ -34,9 +32,29 @@ export function drawPauseButton(ctx) {
   ctx.arc(b.x + b.w / 2, b.y + b.h / 2, b.w / 2, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
+}
+
+/** Bouton pause dessiné par-dessus le HUD de jeu (deux barres verticales). */
+export function drawPauseButton(ctx) {
+  const b = PAUSE_UI.pauseButton;
+  ctx.save();
+  buttonPlate(ctx);
   ctx.fillStyle = MUTED;
   ctx.fillRect(b.x + 11, b.y + 10, 4, 14);
   ctx.fillRect(b.x + 19, b.y + 10, 4, 14);
+  ctx.restore();
+}
+
+/** Bouton sons du menu principal (même pastille, note de musique). */
+export function drawSoundButton(ctx) {
+  const b = PAUSE_UI.pauseButton;
+  ctx.save();
+  buttonPlate(ctx);
+  ctx.fillStyle = MUTED;
+  ctx.font = '18px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('♪', b.x + b.w / 2, b.y + b.h / 2 + 1);
   ctx.restore();
 }
 
@@ -89,8 +107,12 @@ function drawButton(ctx, zone, label, { primary = false } = {}) {
   ctx.fillText(label, zone.x + zone.w / 2, zone.y + zone.h / 2 + 1);
 }
 
-/** Overlay pause complet (à dessiner par-dessus la scène de jeu). */
-export function drawPause(ctx, { musicVol, sfxVol }, W, H) {
+/**
+ * Overlay pause/options (à dessiner par-dessus la scène courante).
+ * Depuis le menu principal : titre « SONS », bouton Fermer, pas d'abandon.
+ */
+export function drawPause(ctx, { musicVol, sfxVol }, W, H, opts = {}) {
+  const { title = 'PAUSE', resumeLabel = 'Reprendre', showAbandon = true } = opts;
   ctx.fillStyle = 'rgba(10,8,16,0.72)';
   ctx.fillRect(0, 0, W, H);
 
@@ -108,12 +130,12 @@ export function drawPause(ctx, { musicVol, sfxVol }, W, H) {
   ctx.fillStyle = CREAM;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('PAUSE', p.x + p.w / 2, p.y + 52);
+  ctx.fillText(title, p.x + p.w / 2, p.y + 52);
 
   drawSlider(ctx, PAUSE_UI.sliders.music, 'Musique', musicVol);
   drawSlider(ctx, PAUSE_UI.sliders.sfx, 'Effets', sfxVol);
-  drawButton(ctx, PAUSE_UI.resume, 'Reprendre', { primary: true });
-  drawButton(ctx, PAUSE_UI.abandon, 'Abandonner le règne');
+  drawButton(ctx, PAUSE_UI.resume, resumeLabel, { primary: true });
+  if (showAbandon) drawButton(ctx, PAUSE_UI.abandon, 'Abandonner le règne');
 }
 
 /** Point (x,y) dans une zone rectangulaire ? */
