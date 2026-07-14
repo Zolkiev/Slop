@@ -5,10 +5,13 @@ import { createSwipe, dragStart, dragMove, dragEnd, previewSide } from './game/s
 import { KINGS, isUnlocked } from './game/dynasty.js';
 import { loadProgress, saveProgress } from './game/score.js';
 import { decodeSave, codeFromHash } from './game/save.js';
+import { startCombat } from './game/combat.js';
+import { COMBATS } from './game/combats/index.js';
 import { createLoop } from './engine/loop.js';
 import { preload, portraitFor, cardPlate } from './engine/assets.js';
 import { render, VIEW_W, VIEW_H } from './render/renderer.js';
 import { PAUSE_UI, inZone } from './render/pause.js';
+import { COMBAT_CARD_SHIFT } from './render/combat.js';
 import { loadFonts } from './render/fonts.js';
 import { createShatter, updateShatter } from './render/shatter.js';
 import { createAudio } from './engine/audio.js';
@@ -85,6 +88,12 @@ function startReign() {
   app.anim = null;
   app.newRecord = false;
   drawNext(app.reign, CARDS);
+  // triche de dev (vérif visuelle) : #combat=<id> ouvre l'épreuve au 1er tour
+  const forced = /#combat=([\w.]+)/.exec(window.location.hash)?.[1];
+  if (forced && COMBATS[forced]) {
+    startCombat(app.reign, COMBATS[forced]);
+    drawNext(app.reign, CARDS);
+  }
   app.mode = 'play';
   audio.play('sacre');
 }
@@ -105,6 +114,7 @@ function commitChoice(side, releaseDx = 0) {
   const card = app.reign.current;
   if (!card) return;
   // La logique avance tout de suite ; la désintégration n'est que visuelle.
+  // En duel, la manœuvre est dessinée plus bas : la poussière part de là.
   app.anim = {
     card,
     side,
@@ -115,7 +125,7 @@ function commitChoice(side, releaseDx = 0) {
       dx: releaseDx || (side === 'left' ? -40 : 40),
       side,
       centerX: VIEW_W / 2,
-      centerY: VIEW_H / 2 + 10,
+      centerY: VIEW_H / 2 + (app.reign.combat ? COMBAT_CARD_SHIFT : 10),
       viewW: VIEW_W,
       viewH: VIEW_H,
     }),

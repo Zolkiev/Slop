@@ -9,6 +9,7 @@ import { drawShatter } from './shatter.js';
 import { drawGauges } from './gauges.js';
 import { drawCard } from './card.js';
 import { drawPause, drawPauseButton, drawSoundButton } from './pause.js';
+import { drawCombatScene, COMBAT_CARD_SHIFT } from './combat.js';
 import { previewSide, SWIPE_PREVIEW, SWIPE_COMMIT } from '../game/swipe.js';
 import { wrapText, drawLines } from './text.js';
 
@@ -137,6 +138,9 @@ function drawPlay(ctx, app) {
 
   drawGauges(ctx, reign.gauges, VIEW_W, effects, Math.max(0, strength));
   drawRelics(ctx, reign.flags);
+  if (reign.combat) {
+    drawCombatScene(ctx, app, VIEW_W, VIEW_H, side, Math.max(0, strength));
+  }
   if (reign.miracle) drawMiracle(ctx, reign.miracle);
 
   if (anim) {
@@ -149,7 +153,7 @@ function drawPlay(ctx, app) {
       dx: swipe.dx,
       previewSide: side,
       centerX: VIEW_W / 2,
-      centerY: VIEW_H / 2 + 10,
+      centerY: VIEW_H / 2 + (reign.combat ? COMBAT_CARD_SHIFT : 10),
     });
   }
 

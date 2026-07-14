@@ -60,34 +60,44 @@ export function nextManoeuvre(reign) {
 }
 
 /**
- * Résout une manche (appelé par reign.choose pendant un combat).
+ * Ce que produirait le côté donné sur la manche courante, SANS rien muter :
+ * `{ foe, self }` en variations de blasons (négatif = perte). Sert à
+ * resolveManoeuvre et à l'aperçu pendant le drag (blasons qui s'illuminent).
  * Ordre : frappe (bonus de jauge, Excalibur) → l'adversaire meurt avant de
- * riposter → riposte (guard, expose si bonus raté) → second souffle (heal) →
- * défaite → manche suivante ou retraite.
+ * riposter → riposte (guard, expose si bonus raté) → second souffle (heal).
  */
-export function resolveManoeuvre(reign, side) {
+export function previewRound(reign, side) {
   const c = reign.combat;
   const man = reign.current;
-  if (!man) throw new Error('resolveManoeuvre() sans manœuvre présentée');
+  if (!c || !man?.[side]) return null;
   const ch = man[side];
-  if (!ch) throw new Error(`côté invalide: ${side}`);
-  reign.miracle = null;
-  reign.current = null;
 
   const s = ch.strike;
   const bonusHit = s?.gauge != null && reign.gauges[s.gauge] >= (s.min ?? 0);
   let dmg = (s?.dmg ?? 0) + (bonusHit ? s.bonus ?? 0 : 0);
   if (dmg > 0 && s?.gauge === 'chevalerie' && holds(reign.flags, EXCALIBUR)) dmg += 1;
-  c.foeHp -= dmg;
-  if (c.foeHp <= 0) return endCombat(reign, 'win');
+
+  if (c.foeHp - dmg <= 0) return { foe: -dmg, self: 0 }; // mort avant la riposte
 
   let incoming = Math.max(0, c.def.foe.atk - (ch.guard ?? 0));
   if (ch.expose && s?.gauge != null && !bonusHit) incoming += ch.expose;
-  c.selfHp -= incoming;
+  const heal = ch.heal && reign.gauges[ch.heal.gauge] >= ch.heal.min ? ch.heal.hp : 0;
+  return { foe: -dmg, self: heal - incoming };
+}
 
-  if (ch.heal && reign.gauges[ch.heal.gauge] >= ch.heal.min) {
-    c.selfHp = Math.min(c.def.selfHp, c.selfHp + ch.heal.hp);
-  }
+/** Résout une manche (appelé par reign.choose pendant un combat). */
+export function resolveManoeuvre(reign, side) {
+  const c = reign.combat;
+  if (!reign.current) throw new Error('resolveManoeuvre() sans manœuvre présentée');
+  const delta = previewRound(reign, side);
+  if (!delta) throw new Error(`côté invalide: ${side}`);
+  reign.miracle = null;
+  reign.current = null;
+
+  c.foeHp += delta.foe;
+  if (c.foeHp <= 0) return endCombat(reign, 'win');
+
+  c.selfHp = Math.min(c.def.selfHp, c.selfHp + delta.self);
   if (c.selfHp <= 0) return endCombat(reign, 'lose');
 
   c.round += 1;

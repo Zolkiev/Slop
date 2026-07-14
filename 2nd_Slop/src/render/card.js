@@ -69,8 +69,10 @@ function glassDiamond(ctx, x, y, s, color) {
  *   dx            — décalage horizontal du drag (0 au repos)
  *   previewSide   — 'left' | 'right' | null (label de choix affiché)
  *   centerX, centerY — position logique du centre de la carte
+ *   hints         — afficher les flèches ‹ › au repos (false pour les cartes
+ *                   de décor, ex. l'adversaire d'un duel)
  */
-export function drawCard(ctx, { card, portrait = null, plate = null, dx = 0, previewSide = null, centerX, centerY }) {
+export function drawCard(ctx, { card, portrait = null, plate = null, dx = 0, previewSide = null, centerX, centerY, hints = true }) {
   const tilt = (dx / 300) * 0.18; // légère rotation façon Reigns
 
   ctx.save();
@@ -203,7 +205,7 @@ export function drawCard(ctx, { card, portrait = null, plate = null, dx = 0, pre
   ctx.restore();
 
   // indications ← → au repos
-  if (!previewSide && dx === 0) {
+  if (hints && !previewSide && dx === 0) {
     ctx.fillStyle = 'rgba(201,162,39,0.4)';
     ctx.font = `400 26px ${TEXT}`;
     ctx.textAlign = 'center';
