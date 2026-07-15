@@ -6,6 +6,9 @@ import { KINGS, isUnlocked, lineageFlag } from './game/dynasty.js';
 import { setFlag } from './game/flags.js';
 import { loadProgress, saveProgress } from './game/score.js';
 import { decodeSave, codeFromHash } from './game/save.js';
+import {
+  serializeReign, deserializeReign, saveReign, loadReign, clearReign,
+} from './game/persist-reign.js';
 import { startCombat } from './game/combat.js';
 import { COMBATS } from './game/combats/index.js';
 import { createLoop } from './engine/loop.js';
@@ -80,6 +83,8 @@ const app = {
   anim: null, // {card, side, dx} — carte validée en cours d'envol
   progress,
   newRecord: false, // le dernier règne a-t-il battu le record ?
+  savedReign: deserializeReign(loadReign(), CARDS), // règne en cours restauré, ou null
+  tutorial: null, // coach-marks du 1er règne (Tâche 9)
 };
 
 function selectKing(delta) {
@@ -103,6 +108,15 @@ function startReign() {
   }
   app.mode = 'play';
   audio.play('sacre');
+  autosave();
+}
+
+// Persiste le règne à chaque frontière de carte (jamais en plein duel).
+function autosave() {
+  if (app.reign && !app.reign.dead && !app.reign.combat) {
+    app.reign.king = progress.king;
+    saveReign(serializeReign(app.reign));
+  }
 }
 
 function endReign() {
@@ -111,6 +125,8 @@ function endReign() {
     progress.best = app.reign.years;
     saveProgress(progress);
   }
+  clearReign();
+  app.savedReign = null;
   app.mode = 'dead';
   audio.play('glas');
 }
@@ -154,8 +170,11 @@ function togglePause() {
 }
 
 function abandonReign() {
+  // retour au menu SANS abandonner : le règne reste sauvegardé (CONTINUER)
+  app.savedReign = app.reign;
   app.reign = null;
   app.anim = null;
+  app.tutorial = null;
   app.mode = 'menu';
 }
 
@@ -356,7 +375,10 @@ function step(dt) {
     if (updateShatter(app.anim.shatter, dt)) {
       app.anim = null;
       if (app.reign.dead) endReign();
-      else drawNext(app.reign, CARDS);
+      else {
+        drawNext(app.reign, CARDS);
+        autosave();
+      }
     }
   }
 

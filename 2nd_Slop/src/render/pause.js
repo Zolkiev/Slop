@@ -135,7 +135,7 @@ export function drawPause(ctx, { musicVol, sfxVol }, W, H, opts = {}) {
   drawSlider(ctx, PAUSE_UI.sliders.music, 'Musique', musicVol);
   drawSlider(ctx, PAUSE_UI.sliders.sfx, 'Effets', sfxVol);
   drawButton(ctx, PAUSE_UI.resume, resumeLabel, { primary: true });
-  if (showAbandon) drawButton(ctx, PAUSE_UI.abandon, 'Abandonner le règne');
+  if (showAbandon) drawButton(ctx, PAUSE_UI.abandon, 'Retour au menu');
 }
 
 /** Point (x,y) dans une zone rectangulaire ? */
