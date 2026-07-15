@@ -57,3 +57,33 @@ describe('serializeReign / deserializeReign', () => {
     ).toBeNull();
   });
 });
+
+import { saveReign, loadReign, clearReign, hasSavedReign } from '../src/game/persist-reign.js';
+
+function fakeStorage() {
+  const m = new Map();
+  return {
+    getItem: (k) => (m.has(k) ? m.get(k) : null),
+    setItem: (k, v) => m.set(k, String(v)),
+    removeItem: (k) => m.delete(k),
+  };
+}
+
+describe('stockage du règne en cours', () => {
+  it('save → has → load → clear', () => {
+    const s = fakeStorage();
+    expect(hasSavedReign(s)).toBe(false);
+    saveReign({ v: 1, years: 3 }, s);
+    expect(hasSavedReign(s)).toBe(true);
+    expect(loadReign(s)).toEqual({ v: 1, years: 3 });
+    clearReign(s);
+    expect(hasSavedReign(s)).toBe(false);
+    expect(loadReign(s)).toBeNull();
+  });
+
+  it('ne jette jamais si le stockage est absent', () => {
+    expect(() => saveReign({ v: 1 }, undefined)).not.toThrow();
+    expect(loadReign(undefined)).toBeNull();
+    expect(hasSavedReign(undefined)).toBe(false);
+  });
+});

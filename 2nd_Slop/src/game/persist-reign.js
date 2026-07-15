@@ -56,3 +56,34 @@ export function deserializeReign(data, cards) {
     return null;
   }
 }
+
+const KEY = 'logres.reign';
+
+export function saveReign(snapshot, storage = globalThis.localStorage) {
+  try {
+    storage?.setItem(KEY, JSON.stringify(snapshot));
+  } catch {
+    // stockage indisponible (navigation privée…) : la partie reste jouable
+  }
+}
+
+export function loadReign(storage = globalThis.localStorage) {
+  try {
+    const raw = storage?.getItem(KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearReign(storage = globalThis.localStorage) {
+  try {
+    storage?.removeItem(KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function hasSavedReign(storage = globalThis.localStorage) {
+  return loadReign(storage) !== null;
+}
