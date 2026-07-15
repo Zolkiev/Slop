@@ -94,7 +94,7 @@ function drawSlider(ctx, zone, label, value) {
   ctx.stroke();
 }
 
-function drawButton(ctx, zone, label, { primary = false } = {}) {
+export function drawButton(ctx, zone, label, { primary = false } = {}) {
   ctx.fillStyle = primary ? 'rgba(201,162,39,0.18)' : 'rgba(14,11,20,0.6)';
   ctx.fillRect(zone.x, zone.y, zone.w, zone.h);
   ctx.strokeStyle = primary ? GOLD : 'rgba(184,176,200,0.4)';
@@ -135,10 +135,31 @@ export function drawPause(ctx, { musicVol, sfxVol }, W, H, opts = {}) {
   drawSlider(ctx, PAUSE_UI.sliders.music, 'Musique', musicVol);
   drawSlider(ctx, PAUSE_UI.sliders.sfx, 'Effets', sfxVol);
   drawButton(ctx, PAUSE_UI.resume, resumeLabel, { primary: true });
-  if (showAbandon) drawButton(ctx, PAUSE_UI.abandon, 'Abandonner le règne');
+  if (showAbandon) drawButton(ctx, PAUSE_UI.abandon, 'Retour au menu');
 }
 
 /** Point (x,y) dans une zone rectangulaire ? */
 export function inZone(zone, x, y) {
   return x >= zone.x && x <= zone.x + zone.w && y >= zone.y && y <= zone.y + zone.h;
+}
+
+export const CONFIRM_UI = {
+  yes: { x: 250, y: 430, w: 130, h: 46 },
+  no: { x: 100, y: 430, w: 130, h: 46 },
+};
+
+/** Confirmation « effacer le règne en cours ? » (focus par défaut : Non). */
+export function drawConfirm(ctx, W, H) {
+  ctx.fillStyle = 'rgba(10,8,16,0.8)';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = CREAM;
+  ctx.font = `700 26px ${TITLE}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Abandonner ce règne ?', W / 2, 340);
+  ctx.font = `400 18px ${TEXT}`;
+  ctx.fillStyle = MUTED;
+  ctx.fillText('Ta progression (rois, record) reste acquise.', W / 2, 380);
+  drawButton(ctx, CONFIRM_UI.yes, 'Oui');
+  drawButton(ctx, CONFIRM_UI.no, 'Non', { primary: true }); // Non = focus/primaire
 }

@@ -9,13 +9,21 @@ import { hasFlag } from '../game/flags.js';
 import { drawShatter } from './shatter.js';
 import { drawGauges } from './gauges.js';
 import { drawCard, feminizeCard } from './card.js';
-import { drawPause, drawPauseButton, drawSoundButton } from './pause.js';
+import { drawPause, drawPauseButton, drawSoundButton, drawButton, drawConfirm } from './pause.js';
 import { drawCombatScene, COMBAT_CARD_SHIFT } from './combat.js';
 import { previewSide, SWIPE_PREVIEW, SWIPE_COMMIT } from '../game/swipe.js';
 import { wrapText, drawLines } from './text.js';
+import { drawTutorial } from './tutorial.js';
 
 export const VIEW_W = 480;
 export const VIEW_H = 800;
+
+// Boutons du menu affichés quand un règne est en cours (hit-test dans main.js).
+export const MENU_UI = {
+  continue: { x: 90, y: 500, w: 300, h: 56 },
+  newReign: { x: 120, y: 572, w: 240, h: 40 },
+  help: { x: 12, y: 800 - 52, w: 34, h: 34 },
+};
 
 // Ambiances de fond par ère (gradient haut -> bas), en attendant les décors PixelLab.
 const ERA_BG = {
@@ -69,32 +77,87 @@ function drawMenu(ctx, app) {
     ctx.fillText(`Record : ${progress.best} ans de règne`, VIEW_W / 2, 330);
   }
 
-  // sélecteur de lignée
-  const king = KINGS[progress.king];
-  const unlocked = isUnlocked(king, progress.best);
-  ctx.font = `400 26px ${TEXT}`;
-  ctx.fillStyle = '#b8b0c8';
-  ctx.fillText('‹', VIEW_W * 0.15, 440);
-  ctx.fillText('›', VIEW_W * 0.85, 440);
-
-  if (unlocked) {
-    ctx.fillStyle = '#f5f0e6';
-    ctx.font = `700 26px ${TITLE}`;
-    ctx.fillText(king.name, VIEW_W / 2, 425);
-    ctx.font = `400 18px ${TEXT}`;
+  if (app.savedReign) {
+    const r = app.savedReign;
+    const kingName = KINGS[r.king]?.name ?? 'ARTHUR';
     ctx.fillStyle = '#b8b0c8';
-    ctx.fillText(king.title, VIEW_W / 2, 458);
-  } else {
-    ctx.fillStyle = '#6a6478';
-    ctx.font = `700 26px ${TITLE}`;
-    ctx.fillText('? ? ?', VIEW_W / 2, 425);
-    ctx.font = `400 17px ${TEXT}`;
-    ctx.fillText(`Règne ${king.unlock} ans pour éveiller cette lignée`, VIEW_W / 2, 458);
-  }
+    ctx.font = `400 18px ${TEXT}`;
+    ctx.fillText(`${kingName} — an ${r.years} de règne`, VIEW_W / 2, 456);
 
-  ctx.font = `700 21px ${TEXT}`;
-  ctx.fillStyle = unlocked ? '#e8c96a' : '#6a6478';
-  ctx.fillText('— Tape pour régner —', VIEW_W / 2, 560);
+    drawButton(ctx, MENU_UI.continue, 'CONTINUER', { primary: true });
+    drawButton(ctx, MENU_UI.newReign, 'Nouveau règne');
+  } else {
+    // sélecteur de lignée (existant)
+    const king = KINGS[progress.king];
+    const unlocked = isUnlocked(king, progress.best);
+    ctx.font = `400 26px ${TEXT}`;
+    ctx.fillStyle = '#b8b0c8';
+    ctx.fillText('‹', VIEW_W * 0.15, 440);
+    ctx.fillText('›', VIEW_W * 0.85, 440);
+    if (unlocked) {
+      ctx.fillStyle = '#f5f0e6';
+      ctx.font = `700 26px ${TITLE}`;
+      ctx.fillText(king.name, VIEW_W / 2, 425);
+      ctx.font = `400 18px ${TEXT}`;
+      ctx.fillStyle = '#b8b0c8';
+      ctx.fillText(king.title, VIEW_W / 2, 458);
+    } else {
+      ctx.fillStyle = '#6a6478';
+      ctx.font = `700 26px ${TITLE}`;
+      ctx.fillText('? ? ?', VIEW_W / 2, 425);
+      ctx.font = `400 17px ${TEXT}`;
+      ctx.fillText(`Règne ${king.unlock} ans pour éveiller cette lignée`, VIEW_W / 2, 458);
+    }
+    // points de lignée : ● éveillé / ○ scellé
+    const dotY = 500;
+    const gap = 22;
+    const startX = VIEW_W / 2 - ((KINGS.length - 1) * gap) / 2;
+    ctx.font = `18px ${TEXT}`;
+    KINGS.forEach((k, i) => {
+      const on = isUnlocked(k, progress.best);
+      ctx.fillStyle = i === progress.king ? '#e8c96a' : on ? '#8a8298' : '#4a4658';
+      ctx.fillText(on ? '●' : '○', startX + i * gap, dotY);
+    });
+    ctx.font = `italic 400 14px ${TEXT}`;
+    ctx.fillStyle = '#8a8298';
+    ctx.fillText('Ta lignée se souvient de tous les rois éveillés.', VIEW_W / 2, 526);
+
+    ctx.font = `700 21px ${TEXT}`;
+    ctx.fillStyle = unlocked ? '#e8c96a' : '#6a6478';
+    ctx.fillText('— Tape pour régner —', VIEW_W / 2, 560);
+
+    // bouton « ? » : revoir le tuto (symétrique du bouton son)
+    // — uniquement dans ce chemin (pas de règne sauvegardé) : c'est le seul
+    //   endroit où le tap handler est câblé (cf. main.js, branche savedReign
+    //   n'a pas de logique pour ce bouton et ferait fuiter vers le code overlay)
+    const h = MENU_UI.help;
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = '#1a1524';
+    ctx.strokeStyle = 'rgba(201,162,39,0.85)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(h.x + h.w / 2, h.y + h.h / 2, h.w / 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#b8b0c8';
+    ctx.font = `700 18px ${TEXT}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('?', h.x + h.w / 2, h.y + h.h / 2 + 1);
+    ctx.restore();
+
+    if (app.toast && performance.now() < (app.toastUntil ?? 0)) {
+      ctx.fillStyle = 'rgba(201,162,39,0.92)';
+      ctx.fillRect(40, 300, VIEW_W - 80, 40);
+      ctx.fillStyle = '#2a2438';
+      ctx.font = `700 15px ${TEXT}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(app.toast, VIEW_W / 2, 320);
+    }
+  }
 
   // code de sauvegarde (partage entre appareils, sans compte)
   ctx.font = `400 16px ${TEXT}`;
@@ -173,6 +236,7 @@ function drawPlay(ctx, app) {
   ctx.textBaseline = 'middle';
   ctx.fillText(`An ${reign.years} — ${eraName(reign.era)}`, VIEW_W / 2, VIEW_H - 36);
   drawPauseButton(ctx);
+  if (app.tutorial) drawTutorial(ctx, app.tutorial, VIEW_W, VIEW_H);
 }
 
 function drawDead(ctx, app) {
@@ -227,4 +291,8 @@ export function render(ctx, app) {
     drawPlay(ctx, app); // la scène reste visible sous le voile
     drawPause(ctx, app.progress, VIEW_W, VIEW_H);
   } else if (app.mode === 'dead') drawDead(ctx, app);
+  else if (app.mode === 'confirm') {
+    drawMenu(ctx, app);
+    drawConfirm(ctx, VIEW_W, VIEW_H);
+  }
 }

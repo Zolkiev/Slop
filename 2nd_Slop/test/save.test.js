@@ -62,13 +62,13 @@ describe('score — persistance', () => {
     };
   };
 
-  const DEFAULTS = { best: 0, king: 0, musicVol: DEFAULT_MUSIC_VOL, sfxVol: DEFAULT_SFX_VOL };
+  const DEFAULTS = { best: 0, king: 0, tutoVu: false, musicVol: DEFAULT_MUSIC_VOL, sfxVol: DEFAULT_SFX_VOL };
 
   it('aller-retour et valeurs par défaut', () => {
     const storage = fakeStorage();
     expect(loadProgress(storage)).toEqual(DEFAULTS);
     saveProgress({ best: 22, king: 1, musicVol: 0.8, sfxVol: 0.1 }, storage);
-    expect(loadProgress(storage)).toEqual({ best: 22, king: 1, musicVol: 0.8, sfxVol: 0.1 });
+    expect(loadProgress(storage)).toEqual({ best: 22, king: 1, tutoVu: false, musicVol: 0.8, sfxVol: 0.1 });
   });
 
   it('résiste au stockage corrompu ou absent', () => {
@@ -82,7 +82,7 @@ describe('score — persistance', () => {
   it('volumes : anciens saves sans volumes -> défauts, valeurs hors bornes ramenées', () => {
     const storage = fakeStorage();
     saveProgress({ best: 5, king: 0 }, storage); // save d'avant les réglages
-    expect(loadProgress(storage)).toEqual({ best: 5, king: 0, ...{ musicVol: DEFAULT_MUSIC_VOL, sfxVol: DEFAULT_SFX_VOL } });
+    expect(loadProgress(storage)).toEqual({ best: 5, king: 0, tutoVu: false, ...{ musicVol: DEFAULT_MUSIC_VOL, sfxVol: DEFAULT_SFX_VOL } });
     saveProgress({ best: 5, king: 0, musicVol: 7, sfxVol: -2 }, storage);
     const p = loadProgress(storage);
     expect(p.musicVol).toBe(1);

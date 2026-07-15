@@ -6,12 +6,16 @@ import { KINGS, isUnlocked, lineageFlag } from './game/dynasty.js';
 import { setFlag } from './game/flags.js';
 import { loadProgress, saveProgress } from './game/score.js';
 import { decodeSave, codeFromHash } from './game/save.js';
+import {
+  serializeReign, deserializeReign, saveReign, loadReign, clearReign,
+} from './game/persist-reign.js';
 import { startCombat } from './game/combat.js';
 import { COMBATS } from './game/combats/index.js';
 import { createLoop } from './engine/loop.js';
+import { createTutorial, advance } from './game/tutorial.js';
 import { preload, portraitFor, cardArt, cardPlate } from './engine/assets.js';
-import { render, VIEW_W, VIEW_H } from './render/renderer.js';
-import { PAUSE_UI, inZone } from './render/pause.js';
+import { render, VIEW_W, VIEW_H, MENU_UI } from './render/renderer.js';
+import { PAUSE_UI, inZone, CONFIRM_UI } from './render/pause.js';
 import { COMBAT_CARD_SHIFT } from './render/combat.js';
 import { feminizeCard } from './render/card.js';
 import { hasFlag } from './game/flags.js';
@@ -74,12 +78,14 @@ audio.setMusicVolume(progress.musicVol);
 
 // --- État de l'application ---
 const app = {
-  mode: 'menu', // 'menu' | 'options' | 'play' | 'pause' | 'dead'
+  mode: 'menu', // 'menu' | 'options' | 'play' | 'pause' | 'dead' | 'confirm'
   reign: null,
   swipe: createSwipe(),
   anim: null, // {card, side, dx} — carte validée en cours d'envol
   progress,
   newRecord: false, // le dernier règne a-t-il battu le record ?
+  savedReign: deserializeReign(loadReign(), CARDS), // règne en cours restauré, ou null
+  tutorial: null, // coach-marks du 1er règne (Tâche 9)
 };
 
 function selectKing(delta) {
@@ -89,8 +95,12 @@ function selectKing(delta) {
 
 function startReign() {
   const king = KINGS[progress.king];
-  if (!isUnlocked(king, progress.best)) return; // lignée encore scellée
-  app.reign = createReign({ gauges: king.gauges });
+  if (!isUnlocked(king, progress.best)) {
+    audio.play('glas'); // lignée scellée : refus sonore
+    return;
+  }
+  app.reign = createReign({ gauges: king.gauges, king: progress.king });
+  app.tutorial = progress.tutoVu ? null : createTutorial();
   setFlag(app.reign.flags, lineageFlag(king)); // les cartes d'identité se gatent dessus
   app.anim = null;
   app.newRecord = false;
@@ -103,6 +113,30 @@ function startReign() {
   }
   app.mode = 'play';
   audio.play('sacre');
+  autosave();
+}
+
+function continueReign() {
+  if (!app.savedReign) return;
+  app.reign = app.savedReign;
+  app.savedReign = null;
+  app.anim = null;
+  app.tutorial = null;
+  if (!app.reign.current) drawNext(app.reign, CARDS);
+  app.mode = 'play';
+}
+
+function newReignFromMenu() {
+  clearReign();
+  app.savedReign = null;
+  startReign();
+}
+
+// Persiste le règne à chaque frontière de carte (jamais en plein duel).
+function autosave() {
+  if (app.reign && !app.reign.dead && !app.reign.combat) {
+    saveReign(serializeReign(app.reign));
+  }
 }
 
 function endReign() {
@@ -111,6 +145,8 @@ function endReign() {
     progress.best = app.reign.years;
     saveProgress(progress);
   }
+  clearReign();
+  app.savedReign = null;
   app.mode = 'dead';
   audio.play('glas');
 }
@@ -120,6 +156,14 @@ function endReign() {
 function commitChoice(side, releaseDx = 0) {
   const card = app.reign.current;
   if (!card) return;
+  if (app.tutorial) {
+    advance(app.tutorial, 'choose');
+    if (app.tutorial.done) {
+      progress.tutoVu = true;
+      saveProgress(progress);
+      app.tutorial = null;
+    }
+  }
   // La logique avance tout de suite ; la désintégration n'est que visuelle.
   // En duel, la manœuvre est dessinée plus bas : la poussière part de là.
   const shown = hasFlag(app.reign.flags, 'lignee.morgane') ? feminizeCard(card) : card;
@@ -154,8 +198,11 @@ function togglePause() {
 }
 
 function abandonReign() {
+  // retour au menu SANS abandonner : le règne reste sauvegardé (CONTINUER)
+  app.savedReign = app.reign;
   app.reign = null;
   app.anim = null;
+  app.tutorial = null;
   app.mode = 'menu';
 }
 
@@ -219,9 +266,24 @@ canvas.addEventListener('pointerup', (e) => {
     saveProgress(progress); // un seul write au relâcher, pas à chaque frame
     return;
   }
+  if (app.mode === 'menu' && app.savedReign) {
+    if (inZone(PAUSE_UI.pauseButton, pos.x, pos.y)) { app.mode = 'options'; return; }
+    if (pos.y > VIEW_H - 80) { openCodeOverlay(); return; }
+    if (inZone(MENU_UI.continue, pos.x, pos.y)) { continueReign(); return; }
+    if (inZone(MENU_UI.newReign, pos.x, pos.y)) { app.mode = 'confirm'; return; }
+    return;
+  }
   if (app.mode === 'menu') {
     if (inZone(PAUSE_UI.pauseButton, pos.x, pos.y)) {
       app.mode = 'options'; // avant la zone du code, qui couvre le même coin
+      return;
+    }
+    if (inZone(MENU_UI.help, pos.x, pos.y)) {
+      // avant la zone du code : même coin bas, symétrique du bouton son
+      progress.tutoVu = false;
+      saveProgress(progress);
+      app.toast = 'Merlin te guidera à nouveau.';
+      app.toastUntil = performance.now() + 2200;
       return;
     }
     if (pos.y > VIEW_H - 80) {
@@ -231,6 +293,11 @@ canvas.addEventListener('pointerup', (e) => {
     if (pos.x < VIEW_W * 0.3) selectKing(-1);
     else if (pos.x > VIEW_W * 0.7) selectKing(+1);
     else startReign();
+    return;
+  }
+  if (app.mode === 'confirm') {
+    if (inZone(CONFIRM_UI.yes, pos.x, pos.y)) newReignFromMenu();
+    else if (inZone(CONFIRM_UI.no, pos.x, pos.y)) app.mode = 'menu';
     return;
   }
   if (app.mode === 'options') {
@@ -271,9 +338,17 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   if (app.mode === 'menu') {
+    if (app.savedReign) {
+      if (e.code === 'Space' || e.code === 'Enter') continueReign();
+      return;
+    }
     if (e.code === 'ArrowLeft') selectKing(-1);
     if (e.code === 'ArrowRight') selectKing(+1);
     if (e.code === 'Space' || e.code === 'Enter') startReign();
+    return;
+  }
+  if (app.mode === 'confirm') {
+    if (e.code === 'Enter' || e.code === 'Escape') app.mode = 'menu'; // défaut : Non
     return;
   }
   if (app.mode === 'dead') {
@@ -356,13 +431,19 @@ function step(dt) {
     if (updateShatter(app.anim.shatter, dt)) {
       app.anim = null;
       if (app.reign.dead) endReign();
-      else drawNext(app.reign, CARDS);
+      else {
+        drawNext(app.reign, CARDS);
+        autosave();
+      }
     }
   }
 
   // tick discret quand le drag révèle un choix
   const preview = app.mode === 'play' && !app.anim ? previewSide(app.swipe) : null;
-  if (preview && preview !== lastPreview) audio.play('tick');
+  if (preview && preview !== lastPreview) {
+    audio.play('tick');
+    if (app.tutorial) advance(app.tutorial, 'preview');
+  }
   lastPreview = preview;
 
   // scintillement quand une relique vient de sauver le règne

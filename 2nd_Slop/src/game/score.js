@@ -12,7 +12,7 @@ const clampVol = (v, fallback) =>
   typeof v === 'number' && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : fallback;
 
 function defaults() {
-  return { best: 0, king: 0, musicVol: DEFAULT_MUSIC_VOL, sfxVol: DEFAULT_SFX_VOL };
+  return { best: 0, king: 0, tutoVu: false, musicVol: DEFAULT_MUSIC_VOL, sfxVol: DEFAULT_SFX_VOL };
 }
 
 export function loadProgress(storage = globalThis.localStorage) {
@@ -23,6 +23,7 @@ export function loadProgress(storage = globalThis.localStorage) {
     return {
       best: Math.max(0, p.best | 0),
       king: Math.min(Math.max(0, p.king | 0), KINGS.length - 1),
+      tutoVu: p.tutoVu === true,
       musicVol: clampVol(p.musicVol, DEFAULT_MUSIC_VOL),
       sfxVol: clampVol(p.sfxVol, DEFAULT_SFX_VOL),
     };

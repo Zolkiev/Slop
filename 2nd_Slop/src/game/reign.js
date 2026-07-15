@@ -22,6 +22,7 @@ export function eraForYears(years) {
 export function createReign(initial = {}) {
   return {
     gauges: createGauges(initial.gauges),
+    king: initial.king ?? 0, // index de lignée (dynasty.KINGS), pour l'affichage/CONTINUE
     flags: initial.flags ?? createFlags(),
     years: 0,
     era: eraForYears(0),
