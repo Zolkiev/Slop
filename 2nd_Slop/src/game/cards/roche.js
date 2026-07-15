@@ -4,6 +4,7 @@
 export const roche = [
   {
     id: 'roche.merlin.couronne',
+    art: 'sacre-arthur',
     era: 'roche',
     speaker: 'Merlin',
     text: "L'épée a quitté la pierre dans ta main. Proclameras-tu ton droit divin, ou laisseras-tu les barons t'élire ?",
@@ -35,6 +36,7 @@ export const roche = [
   },
   {
     id: 'roche.dame.lac',
+    art: 'excalibur-remise',
     era: 'roche',
     speaker: 'La Dame du Lac',
     text: "Ton épée s'est brisée. Je puis t'en offrir une forgée à Avalon — Excalibur. Accepteras-tu ce présent des fées ?",
@@ -53,6 +55,7 @@ export const roche = [
   // ---- Chaîne : la naissance de Mordred (posée tôt, éclatera à l'ère de la Chute) ----
   {
     id: 'roche.morgane.nuit',
+    art: 'nuit-morgane',
     era: 'roche',
     speaker: 'Morgane',
     text: "La nuit est froide, mon roi, et je ne suis pas si lointaine parente. M'ouvriras-tu ta porte ?",

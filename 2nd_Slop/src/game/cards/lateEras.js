@@ -40,6 +40,7 @@ export const graal = [
   },
   {
     id: 'graal.galaad.siege',
+    art: 'galaad-siege',
     era: 'graal',
     speaker: 'Galaad',
     text: "Le Siège Périlleux m'attend, dit-on — la place qui foudroie les indignes. Me laisseras-tu m'y asseoir, Sire ?",
@@ -174,6 +175,7 @@ export const graal = [
   },
   {
     id: 'graal.roi.pecheur',
+    art: 'roi-pecheur',
     era: 'graal',
     speaker: 'Un ermite',
     text: "Au château du Graal règne un roi blessé qui ne meurt ni ne guérit, et sa terre pourrit avec lui. Ton chevalier doit poser LA question, Sire — mais laquelle ?",
@@ -191,6 +193,7 @@ export const graal = [
   },
   {
     id: 'graal.galaad.atteint',
+    art: 'graal-atteint',
     era: ['graal', 'chute'],
     speaker: 'Galaad',
     text: "Sire, je l'ai vu — le Graal, à visage découvert. Ma quête s'achève, et moi avec elle : je monte vers la lumière. Que dira Camelot de ce jour ?",
@@ -444,6 +447,7 @@ export const chute = [
   // ---- Éclatement de la chaîne Mordred, posée à l'ère de la Roche ----
   {
     id: 'chute.mordred.revele',
+    art: 'table-brisee',
     era: 'chute',
     speaker: 'Mordred',
     text: "Père. Oui — père. Le fils que Morgane t'a donné, celui que tu as élevé ou banni, réclame aujourd'hui sa part de Logres. Me nommeras-tu héritier ?",
@@ -463,6 +467,7 @@ export const chute = [
   },
   {
     id: 'chute.mordred.guerre',
+    art: 'mordred-revolte',
     era: 'chute',
     speaker: 'Gauvain',
     text: "Mordred lève une armée contre toi ! Marcherons-nous sur lui à Camlann ?",
@@ -1043,6 +1048,7 @@ export const avalon = [
   },
   {
     id: 'avalon.bedivere',
+    art: 'excalibur-rendue',
     era: 'avalon',
     speaker: 'Bédivère',
     text: "Deux fois tu m'as ordonné de jeter Excalibur au lac, deux fois j'ai menti. Elle est trop belle, Sire. Ordonne encore ?",
@@ -1145,6 +1151,7 @@ export const avalon = [
   },
   {
     id: 'avalon.peuple.tombeau',
+    art: 'tombeau-arthur',
     era: 'avalon',
     speaker: 'Le peuple',
     text: "Laisse-nous un tombeau, Sire — une pierre où pleurer. Ou disparais dans la brume, et laisse-nous le doute.",
