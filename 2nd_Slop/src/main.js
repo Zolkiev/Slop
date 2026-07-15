@@ -13,8 +13,8 @@ import { startCombat } from './game/combat.js';
 import { COMBATS } from './game/combats/index.js';
 import { createLoop } from './engine/loop.js';
 import { preload, portraitFor, cardArt, cardPlate } from './engine/assets.js';
-import { render, VIEW_W, VIEW_H } from './render/renderer.js';
-import { PAUSE_UI, inZone } from './render/pause.js';
+import { render, VIEW_W, VIEW_H, MENU_UI } from './render/renderer.js';
+import { PAUSE_UI, inZone, CONFIRM_UI } from './render/pause.js';
 import { COMBAT_CARD_SHIFT } from './render/combat.js';
 import { feminizeCard } from './render/card.js';
 import { hasFlag } from './game/flags.js';
@@ -109,6 +109,22 @@ function startReign() {
   app.mode = 'play';
   audio.play('sacre');
   autosave();
+}
+
+function continueReign() {
+  if (!app.savedReign) return;
+  app.reign = app.savedReign;
+  app.savedReign = null;
+  app.anim = null;
+  app.tutorial = null;
+  if (!app.reign.current) drawNext(app.reign, CARDS);
+  app.mode = 'play';
+}
+
+function newReignFromMenu() {
+  clearReign();
+  app.savedReign = null;
+  startReign();
 }
 
 // Persiste le règne à chaque frontière de carte (jamais en plein duel).
@@ -238,6 +254,13 @@ canvas.addEventListener('pointerup', (e) => {
     saveProgress(progress); // un seul write au relâcher, pas à chaque frame
     return;
   }
+  if (app.mode === 'menu' && app.savedReign) {
+    if (inZone(PAUSE_UI.pauseButton, pos.x, pos.y)) { app.mode = 'options'; return; }
+    if (pos.y > VIEW_H - 80) { openCodeOverlay(); return; }
+    if (inZone(MENU_UI.continue, pos.x, pos.y)) { continueReign(); return; }
+    if (inZone(MENU_UI.newReign, pos.x, pos.y)) { app.mode = 'confirm'; return; }
+    return;
+  }
   if (app.mode === 'menu') {
     if (inZone(PAUSE_UI.pauseButton, pos.x, pos.y)) {
       app.mode = 'options'; // avant la zone du code, qui couvre le même coin
@@ -250,6 +273,11 @@ canvas.addEventListener('pointerup', (e) => {
     if (pos.x < VIEW_W * 0.3) selectKing(-1);
     else if (pos.x > VIEW_W * 0.7) selectKing(+1);
     else startReign();
+    return;
+  }
+  if (app.mode === 'confirm') {
+    if (inZone(CONFIRM_UI.yes, pos.x, pos.y)) newReignFromMenu();
+    else if (inZone(CONFIRM_UI.no, pos.x, pos.y)) app.mode = 'menu';
     return;
   }
   if (app.mode === 'options') {
@@ -290,9 +318,17 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   if (app.mode === 'menu') {
+    if (app.savedReign) {
+      if (e.code === 'Space' || e.code === 'Enter') continueReign();
+      return;
+    }
     if (e.code === 'ArrowLeft') selectKing(-1);
     if (e.code === 'ArrowRight') selectKing(+1);
     if (e.code === 'Space' || e.code === 'Enter') startReign();
+    return;
+  }
+  if (app.mode === 'confirm') {
+    if (e.code === 'Enter' || e.code === 'Escape') app.mode = 'menu'; // défaut : Non
     return;
   }
   if (app.mode === 'dead') {

@@ -9,13 +9,19 @@ import { hasFlag } from '../game/flags.js';
 import { drawShatter } from './shatter.js';
 import { drawGauges } from './gauges.js';
 import { drawCard, feminizeCard } from './card.js';
-import { drawPause, drawPauseButton, drawSoundButton } from './pause.js';
+import { drawPause, drawPauseButton, drawSoundButton, drawButton, drawConfirm, CONFIRM_UI } from './pause.js';
 import { drawCombatScene, COMBAT_CARD_SHIFT } from './combat.js';
 import { previewSide, SWIPE_PREVIEW, SWIPE_COMMIT } from '../game/swipe.js';
 import { wrapText, drawLines } from './text.js';
 
 export const VIEW_W = 480;
 export const VIEW_H = 800;
+
+// Boutons du menu affichés quand un règne est en cours (hit-test dans main.js).
+export const MENU_UI = {
+  continue: { x: 90, y: 500, w: 300, h: 56 },
+  newReign: { x: 120, y: 572, w: 240, h: 40 },
+};
 
 // Ambiances de fond par ère (gradient haut -> bas), en attendant les décors PixelLab.
 const ERA_BG = {
@@ -69,32 +75,41 @@ function drawMenu(ctx, app) {
     ctx.fillText(`Record : ${progress.best} ans de règne`, VIEW_W / 2, 330);
   }
 
-  // sélecteur de lignée
-  const king = KINGS[progress.king];
-  const unlocked = isUnlocked(king, progress.best);
-  ctx.font = `400 26px ${TEXT}`;
-  ctx.fillStyle = '#b8b0c8';
-  ctx.fillText('‹', VIEW_W * 0.15, 440);
-  ctx.fillText('›', VIEW_W * 0.85, 440);
-
-  if (unlocked) {
-    ctx.fillStyle = '#f5f0e6';
-    ctx.font = `700 26px ${TITLE}`;
-    ctx.fillText(king.name, VIEW_W / 2, 425);
-    ctx.font = `400 18px ${TEXT}`;
+  if (app.savedReign) {
+    const r = app.savedReign;
+    const kingName = KINGS[r.king]?.name ?? 'ARTHUR';
     ctx.fillStyle = '#b8b0c8';
-    ctx.fillText(king.title, VIEW_W / 2, 458);
-  } else {
-    ctx.fillStyle = '#6a6478';
-    ctx.font = `700 26px ${TITLE}`;
-    ctx.fillText('? ? ?', VIEW_W / 2, 425);
-    ctx.font = `400 17px ${TEXT}`;
-    ctx.fillText(`Règne ${king.unlock} ans pour éveiller cette lignée`, VIEW_W / 2, 458);
-  }
+    ctx.font = `400 18px ${TEXT}`;
+    ctx.fillText(`${kingName} — an ${r.years} de règne`, VIEW_W / 2, 456);
 
-  ctx.font = `700 21px ${TEXT}`;
-  ctx.fillStyle = unlocked ? '#e8c96a' : '#6a6478';
-  ctx.fillText('— Tape pour régner —', VIEW_W / 2, 560);
+    drawButton(ctx, MENU_UI.continue, 'CONTINUER', { primary: true });
+    drawButton(ctx, MENU_UI.newReign, 'Nouveau règne');
+  } else {
+    // sélecteur de lignée (existant)
+    const king = KINGS[progress.king];
+    const unlocked = isUnlocked(king, progress.best);
+    ctx.font = `400 26px ${TEXT}`;
+    ctx.fillStyle = '#b8b0c8';
+    ctx.fillText('‹', VIEW_W * 0.15, 440);
+    ctx.fillText('›', VIEW_W * 0.85, 440);
+    if (unlocked) {
+      ctx.fillStyle = '#f5f0e6';
+      ctx.font = `700 26px ${TITLE}`;
+      ctx.fillText(king.name, VIEW_W / 2, 425);
+      ctx.font = `400 18px ${TEXT}`;
+      ctx.fillStyle = '#b8b0c8';
+      ctx.fillText(king.title, VIEW_W / 2, 458);
+    } else {
+      ctx.fillStyle = '#6a6478';
+      ctx.font = `700 26px ${TITLE}`;
+      ctx.fillText('? ? ?', VIEW_W / 2, 425);
+      ctx.font = `400 17px ${TEXT}`;
+      ctx.fillText(`Règne ${king.unlock} ans pour éveiller cette lignée`, VIEW_W / 2, 458);
+    }
+    ctx.font = `700 21px ${TEXT}`;
+    ctx.fillStyle = unlocked ? '#e8c96a' : '#6a6478';
+    ctx.fillText('— Tape pour régner —', VIEW_W / 2, 560);
+  }
 
   // code de sauvegarde (partage entre appareils, sans compte)
   ctx.font = `400 16px ${TEXT}`;
@@ -227,4 +242,8 @@ export function render(ctx, app) {
     drawPlay(ctx, app); // la scène reste visible sous le voile
     drawPause(ctx, app.progress, VIEW_W, VIEW_H);
   } else if (app.mode === 'dead') drawDead(ctx, app);
+  else if (app.mode === 'confirm') {
+    drawMenu(ctx, app);
+    drawConfirm(ctx, VIEW_W, VIEW_H);
+  }
 }
