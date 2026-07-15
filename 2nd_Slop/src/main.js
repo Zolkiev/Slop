@@ -12,6 +12,7 @@ import {
 import { startCombat } from './game/combat.js';
 import { COMBATS } from './game/combats/index.js';
 import { createLoop } from './engine/loop.js';
+import { createTutorial, advance } from './game/tutorial.js';
 import { preload, portraitFor, cardArt, cardPlate } from './engine/assets.js';
 import { render, VIEW_W, VIEW_H, MENU_UI } from './render/renderer.js';
 import { PAUSE_UI, inZone, CONFIRM_UI } from './render/pause.js';
@@ -95,7 +96,8 @@ function selectKing(delta) {
 function startReign() {
   const king = KINGS[progress.king];
   if (!isUnlocked(king, progress.best)) return; // lignée encore scellée
-  app.reign = createReign({ gauges: king.gauges });
+  app.reign = createReign({ gauges: king.gauges, king: progress.king });
+  app.tutorial = progress.tutoVu ? null : createTutorial();
   setFlag(app.reign.flags, lineageFlag(king)); // les cartes d'identité se gatent dessus
   app.anim = null;
   app.newRecord = false;
@@ -152,6 +154,14 @@ function endReign() {
 function commitChoice(side, releaseDx = 0) {
   const card = app.reign.current;
   if (!card) return;
+  if (app.tutorial) {
+    advance(app.tutorial, 'choose');
+    if (app.tutorial.done) {
+      progress.tutoVu = true;
+      saveProgress(progress);
+      app.tutorial = null;
+    }
+  }
   // La logique avance tout de suite ; la désintégration n'est que visuelle.
   // En duel, la manœuvre est dessinée plus bas : la poussière part de là.
   const shown = hasFlag(app.reign.flags, 'lignee.morgane') ? feminizeCard(card) : card;
@@ -420,7 +430,10 @@ function step(dt) {
 
   // tick discret quand le drag révèle un choix
   const preview = app.mode === 'play' && !app.anim ? previewSide(app.swipe) : null;
-  if (preview && preview !== lastPreview) audio.play('tick');
+  if (preview && preview !== lastPreview) {
+    audio.play('tick');
+    if (app.tutorial) advance(app.tutorial, 'preview');
+  }
   lastPreview = preview;
 
   // scintillement quand une relique vient de sauver le règne

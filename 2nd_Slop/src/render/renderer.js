@@ -13,6 +13,7 @@ import { drawPause, drawPauseButton, drawSoundButton, drawButton, drawConfirm, C
 import { drawCombatScene, COMBAT_CARD_SHIFT } from './combat.js';
 import { previewSide, SWIPE_PREVIEW, SWIPE_COMMIT } from '../game/swipe.js';
 import { wrapText, drawLines } from './text.js';
+import { drawTutorial } from './tutorial.js';
 
 export const VIEW_W = 480;
 export const VIEW_H = 800;
@@ -188,6 +189,7 @@ function drawPlay(ctx, app) {
   ctx.textBaseline = 'middle';
   ctx.fillText(`An ${reign.years} — ${eraName(reign.era)}`, VIEW_W / 2, VIEW_H - 36);
   drawPauseButton(ctx);
+  if (app.tutorial) drawTutorial(ctx, app.tutorial, VIEW_W, VIEW_H);
 }
 
 function drawDead(ctx, app) {
