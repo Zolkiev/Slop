@@ -1,7 +1,7 @@
 # Jetpack Bot
 
 <p align="center">
-  <a href="https://zolkiev.github.io/Slop/"><b>▶️&nbsp;JOUER DANS LE NAVIGATEUR</b></a>
+  <a href="https://zolkiev.github.io/Slop/jetpack/"><b>▶️&nbsp;JOUER DANS LE NAVIGATEUR</b></a>
 </p>
 
 Flappy-like vertical : un **robot à jetpack** s'élève depuis une mégapole cyberpunk

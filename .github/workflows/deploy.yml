@@ -1,6 +1,9 @@
-# Déploiement du jeu Jetpack Bot (1st_Slop) sur GitHub Pages.
-# Chaque push sur main qui touche le jeu (ou ce fichier) reconstruit
-# et redéploie https://zolkiev.github.io/Slop/
+# Déploiement des Slop games sur GitHub Pages (un seul site pour tout le repo).
+# Chaque push sur main qui touche un jeu, la page hub ou ce fichier reconstruit
+# et redéploie :
+#   https://zolkiev.github.io/Slop/          → page hub
+#   https://zolkiev.github.io/Slop/jetpack/  → Jetpack Bot (1st_Slop)
+#   https://zolkiev.github.io/Slop/logres/   → Logres (2nd_Slop)
 name: Déploiement GitHub Pages
 
 on:
@@ -8,6 +11,8 @@ on:
     branches: [main]
     paths:
       - '1st_Slop/**'
+      - '2nd_Slop/**'
+      - 'landing/**'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
@@ -29,22 +34,56 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: 1st_Slop/package-lock.json
-      - name: Installer les dépendances
+          cache-dependency-path: |
+            1st_Slop/package-lock.json
+            2nd_Slop/package-lock.json
+
+      # --- Jetpack Bot (1st_Slop) ---
+      - name: Installer les dépendances (Jetpack)
         run: npm ci
         working-directory: 1st_Slop
-      - name: Vérifier les tests
+      - name: Tests (Jetpack)
         run: npx vitest run
         working-directory: 1st_Slop
-      - name: Construire le jeu
+      - name: Build (Jetpack)
         run: npx vite build
         working-directory: 1st_Slop
+
+      # --- Logres (2nd_Slop) ---
+      - name: Installer les dépendances (Logres)
+        run: npm ci
+        working-directory: 2nd_Slop
+      - name: Tests (Logres)
+        run: npx vitest run
+        working-directory: 2nd_Slop
+      - name: Build (Logres)
+        run: npx vite build
+        working-directory: 2nd_Slop
+
+      # --- Assemblage de l'artefact Pages ---
+      # site/index.html          = page hub
+      # site/jetpack/            = build Jetpack
+      # site/logres/             = build Logres + assets runtime (chargés par chemin,
+      #                            donc non bundlés par Vite)
+      - name: Assembler le site
+        run: |
+          set -euo pipefail
+          rm -rf site
+          mkdir -p site/jetpack site/logres
+          cp landing/index.html site/index.html
+          cp -r 1st_Slop/dist/. site/jetpack/
+          cp -r 2nd_Slop/dist/. site/logres/
+          mkdir -p site/logres/assets
+          for d in bg music portraits sfx ui scenes; do
+            cp -r "2nd_Slop/assets/$d" "site/logres/assets/$d"
+          done
+
       - uses: actions/configure-pages@v5
         with:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: 1st_Slop/dist
+          path: site
 
   deploy:
     needs: build
