@@ -43,4 +43,17 @@ describe('serializeReign / deserializeReign', () => {
     expect(deserializeReign({ v: 999 }, CARDS)).toBeNull();
     expect(deserializeReign('pas un objet', CARDS)).toBeNull();
   });
+
+  it('renvoie null si les jauges sont absentes', () => {
+    expect(deserializeReign({ v: 1 }, CARDS)).toBeNull();
+  });
+
+  it('renvoie null si une jauge est non-numérique', () => {
+    expect(
+      deserializeReign(
+        { v: 1, gauges: { foi: 'x', magie: 50, chevalerie: 50, couronne: 50 } },
+        CARDS
+      )
+    ).toBeNull();
+  });
 });
