@@ -22,6 +22,7 @@ export const VIEW_H = 800;
 export const MENU_UI = {
   continue: { x: 90, y: 500, w: 300, h: 56 },
   newReign: { x: 120, y: 572, w: 240, h: 40 },
+  help: { x: 12, y: 800 - 52, w: 34, h: 34 },
 };
 
 // Ambiances de fond par ère (gradient haut -> bas), en attendant les décors PixelLab.
@@ -107,6 +108,20 @@ function drawMenu(ctx, app) {
       ctx.font = `400 17px ${TEXT}`;
       ctx.fillText(`Règne ${king.unlock} ans pour éveiller cette lignée`, VIEW_W / 2, 458);
     }
+    // points de lignée : ● éveillé / ○ scellé
+    const dotY = 500;
+    const gap = 22;
+    const startX = VIEW_W / 2 - ((KINGS.length - 1) * gap) / 2;
+    ctx.font = `18px ${TEXT}`;
+    KINGS.forEach((k, i) => {
+      const on = isUnlocked(k, progress.best);
+      ctx.fillStyle = i === progress.king ? '#e8c96a' : on ? '#8a8298' : '#4a4658';
+      ctx.fillText(on ? '●' : '○', startX + i * gap, dotY);
+    });
+    ctx.font = `italic 400 14px ${TEXT}`;
+    ctx.fillStyle = '#8a8298';
+    ctx.fillText('Ta lignée se souvient de tous les rois éveillés.', VIEW_W / 2, 526);
+
     ctx.font = `700 21px ${TEXT}`;
     ctx.fillStyle = unlocked ? '#e8c96a' : '#6a6478';
     ctx.fillText('— Tape pour régner —', VIEW_W / 2, 560);
@@ -119,6 +134,33 @@ function drawMenu(ctx, app) {
   ctx.font = `400 14px ${TEXT}`;
   ctx.fillText('touche le code pour restaurer une progression', VIEW_W / 2, VIEW_H - 36);
   drawSoundButton(ctx);
+
+  // bouton « ? » : revoir le tuto (symétrique du bouton son)
+  const h = MENU_UI.help;
+  ctx.globalAlpha = 0.85;
+  ctx.fillStyle = '#1a1524';
+  ctx.strokeStyle = 'rgba(201,162,39,0.85)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(h.x + h.w / 2, h.y + h.h / 2, h.w / 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#b8b0c8';
+  ctx.font = `700 18px ${TEXT}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('?', h.x + h.w / 2, h.y + h.h / 2 + 1);
+
+  if (app.toast && performance.now() < (app.toastUntil ?? 0)) {
+    ctx.fillStyle = 'rgba(201,162,39,0.92)';
+    ctx.fillRect(40, 300, VIEW_W - 80, 40);
+    ctx.fillStyle = '#2a2438';
+    ctx.font = `700 15px ${TEXT}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(app.toast, VIEW_W / 2, 320);
+  }
 }
 
 function drawRelics(ctx, flags) {

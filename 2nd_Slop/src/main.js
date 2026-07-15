@@ -95,7 +95,10 @@ function selectKing(delta) {
 
 function startReign() {
   const king = KINGS[progress.king];
-  if (!isUnlocked(king, progress.best)) return; // lignée encore scellée
+  if (!isUnlocked(king, progress.best)) {
+    audio.play('glas'); // lignée scellée : refus sonore
+    return;
+  }
   app.reign = createReign({ gauges: king.gauges, king: progress.king });
   app.tutorial = progress.tutoVu ? null : createTutorial();
   setFlag(app.reign.flags, lineageFlag(king)); // les cartes d'identité se gatent dessus
@@ -274,6 +277,14 @@ canvas.addEventListener('pointerup', (e) => {
   if (app.mode === 'menu') {
     if (inZone(PAUSE_UI.pauseButton, pos.x, pos.y)) {
       app.mode = 'options'; // avant la zone du code, qui couvre le même coin
+      return;
+    }
+    if (inZone(MENU_UI.help, pos.x, pos.y)) {
+      // avant la zone du code : même coin bas, symétrique du bouton son
+      progress.tutoVu = false;
+      saveProgress(progress);
+      app.toast = 'Merlin te guidera à nouveau.';
+      app.toastUntil = performance.now() + 2200;
       return;
     }
     if (pos.y > VIEW_H - 80) {
