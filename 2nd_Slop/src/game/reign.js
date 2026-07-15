@@ -3,7 +3,7 @@
 // Pendant un combat (reign.combat), les deux délèguent au module combat —
 // la boucle de jeu ne voit pas la différence.
 import { ERAS, RECENT_LIMIT } from '../config.js';
-import { createGauges, applyEffects, checkDeath } from './gauges.js';
+import { createGauges, applyEffects, applyDeclin, checkDeath } from './gauges.js';
 import { createFlags, applyFlags } from './flags.js';
 import { pickCard } from './deck.js';
 import { empowerEffects, tryCancelDeath } from './relics.js';
@@ -75,6 +75,11 @@ export function choose(reign, side, rng = Math.random) {
   const choice = card[side];
   if (!choice) throw new Error(`côté invalide: ${side}`);
 
+  // L'ère de la carte qu'on vient de jouer. `reign.era` sera réécrit plus bas par
+  // eraForYears() : s'en servir pour le déclin ou le texte de mort donnerait un
+  // texte d'Avalon à une mort causée par une carte de la Chute (bascule an 43→44).
+  const eraPlayed = reign.era;
+
   if (choice.combat) {
     const def = COMBATS[choice.combat];
     if (!def) throw new Error(`combat inconnu: ${choice.combat}`);
@@ -87,11 +92,14 @@ export function choose(reign, side, rng = Math.random) {
   reign.miracle = null;
   reign.gauges = applyEffects(reign.gauges, empowerEffects(choice.effects, reign.flags));
   applyFlags(reign.flags, choice.flags);
+  // Le Déclin : en Avalon, Logres échappe au roi mourant. Après les effets, car
+  // le joueur doit pouvoir choisir la jauge qu'il défend en dernier.
+  if (eraPlayed === 'avalon') reign.gauges = applyDeclin(reign.gauges);
   reign.years += 1;
   reign.era = eraForYears(reign.years);
   reign.next = choice.next ?? null;
   reign.current = null;
-  reign.dead = checkDeath(reign.gauges);
+  reign.dead = checkDeath(reign.gauges, eraPlayed);
 
   // Le Fourreau peut boire le coup mortel (une seule fois).
   if (reign.dead) {
@@ -99,7 +107,7 @@ export function choose(reign, side, rng = Math.random) {
     if (saved) {
       reign.gauges = saved.gauges;
       // une AUTRE jauge peut avoir lâché au même tour — le miracle n'y peut rien
-      reign.dead = checkDeath(reign.gauges);
+      reign.dead = checkDeath(reign.gauges, eraPlayed);
       reign.miracle = reign.dead ? null : saved.message;
     }
   }
