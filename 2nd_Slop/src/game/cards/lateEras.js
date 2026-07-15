@@ -1052,6 +1052,7 @@ export const avalon = [
   {
     id: 'avalon.filler.veille',
     era: 'avalon',
+    filler: true,
     speaker: 'Un moine',
     text: "On veille ton sommeil, Sire. Faut-il prier pour ton âme — ou chanter tes batailles ?",
     left: { label: "Qu'on prie", effects: { foi: +6, chevalerie: -5 } },
@@ -1061,6 +1062,7 @@ export const avalon = [
   {
     id: 'avalon.filler.visiteurs',
     era: 'avalon',
+    filler: true,
     speaker: 'Le peuple',
     text: "Ils viennent de trois jours de marche pour toucher ton manteau, Sire. On ouvre les portes, ou on te laisse partir en paix ?",
     left: { label: "Qu'ils entrent", effects: { couronne: +6, magie: -5 } },
@@ -1070,6 +1072,7 @@ export const avalon = [
   {
     id: 'avalon.filler.destrier',
     era: 'avalon',
+    filler: true,
     speaker: 'Un écuyer',
     text: "Ton destrier ne se laisse plus seller, Sire — il t'attend. L'abat-on avec les honneurs d'un compagnon d'armes, ou le rend-on aux écuries du prochain roi ?",
     left: { label: 'Les honneurs', effects: { chevalerie: +7, couronne: -5 } },
@@ -1079,6 +1082,7 @@ export const avalon = [
   {
     id: 'avalon.filler.eau',
     era: 'avalon',
+    filler: true,
     speaker: 'Un ermite',
     text: "On mouille tes lèvres, Sire. Cette eau-ci vient de l'autel — celle-là, du puits des fées. Laquelle veux-tu ?",
     left: { label: "L'eau de l'autel", effects: { foi: +7, magie: -6 } },
@@ -1088,6 +1092,7 @@ export const avalon = [
   {
     id: 'avalon.filler.heaume',
     era: 'avalon',
+    filler: true,
     speaker: 'Un barde',
     text: "On se dispute déjà tes affaires, Sire : ton heaume, ton manteau, ta coupe. Reliques saintes — ou butin de guerre ?",
     left: { label: "Reliques", effects: { foi: +6, magie: -5 } },
