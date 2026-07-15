@@ -1,5 +1,5 @@
 // Jauges du royaume : état pur, application d'effets bornée, détection de mort.
-import { GAUGE_KEYS, GAUGE_MIN, GAUGE_MAX, GAUGE_START, GAUGES } from '../config.js';
+import { GAUGE_KEYS, GAUGE_MIN, GAUGE_MAX, GAUGE_START, GAUGES, AVALON_DECLIN } from '../config.js';
 
 const clamp = (v) => Math.max(GAUGE_MIN, Math.min(GAUGE_MAX, v));
 
@@ -21,6 +21,17 @@ export function applyEffects(gauges, effects = {}) {
   for (const key of GAUGE_KEYS) {
     if (effects[key]) next[key] = clamp(next[key] + effects[key]);
   }
+  return next;
+}
+
+/**
+ * Le Déclin d'Avalon : érode les 4 jauges de `n` points et renvoie de NOUVELLES
+ * jauges bornées 0..100. N'altère jamais l'objet d'entrée.
+ * Peut tuer — c'est le but : l'épilogue doit se conclure.
+ */
+export function applyDeclin(gauges, n = AVALON_DECLIN) {
+  const next = { ...gauges };
+  for (const key of GAUGE_KEYS) next[key] = clamp(next[key] - n);
   return next;
 }
 

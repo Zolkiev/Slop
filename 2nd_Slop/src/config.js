@@ -5,6 +5,11 @@ export const GAUGE_MIN = 0;
 export const GAUGE_MAX = 100;
 export const GAUGE_START = 50;
 
+// Avalon : érosion des 4 jauges à chaque tour joué dans l'ère (« Le Déclin »).
+// Logres échappe au roi mourant. Calibré par simulation : médiane ~10 tours
+// d'épilogue. Voir docs/superpowers/specs/2026-07-15-avalon-declin-design.md §3.1.
+export const AVALON_DECLIN = 3;
+
 // Les 4 jauges. `key` est l'identifiant utilisé dans les effets de carte.
 // `empty` = mort quand la jauge tombe à 0 ; `full` = mort quand elle atteint 100.
 export const GAUGES = [
