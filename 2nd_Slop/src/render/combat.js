@@ -3,7 +3,7 @@
 // La carte de manœuvre elle-même passe par le circuit normal (drawCard).
 import { drawCard } from './card.js';
 import { TITLE, TEXT } from './fonts.js';
-import { portraitFor, cardPlate } from '../engine/assets.js';
+import { portraitFor, plateFor } from '../engine/assets.js';
 import { previewRound } from '../game/combat.js';
 
 const LEAD = '#0e0b14';
@@ -95,7 +95,7 @@ export function drawCombatScene(ctx, app, W, H, previewSideName, previewStrength
   drawCard(ctx, {
     card: { speaker: c.def.foe.name, text: '' },
     portrait: portraitFor(c.def.foe.speaker),
-    plate: cardPlate(),
+    plate: plateFor({ speaker: c.def.foe.speaker }),
     dx: 0,
     previewSide: null,
     centerX: 128 / s,

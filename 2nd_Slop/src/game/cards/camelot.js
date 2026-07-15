@@ -3,6 +3,7 @@
 export const camelot = [
   {
     id: 'camelot.table.ronde',
+    art: 'table-ronde',
     era: 'camelot',
     speaker: 'Merlin',
     text: "Une table ronde, où nul chevalier n'est assis plus haut qu'un autre. La feras-tu bâtir ?",
@@ -273,6 +274,7 @@ export const camelot = [
   // ---- Matière de cour : dilemmes standalone ----
   {
     id: 'camelot.tournoi.grand',
+    art: 'grand-tournoi',
     era: 'camelot',
     speaker: 'Un héraut',
     text: "Sire, tous les royaumes d'Europe veulent voir tes chevaliers jouter. Un grand tournoi coûterait cher — mais quelle vitrine pour la Table Ronde ! Un mystérieux Chevalier Noir s'est déjà inscrit.",

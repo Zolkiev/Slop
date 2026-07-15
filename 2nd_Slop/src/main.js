@@ -13,7 +13,7 @@ import { startCombat } from './game/combat.js';
 import { COMBATS } from './game/combats/index.js';
 import { createLoop } from './engine/loop.js';
 import { createTutorial, advance } from './game/tutorial.js';
-import { preload, portraitFor, cardArt, cardPlate } from './engine/assets.js';
+import { preload, portraitFor, cardArt, plateFor } from './engine/assets.js';
 import { render, VIEW_W, VIEW_H, MENU_UI } from './render/renderer.js';
 import { PAUSE_UI, inZone, CONFIRM_UI } from './render/pause.js';
 import { COMBAT_CARD_SHIFT } from './render/combat.js';
@@ -173,7 +173,7 @@ function commitChoice(side, releaseDx = 0) {
     shatter: createShatter({
       card: shown, // la capture doit montrer le même texte que l'affichage
       portrait: cardArt(card),
-      plate: cardPlate(),
+      plate: plateFor(card),
       dx: releaseDx || (side === 'left' ? -40 : 40),
       side,
       centerX: VIEW_W / 2,
