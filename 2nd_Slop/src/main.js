@@ -78,7 +78,7 @@ audio.setMusicVolume(progress.musicVol);
 
 // --- État de l'application ---
 const app = {
-  mode: 'menu', // 'menu' | 'options' | 'play' | 'pause' | 'dead'
+  mode: 'menu', // 'menu' | 'options' | 'play' | 'pause' | 'dead' | 'confirm'
   reign: null,
   swipe: createSwipe(),
   anim: null, // {card, side, dx} — carte validée en cours d'envol
@@ -135,7 +135,6 @@ function newReignFromMenu() {
 // Persiste le règne à chaque frontière de carte (jamais en plein duel).
 function autosave() {
   if (app.reign && !app.reign.dead && !app.reign.combat) {
-    app.reign.king = progress.king;
     saveReign(serializeReign(app.reign));
   }
 }

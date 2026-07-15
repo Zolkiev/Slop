@@ -9,7 +9,7 @@ import { hasFlag } from '../game/flags.js';
 import { drawShatter } from './shatter.js';
 import { drawGauges } from './gauges.js';
 import { drawCard, feminizeCard } from './card.js';
-import { drawPause, drawPauseButton, drawSoundButton, drawButton, drawConfirm, CONFIRM_UI } from './pause.js';
+import { drawPause, drawPauseButton, drawSoundButton, drawButton, drawConfirm } from './pause.js';
 import { drawCombatScene, COMBAT_CARD_SHIFT } from './combat.js';
 import { previewSide, SWIPE_PREVIEW, SWIPE_COMMIT } from '../game/swipe.js';
 import { wrapText, drawLines } from './text.js';
@@ -131,6 +131,7 @@ function drawMenu(ctx, app) {
     //   endroit où le tap handler est câblé (cf. main.js, branche savedReign
     //   n'a pas de logique pour ce bouton et ferait fuiter vers le code overlay)
     const h = MENU_UI.help;
+    ctx.save();
     ctx.globalAlpha = 0.85;
     ctx.fillStyle = '#1a1524';
     ctx.strokeStyle = 'rgba(201,162,39,0.85)';
@@ -145,6 +146,7 @@ function drawMenu(ctx, app) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('?', h.x + h.w / 2, h.y + h.h / 2 + 1);
+    ctx.restore();
 
     if (app.toast && performance.now() < (app.toastUntil ?? 0)) {
       ctx.fillStyle = 'rgba(201,162,39,0.92)';

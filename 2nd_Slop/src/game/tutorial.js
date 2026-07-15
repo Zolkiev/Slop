@@ -10,6 +10,10 @@ export const TUTO_STEPS = [
 // Événement qui fait avancer les étapes 1 et 2.
 const TRIGGER = ['preview', 'choose', 'choose'];
 
+if (TRIGGER.length !== TUTO_STEPS.length) {
+  throw new Error('tutorial: TRIGGER et TUTO_STEPS doivent avoir la même longueur');
+}
+
 export function createTutorial() {
   return { step: 0, done: false };
 }
