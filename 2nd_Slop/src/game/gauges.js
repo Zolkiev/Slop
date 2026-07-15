@@ -38,12 +38,17 @@ export function applyDeclin(gauges, n = AVALON_DECLIN) {
 /**
  * Renvoie la première mort déclenchée (jauge à 0 ou à 100), ou null.
  * L'ordre suit GAUGES pour un résultat déterministe.
+ * `era` (optionnel) sélectionne les textes d'agonie d'Avalon pour les morts
+ * « à vide » : on ne renverse pas un mourant. Sans `era`, comportement inchangé.
  * @returns {{key:string, side:'empty'|'full', cause:string}|null}
  */
-export function checkDeath(gauges) {
+export function checkDeath(gauges, era = null) {
   for (const g of GAUGES) {
     const v = gauges[g.key];
-    if (v <= GAUGE_MIN) return { key: g.key, side: 'empty', cause: g.empty };
+    if (v <= GAUGE_MIN) {
+      const cause = era === 'avalon' && g.avalonEmpty ? g.avalonEmpty : g.empty;
+      return { key: g.key, side: 'empty', cause };
+    }
     if (v >= GAUGE_MAX) return { key: g.key, side: 'full', cause: g.full };
   }
   return null;
