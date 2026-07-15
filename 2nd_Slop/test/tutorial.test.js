@@ -14,10 +14,26 @@ describe('tutoriel (coach-marks)', () => {
     expect(currentStep(t)).toBeNull();
   });
 
+  it('avance aussi au clavier (choose direct, sans preview)', () => {
+    const t = createTutorial();
+    expect(currentStep(t)).toEqual(TUTO_STEPS[0]);      // 1re carte
+    advance(t, 'choose');
+    expect(currentStep(t)).toEqual(TUTO_STEPS[1]);      // clavier : choose direct fait avancer
+    advance(t, 'choose');
+    expect(currentStep(t)).toEqual(TUTO_STEPS[2]);
+    advance(t, 'choose');
+    expect(t.done).toBe(true);
+    expect(currentStep(t)).toBeNull();
+  });
+
   it('ignore les événements hors séquence', () => {
     const t = createTutorial();
-    advance(t, 'choose'); // pas encore d'aperçu → pas d'avancée
-    expect(currentStep(t)).toEqual(TUTO_STEPS[0]);
+    advance(t, 'choose'); // étape 0 : accepte choose (clavier), avance à l'étape 1
+    expect(currentStep(t)).toEqual(TUTO_STEPS[1]);
+    advance(t, 'preview'); // étape 1 : n'accepte que choose → ignoré
+    expect(currentStep(t)).toEqual(TUTO_STEPS[1]);
+    advance(t, 'inconnu'); // événement inconnu → ignoré
+    expect(currentStep(t)).toEqual(TUTO_STEPS[1]);
   });
 
   it('a exactement 3 étapes avec ancrage', () => {

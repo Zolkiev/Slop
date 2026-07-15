@@ -7,7 +7,7 @@ export const TUTO_STEPS = [
   { text: "Qu'une seule s'éteigne ou s'embrase, et ton règne s'achève.", anchor: 'card' },
 ];
 
-// Événement qui fait avancer chaque étape.
+// Événement qui fait avancer les étapes 1 et 2.
 const TRIGGER = ['preview', 'choose', 'choose'];
 
 export function createTutorial() {
@@ -16,7 +16,12 @@ export function createTutorial() {
 
 export function advance(tuto, event) {
   if (tuto.done) return tuto;
-  if (event === TRIGGER[tuto.step]) {
+  // Étape 0 : le geste peut être amorcé ('preview', souris — transition des jauges
+  // pendant le drag) ou validé directement ('choose', clavier — les flèches ne
+  // déclenchent jamais 'preview'). Sans ça le tuto restait bloqué en boucle
+  // pour les joueurs clavier. Étapes 1-2 : seul 'choose' fait avancer.
+  const accepts = tuto.step === 0 ? event === 'preview' || event === 'choose' : event === TRIGGER[tuto.step];
+  if (accepts) {
     tuto.step += 1;
     if (tuto.step >= TUTO_STEPS.length) tuto.done = true;
   }
