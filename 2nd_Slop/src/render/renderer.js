@@ -3,7 +3,7 @@ import { ERAS } from '../config.js';
 import { KINGS, isUnlocked } from '../game/dynasty.js';
 import { heldRelics } from '../game/relics.js';
 import { encodeSave } from '../game/save.js';
-import { portraitFor, cardArt, backgroundFor, cardPlate, relicIcon } from '../engine/assets.js';
+import { portraitFor, cardArt, backgroundFor, plateFor, relicIcon } from '../engine/assets.js';
 import { TITLE, TEXT } from './fonts.js';
 import { hasFlag } from '../game/flags.js';
 import { drawShatter } from './shatter.js';
@@ -221,7 +221,7 @@ function drawPlay(ctx, app) {
     drawCard(ctx, {
       card: hasFlag(reign.flags, 'lignee.morgane') ? feminizeCard(card) : card,
       portrait: cardArt(card),
-      plate: cardPlate(),
+      plate: plateFor(card),
       dx: swipe.dx,
       previewSide: side,
       centerX: VIEW_W / 2,

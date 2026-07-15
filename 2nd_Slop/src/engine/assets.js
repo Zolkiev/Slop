@@ -1,6 +1,7 @@
 // Préchargement des images (portraits + scènes + décors). Chargement paresseux
 // et tolérant : le jeu reste jouable si une image manque (fallback dessiné).
 import { PORTRAITS } from '../game/portraits.js';
+import { DOMAINS, domainFor } from '../game/domains.js';
 import { SCENES } from '../game/scenes.js';
 import { ERAS, GAUGES } from '../config.js';
 
@@ -25,6 +26,7 @@ export function preload() {
     load(`bg:${era.id}`, `assets/bg/${era.id}.png`);
   }
   load('ui:card-plate', 'assets/ui/card-plate.png');
+  for (const d of DOMAINS) load(`ui:plate-${d}`, `assets/ui/plate-${d}.png`);
   for (const g of GAUGES) {
     load(`icon:${g.key}`, `assets/ui/icon-${g.key}.png`);
   }
@@ -45,5 +47,7 @@ export const cardArt = (card) =>
   (card.art ? get(`scene:${card.art}`) : null) ?? portraitFor(card.speaker);
 export const backgroundFor = (eraId) => get(`bg:${eraId}`);
 export const cardPlate = () => get('ui:card-plate');
+/** Cadre de carte tinté selon le domaine de l'orateur (fallback : cadre neutre). */
+export const plateFor = (card) => get(`ui:plate-${domainFor(card.speaker)}`) ?? get('ui:card-plate');
 export const gaugeIcon = (key) => get(`icon:${key}`);
 export const relicIcon = (key) => get(`relic:${key}`);
